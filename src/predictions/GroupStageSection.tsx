@@ -13,9 +13,6 @@ export function GroupStageSection({
   onDraftChange,
   teamLabel,
   groupLocked,
-  filledCount,
-  totalCount,
-  incompleteGroupLabels,
 }: {
   matchesByGroup: Map<string, (MatchDoc & { id: string })[]>
   draftByMatchId: Map<string, GroupDraftEntry>
@@ -23,14 +20,9 @@ export function GroupStageSection({
   onDraftChange: (matchId: string, goalsHome: number | null, goalsAway: number | null) => void
   teamLabel: (id: string) => string
   groupLocked: boolean
-  filledCount: number
-  totalCount: number
-  incompleteGroupLabels: string[]
 }) {
   const groups = orderedGroupIds().filter((g) => matchesByGroup.has(g))
   if (groups.length === 0) return null
-
-  const pct = totalCount > 0 ? Math.round((filledCount / totalCount) * 100) : 0
 
   return (
     <section className="pred-group-stage">
@@ -40,28 +32,6 @@ export function GroupStageSection({
         botón inferior cuando todo esté completo.
         {groupLocked ? ' · Fase de grupos ya guardada (no editable).' : ''}
       </p>
-
-      <div className="pred-group-sticky-head" aria-live="polite">
-        <div className="pred-group-progress">
-          <div
-            className="pred-group-progress-bar"
-            role="progressbar"
-            aria-valuenow={filledCount}
-            aria-valuemin={0}
-            aria-valuemax={totalCount}
-          >
-            <div className="pred-group-progress-fill" style={{ width: `${pct}%` }} />
-          </div>
-          <span className="pred-group-progress-text">
-            {filledCount} / {totalCount} partidos con marcador
-          </span>
-        </div>
-        {incompleteGroupLabels.length > 0 && !groupLocked ? (
-          <p className="pred-group-hint app-muted" style={{ marginTop: 8, marginBottom: 0 }}>
-            Faltan en: <strong>{incompleteGroupLabels.join(', ')}</strong>
-          </p>
-        ) : null}
-      </div>
 
       {groups.map((gid) => {
         const list = matchesByGroup.get(gid) ?? []

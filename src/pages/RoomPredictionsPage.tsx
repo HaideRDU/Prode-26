@@ -119,7 +119,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const [groupLocked, setGroupLocked] = useState(false)
   const [predictionFinalized, setPredictionFinalizedState] = useState<boolean | null>(null)
   const [draftGroup, setDraftGroup] = useState<Map<string, GroupDraftEntry>>(new Map())
-  const [touchedGroupMatchIds, setTouchedGroupMatchIds] = useState<Set<string>>(new Set())
   const draftInitRef = useRef(false)
   const roomDraftRef = useRef<string | null>(null)
 
@@ -230,7 +229,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   useEffect(() => {
     setKoDraftOverrides(new Map())
     setBonusOverrides(new Map())
-    setTouchedGroupMatchIds(new Set())
   }, [roomId])
 
   useEffect(() => {
@@ -238,31 +236,25 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     if (draftInitRef.current) return
 
     const m = new Map<string, GroupDraftEntry>()
-    const touched = new Set<string>()
     for (const id of groupMatchIds) {
       const p = predByMatchId.get(id)
       m.set(id, {
         goalsHome: p?.goalsHome ?? 0,
         goalsAway: p?.goalsAway ?? 0,
       })
-      if (hasNumericScorePrediction(p)) touched.add(id)
     }
     setDraftGroup(m)
-    setTouchedGroupMatchIds(touched)
     draftInitRef.current = true
   }, [roomId, loadingP, groupMatchIds, predByMatchId])
 
   useEffect(() => {
     if (!groupLocked || groupMatchIds.size === 0) return
     const m = new Map<string, GroupDraftEntry>()
-    const touched = new Set<string>()
     for (const id of groupMatchIds) {
       const p = predByMatchId.get(id)
       m.set(id, { goalsHome: p?.goalsHome ?? 0, goalsAway: p?.goalsAway ?? 0 })
-      if (hasNumericScorePrediction(p)) touched.add(id)
     }
     setDraftGroup(m)
-    setTouchedGroupMatchIds(touched)
   }, [groupLocked, groupMatchIds, predByMatchId])
 
   const finalizedResolved = predictionFinalized !== null
@@ -270,12 +262,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
 
   const onDraftChange = useCallback((matchId: string, gh: number | null, ga: number | null) => {
     if (readOnly || !finalizedResolved) return
-    setTouchedGroupMatchIds((prev) => {
-      if (prev.has(matchId)) return prev
-      const next = new Set(prev)
-      next.add(matchId)
-      return next
-    })
     setDraftGroup((prev) => {
       const next = new Map(prev)
       next.set(matchId, { goalsHome: gh, goalsAway: ga })
@@ -286,16 +272,12 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const filledGroupMatchIds = useMemo(() => {
     const ids = new Set<string>()
     for (const id of groupMatchIds) {
-      const draft = draftGroup.get(id)
-      if (!isDraftComplete(draft)) continue
-      const hasPersistedPrediction = hasNumericScorePrediction(predByMatchId.get(id))
-      if (!hasPersistedPrediction && !touchedGroupMatchIds.has(id)) continue
-      ids.add(id)
+      if (isDraftComplete(draftGroup.get(id))) ids.add(id)
     }
     return ids
-  }, [groupMatchIds, draftGroup, predByMatchId, touchedGroupMatchIds])
+  }, [groupMatchIds, draftGroup])
 
-  const { filledCount, totalCount, incompleteGroupLabels, canSaveBatch } = useMemo(() => {
+  const { incompleteGroupLabels, canSaveBatch } = useMemo(() => {
     const total = groupMatchIds.size
     const filled = filledGroupMatchIds.size
     const incompleteGroups = new Set<string>()
@@ -306,8 +288,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     }
     const canSave = total > 0 && filled === total
     return {
-      filledCount: filled,
-      totalCount: total,
       incompleteGroupLabels: [...incompleteGroups].sort(),
       canSaveBatch: canSave,
     }
@@ -338,6 +318,30 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     for (const [k, v] of koDraftOverrides) m.set(k, v)
     return m
   }, [koPredByMatchId, koDraftOverrides])
+
+  const { filledOverall, totalOverall } = useMemo(() => {
+    const groupFilled = filledGroupMatchIds.size
+    const groupTotal = groupMatchIds.size
+    const koTotal = WC26_KO_MATCHES.length
+    const ctx = buildKoPredictionsContext(groupPredForBracket, mergedKoPredByMatchId)
+    let koFilled = 0
+    for (const def of WC26_KO_MATCHES) {
+      const { homeId, awayId } = resolveKoMatchTeams(
+        def.matchNum,
+        ctx.tablesByGroup,
+        ctx.thirdByMatchNum,
+        ctx.winnerByMatchNum,
+      )
+      if (!homeId || !awayId) continue
+      const id = koMatchDocId(def.matchNum)
+      const pred = mergedKoPredByMatchId.get(id)
+      if (isCompleteMatchPredictionForPicker(pred, 'knockout')) koFilled++
+    }
+    return {
+      filledOverall: groupFilled + koFilled,
+      totalOverall: groupTotal + koTotal,
+    }
+  }, [filledGroupMatchIds, groupMatchIds, groupPredForBracket, mergedKoPredByMatchId])
 
   const getMergedBonusPayload = useCallback(
     (questionId: string): TournamentPredictionPayload | undefined => {
@@ -831,6 +835,40 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       ) : null}
 
       {groupMatches.length > 0 ? (
+        <div className="pred-group-sticky-head pred-overall-progress-sticky" aria-live="polite">
+          <div className="pred-group-progress">
+            <div
+              className="pred-group-progress-bar"
+              role="progressbar"
+              aria-valuenow={filledOverall}
+              aria-valuemin={0}
+              aria-valuemax={totalOverall}
+              aria-label="Progreso de partidos: grupos y eliminatorias"
+            >
+              <div
+                className="pred-group-progress-fill"
+                style={{
+                  width: `${totalOverall > 0 ? Math.round((filledOverall / totalOverall) * 100) : 0}%`,
+                }}
+              />
+            </div>
+            <span className="pred-group-progress-text">
+              {filledOverall} / {totalOverall} partidos listos (grupos + eliminatorias)
+            </span>
+          </div>
+          <p className="pred-overall-progress-hint app-muted" style={{ marginTop: 8, marginBottom: 0 }}>
+            Grupos: marcador válido (incluye 0-0). Eliminatorias: si hay empate, elegí ganador en penales
+            para contar el partido.
+          </p>
+          {incompleteGroupLabels.length > 0 && !(groupLocked || readOnly) ? (
+            <p className="pred-group-hint app-muted" style={{ marginTop: 8, marginBottom: 0 }}>
+              Faltan grupos en: <strong>{incompleteGroupLabels.join(', ')}</strong>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {groupMatches.length > 0 ? (
         <GroupStageSection
           matchesByGroup={matchesByGroup}
           draftByMatchId={draftGroup}
@@ -838,9 +876,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
           onDraftChange={onDraftChange}
           teamLabel={teamLabel}
           groupLocked={groupLocked || readOnly}
-          filledCount={filledCount}
-          totalCount={totalCount}
-          incompleteGroupLabels={incompleteGroupLabels}
         />
       ) : !loadingM && matches.length === 0 ? (
         <p className="app-muted">

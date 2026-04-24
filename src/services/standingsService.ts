@@ -1,4 +1,4 @@
-import { collection, doc, onSnapshot, query, where, type Unsubscribe } from 'firebase/firestore'
+import { collection, doc, getDoc, onSnapshot, query, where, type Unsubscribe } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { MatchDoc, PredictionDoc, RoomDoc, StandingUserDoc, TournamentResultDoc } from '../types/predictions'
 import { assignRanks, computeScoresForRoom } from './aggregateScores'
@@ -10,6 +10,22 @@ export type StandingRow = StandingUserDoc & {
   isOutsideTop50?: boolean
 }
 type RoomMemberLite = { roomId: string; userId: string; displayName?: string }
+
+function labelFromUserProfileData(data: Record<string, unknown>): string | null {
+  const username = data.username
+  if (typeof username === 'string') {
+    const t = username.trim()
+    if (t) return t
+  }
+  const dn = data.displayName
+  if (typeof dn === 'string' && dn.trim()) return dn.trim()
+  const email = data.email
+  if (typeof email === 'string' && email.includes('@')) {
+    const local = email.split('@')[0]?.trim()
+    if (local) return local
+  }
+  return null
+}
 
 export function subscribeStandingsForRoom(
   roomId: string,
@@ -27,9 +43,40 @@ export function subscribeStandingsForRoom(
   const matchesById = new Map<string, MatchDoc>()
   const tournamentResultsByQuestionId = new Map<string, TournamentResultDoc>()
   const memberNameByUserId = new Map<string, string>()
+  const profileLabelByUserId = new Map<string, string>()
+  const profileFetchedUids = new Set<string>()
+  const profileInFlight = new Set<string>()
 
   function resolveDisplayName(uid: string): string {
-    return memberNameByUserId.get(uid) ?? uid
+    const fromMember = memberNameByUserId.get(uid)
+    if (fromMember) return fromMember
+    const fromProfile = profileLabelByUserId.get(uid)
+    if (fromProfile) return fromProfile
+    return uid
+  }
+
+  function requestMissingUserProfiles(uids: Iterable<string>) {
+    for (const uid of uids) {
+      if (memberNameByUserId.has(uid)) continue
+      if (profileLabelByUserId.has(uid)) continue
+      if (profileFetchedUids.has(uid)) continue
+      if (profileInFlight.has(uid)) continue
+      profileInFlight.add(uid)
+      void getDoc(doc(db!, 'users', uid))
+        .then((snap) => {
+          profileInFlight.delete(uid)
+          profileFetchedUids.add(uid)
+          if (snap.exists()) {
+            const label = labelFromUserProfileData(snap.data() as Record<string, unknown>)
+            if (label) profileLabelByUserId.set(uid, label)
+          }
+          emitRows()
+        })
+        .catch(() => {
+          profileInFlight.delete(uid)
+          emitRows()
+        })
+    }
   }
 
   function emitRows() {
@@ -44,6 +91,7 @@ export function subscribeStandingsForRoom(
         }
       }
     }
+    requestMissingUserProfiles(scores.keys())
     const ranked = assignRanks(scores)
     const rows: StandingRow[] = [...ranked.entries()].map(([uid, row]) => ({
       id: uid,
@@ -155,9 +203,9 @@ export function subscribeStandingsForRoom(
         memberNameByUserId.clear()
         snap.forEach((d) => {
           const m = d.data() as RoomMemberLite
-          if (typeof m.userId === 'string' && m.userId.length > 0) {
-            memberNameByUserId.set(m.userId, m.displayName?.trim() || m.userId)
-          }
+          if (typeof m.userId !== 'string' || m.userId.length === 0) return
+          const name = m.displayName?.trim()
+          if (name) memberNameByUserId.set(m.userId, name)
         })
         emitRows()
       },

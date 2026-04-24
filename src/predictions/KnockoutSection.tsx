@@ -136,6 +136,8 @@ function KoMatchRow({
     firestoreMatch.status !== 'live'
 
   const draw = h === a
+  const pensIncomplete =
+    Boolean(homeId && awayId) && draw && pensHomeWins === null && !disabled
 
   const preview =
     firestoreMatch?.status === 'finished' &&
@@ -198,7 +200,9 @@ function KoMatchRow({
   const awayPenLabel = awayId ? teamLabel(awayId) : 'Visita'
 
   return (
-    <div className="pred-match-card pred-match-card--ko">
+    <div
+      className={`pred-match-card pred-match-card--ko${pensIncomplete ? ' pred-match-card--ko-pens-incomplete' : ''}`}
+    >
       <div className="pred-ko-meta">Partido {matchNum}</div>
       <div className="pred-match-teams pred-match-teams--ko">
         {homeId ? (
@@ -273,7 +277,7 @@ function KoMatchRow({
                 {awayPenLabel}
               </label>
               {pensHomeWins === null ? (
-                <span className="app-muted" style={{ width: '100%' }}>
+                <span className="pred-bonus-missing-hint" style={{ width: '100%' }}>
                   Elegí un ganador en penales para completar el partido.
                 </span>
               ) : null}
