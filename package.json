@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "node scripts/copy-spa-404.mjs",
     "visualizer": "tsc -b && vite build --mode analyze",
     "lint": "eslint .",
     "test:assign-thirds": "tsx src/domain/assignThirdsGreedy.test.ts",

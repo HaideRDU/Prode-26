@@ -37,6 +37,15 @@ const AUTH_SAVED_EMAIL_KEY = 'authSavedEmail'
 
 const EMAIL_VERIFY_RESEND_COOLDOWN_MS = 120_000
 
+/** Alineado con `normalizeBase` en vite.config: URL absoluta de la raíz de la app (basename / GitHub Pages). */
+function getAppRootHref(): string {
+  const raw = import.meta.env.BASE_URL?.trim()
+  if (!raw || raw === '/') return `${window.location.origin}/`
+  const withSlash = raw.startsWith('/') ? raw : `/${raw}`
+  const base = withSlash.endsWith('/') ? withSlash : `${withSlash}/`
+  return new URL(base, window.location.origin).href
+}
+
 function getEmailVerifySentAtKey(emailValue: string): string {
   return `firebaseEmailVerifySentAt:${emailValue}`
 }
@@ -517,6 +526,7 @@ function App() {
     setInfo(null)
     try {
       await signOut(auth)
+      window.location.replace(getAppRootHref())
     } catch (e) {
       setAuthError(e instanceof Error ? e.message : 'Error al cerrar sesión.')
     }

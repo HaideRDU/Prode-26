@@ -34,6 +34,12 @@ Los valores salen de Firebase Console → Configuración del proyecto → Tu app
 
 El workflow [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) define `VITE_BASE_PATH` como `/<nombre-del-repo>/`, alineado con `base` en Vite y `basename` en `BrowserRouter`.
 
+### Rutas SPA, recarga y `404.html`
+
+GitHub Pages sirve archivos estáticos: una URL como `/<repo>/room/…/predictions` no corresponde a un archivo en disco. Tras `npm run build`, el `postbuild` ejecuta [`scripts/copy-spa-404.mjs`](../scripts/copy-spa-404.mjs) y copia `dist/index.html` a `dist/404.html`, para que GitHub pueda entregar la misma SPA en rutas “inexistentes” y React Router resuelva la ruta (enlace directo, recarga, etc.).
+
+Al **cerrar sesión**, la app redirige con `window.location.replace` a la raíz del prefijo (`BASE_URL`), de modo que la URL coincida con el login y no quede una ruta profunda en la barra del navegador.
+
 ## 4. Firebase Authentication (manual)
 
 Para que login (sobre todo **Google**) funcione en `https://<usuario>.github.io/<repo>/`:
@@ -57,6 +63,8 @@ Tras cambiar dominios u OAuth, puede tardar unos minutos en aplicarse.
 2. Red: sin 404 en `/…/assets/…`.
 3. Navegación interna (rutas bajo el prefijo del repo).
 4. Inicio de sesión y una operación mínima contra Firestore.
+5. Recarga en una ruta interna o abrila en pestaña nueva: debe cargar la app (no el 404 genérico de GitHub).
+6. Cerrar sesión: la URL debe volver a la raíz del sitio bajo el repo y mostrar el login.
 
 ## 6. Prueba local con la misma base que Pages
 
