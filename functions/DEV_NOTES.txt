@@ -1,0 +1,21 @@
+Cloud Functions (recalculo de standings)
+========================================
+
+Nota Spark:
+- Si el proyecto no usa plan Blaze, la app puede calcular clasificación del lado cliente
+  leyendo `predictions`, `matches`, `tournamentResults` y `roomMembers`, sin depender
+  de escritura en `standings/`.
+
+- Despliegue: desde la raíz del proyecto, con Firebase CLI instalado y proyecto seleccionado:
+  firebase deploy --only functions
+
+- Emuladores locales:
+  firebase emulators:start --only firestore,functions
+
+- El cliente React NO puede escribir en `standings/` (ver firestore.rules). El recálculo ocurre en:
+  - onPredictionWrite: al cambiar una predicción en `predictions/{predictionId}`
+  - onMatchWrite: al cambiar un documento en `matches/{matchId}`
+  - onTournamentResultWrite: al cambiar `tournamentResults/{questionId}`
+
+- Para probar sin Functions: puedes ejecutar temporalmente reglas de desarrollo (no recomendado en producción)
+  o desplegar solo las functions y usar datos reales en Firestore.

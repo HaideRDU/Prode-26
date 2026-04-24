@@ -1,0 +1,66 @@
+/**
+ * Tema oscuro: tokens WC26 + variables legacy de index.css (sidebar, formularios).
+ */
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  --wc26-border-strong: #475569;
+  --wc26-surface-panel: #1e293b;
+  --wc26-surface-field: #334155;
+  --wc26-bg: #0f172a;
+  --wc26-surface: #1e293b;
+  --wc26-text: #f1f5f9;
+  --wc26-muted: #94a3b8;
+  --wc26-border: #334155;
+  --wc26-accent: #3b82f6;
+  --wc26-accent-hover: #60a5fa;
+  --wc26-green: #34d399;
+  --wc26-red: #f87171;
+  --wc26-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+
+  --text: #94a3b8;
+  --text-h: #f1f5f9;
+  --bg: #0f172a;
+  --border: #334155;
+  --code-bg: #1e293b;
+  --accent: #60a5fa;
+  --accent-bg: rgba(59, 130, 246, 0.15);
+  --accent-border: rgba(96, 165, 250, 0.45);
+  --social-bg: rgba(30, 41, 59, 0.6);
+  --shadow:
+    rgba(0, 0, 0, 0.45) 0 10px 15px -3px,
+    rgba(0, 0, 0, 0.3) 0 4px 6px -2px;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+
+  --wc26-bg: #f8fafc;
+  --wc26-surface: #ffffff;
+  --wc26-text: #0f172a;
+  --wc26-muted: #64748b;
+  --wc26-border: #e2e8f0;
+  /** Bordes más visibles en UI densa (predicciones, tarjetas). */
+  --wc26-border-strong: #cbd5e1;
+  /** Superficies de tarjeta en claro (no blanco plano sobre el fondo). */
+  --wc26-surface-panel: #f1f5f9;
+  --wc26-surface-field: #e2e8f0;
+  --wc26-accent: #1d4ed8;
+  --wc26-accent-hover: #1e40af;
+  --wc26-green: #059669;
+  --wc26-red: #dc2626;
+  --wc26-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px,
+    rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+}

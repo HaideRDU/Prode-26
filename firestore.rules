@@ -1,0 +1,73 @@
+rules_version = '2';
+// Colecciones: users, rooms, roomMembers, teams, matches, predictions, tournamentResults,
+// standings/{roomId}/users/{userId}
+// Escritura de matches, tournamentResults y standings: solo backend (Functions/admin SDK).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+
+      match /predictionState/{roomId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /rooms/{roomId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.keys().hasAll(['name', 'inviteCode', 'maxMembers', 'createdBy', 'type']);
+      allow update, delete: if request.auth != null
+        && resource.data.createdBy == request.auth.uid;
+    }
+
+    match /roomMembers/{membershipId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && membershipId == request.resource.data.roomId + '_' + request.auth.uid;
+      allow update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    match /teams/{teamId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /matches/{matchId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /predictions/{predictionId} {
+      allow read: if request.auth != null
+        && (
+          resource.data.roomId == 'global'
+          || 
+          resource.data.userId == request.auth.uid
+          || exists(
+            /databases/$(database)/documents/roomMembers/$(resource.data.roomId + '_' + request.auth.uid)
+          )
+        );
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    match /tournamentResults/{questionId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /standings/{roomId}/users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

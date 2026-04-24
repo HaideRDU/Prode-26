@@ -1,0 +1,44 @@
+{
+  "name": "proyect-cursor",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "visualizer": "tsc -b && vite build --mode analyze",
+    "lint": "eslint .",
+    "test:assign-thirds": "tsx src/domain/assignThirdsGreedy.test.ts",
+    "preview": "vite preview",
+    "seed:teams": "tsx scripts/seed-teams.ts",
+    "seed:group-matches": "tsx scripts/seed-group-matches.ts",
+    "seed:wc2026-group-stage": "tsx scripts/seed-teams.ts && tsx scripts/seed-group-matches.ts",
+    "cleanup:rooms-predictions": "tsx scripts/cleanup-firestore.ts",
+    "deploy:firestore-rules": "firebase deploy --only firestore:rules",
+    "verify:firebase-project": "tsx scripts/verify-firebase-project.ts"
+  },
+  "dependencies": {
+    "firebase": "^12.12.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.6.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "firebase-admin": "^13.0.0",
+    "firebase-tools": "^14.0.0",
+    "globals": "^17.4.0",
+    "rollup-plugin-visualizer": "^6.0.11",
+    "tsx": "^4.19.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.0",
+    "vite": "^8.0.4"
+  }
+}

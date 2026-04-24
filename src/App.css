@@ -1,0 +1,507 @@
+.auth-shell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  padding: 32px 28px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.auth-card h1 {
+  font-size: 28px;
+  margin: 0 0 12px;
+  letter-spacing: -0.5px;
+}
+
+.auth-lead {
+  margin: 0 0 24px;
+  line-height: 150%;
+}
+
+.auth-lead.small {
+  margin: 16px 0 12px;
+  font-size: 0.9rem;
+}
+
+.form-fields {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.field-input {
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.field-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.button-group {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 430px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  text-align: left;
+  flex: 1;
+}
+
+.modal-close {
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: var(--text-h);
+  font-size: 1.75rem;
+  padding: 0 4px;
+  border-radius: 6px;
+}
+
+.modal-close:hover {
+  background: var(--code-bg);
+}
+
+.modal-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-link {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  text-decoration: underline;
+  margin: 0 0 14px;
+}
+
+.btn-link:hover {
+  color: var(--text-h);
+}
+
+.btn-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.btn-google {
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  background: var(--bg);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.btn-google:hover {
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow);
+}
+
+.btn-google:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-secondary {
+  font: inherit;
+  cursor: pointer;
+  margin-top: 16px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  color: var(--accent);
+  background: var(--accent-bg);
+  transition: border-color 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-border);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.user-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.user-avatar {
+  border-radius: 50%;
+  border: 2px solid var(--border);
+}
+
+.user-name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.user-email {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.auth-error {
+  margin: 16px 0 0;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .auth-error {
+    color: #fca5a5;
+  }
+}
+
+.auth-warn {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.auth-info {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  color: #047857;
+}
+
+@media (prefers-color-scheme: dark) {
+  .auth-info {
+    color: #6ee7b7;
+  }
+}
+
+/* —— Predicciones: grupos, KO, bonus —— */
+.pred-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.pred-section-title {
+  margin: 28px 0 12px;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-h);
+}
+
+.pred-group-block {
+  margin-bottom: 28px;
+}
+
+.pred-group-heading {
+  text-align: center;
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  margin: 0 0 16px;
+  color: var(--text-h);
+}
+
+.pred-group-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pred-match-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: var(--bg);
+}
+
+.pred-match-teams {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pred-match-teams--ko {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 16px;
+}
+
+.team-flag-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.team-flag-name__flag {
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.team-flag-name__placeholder {
+  display: inline-block;
+  width: 28px;
+  height: 21px;
+  border-radius: 4px;
+  background: var(--code-bg);
+}
+
+.pred-vs {
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  color: var(--text);
+}
+
+.pred-match-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pred-match-inputs--ko {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.pred-score-input {
+  width: 72px;
+  text-align: center;
+}
+
+.pred-dash {
+  color: var(--text);
+}
+
+.pred-preview-pts {
+  font-size: 0.85rem;
+}
+
+.pred-knockout-note {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.pred-ko-round {
+  margin-bottom: 24px;
+}
+
+.pred-ko-round-title {
+  font-size: 0.95rem;
+  margin: 0 0 12px;
+  color: var(--text-h);
+}
+
+.pred-ko-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pred-ko-meta {
+  font-size: 0.75rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.pred-pens-winner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.pred-row-error {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+}
+
+.pred-bonus-bank {
+  margin-top: 8px;
+  margin-bottom: 40px;
+}
+
+.pred-bonus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pred-bonus-row {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.pred-bonus-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.pred-bonus-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.pred-bonus-select {
+  flex: 1;
+  min-width: 200px;
+}
+
+.pred-bonus-text {
+  flex: 1;
+  min-width: 180px;
+}
+
+.pred-bonus-optional {
+  text-align: center;
+  margin: -8px 0 20px;
+  font-size: 0.9rem;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pred-group-intro {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pred-group-progress {
+  margin-bottom: 12px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pred-group-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--code-bg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.pred-group-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1d4ed8, #059669);
+  transition: width 0.35s ease;
+}
+
+.pred-group-progress-text {
+  display: block;
+  text-align: center;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  color: var(--text);
+}
+
+.pred-group-hint {
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+}
+
+.pred-group-save-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.pred-group-save-all {
+  min-height: 48px;
+  padding-left: 24px;
+  padding-right: 24px;
+  font-weight: 600;
+}
+
+.pred-match-card--incomplete {
+  border-style: dashed;
+  opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pred-group-progress-fill {
+    transition: none;
+  }
+}

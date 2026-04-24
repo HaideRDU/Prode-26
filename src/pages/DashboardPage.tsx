@@ -1,0 +1,112 @@
+import { useEffect, useState } from 'react'
+import { Link, useOutletContext } from 'react-router-dom'
+import type { User } from 'firebase/auth'
+import { useRooms } from '../hooks/useRooms'
+import { ensureGlobalRoomMembership } from '../services/roomsService'
+import { getPredictionFinalized } from '../services/predictionStateService'
+import { GLOBAL_ROOM_ID } from '../constants/rooms'
+import type { AccountOutletContext } from '../types/outletContext'
+
+export function DashboardPage({ user }: { user: User }) {
+  const { publicDisplayName } = useOutletContext<AccountOutletContext>()
+  const displayName = publicDisplayName || user.email || 'Usuario'
+  const { rooms, error, loading } = useRooms(user.uid)
+  const [visibleCodesByRoomId, setVisibleCodesByRoomId] = useState<Record<string, boolean>>({})
+  const [finalizedByRoomId, setFinalizedByRoomId] = useState<Record<string, boolean>>({})
+
+  function toggleCode(roomId: string) {
+    setVisibleCodesByRoomId((prev) => ({ ...prev, [roomId]: !prev[roomId] }))
+  }
+
+  useEffect(() => {
+    void ensureGlobalRoomMembership(user.uid, displayName)
+  }, [user.uid, displayName])
+
+  useEffect(() => {
+    const ids = [GLOBAL_ROOM_ID, ...rooms.map((r) => r.roomId)]
+    let cancelled = false
+    Promise.all(
+      ids.map(async (id) => ({ id, finalized: await getPredictionFinalized(user.uid, id) })),
+    )
+      .then((pairs) => {
+        if (cancelled) return
+        const next: Record<string, boolean> = {}
+        for (const p of pairs) next[p.id] = p.finalized
+        setFinalizedByRoomId(next)
+      })
+      .catch(() => {
+        if (!cancelled) setFinalizedByRoomId({})
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [rooms, user.uid])
+
+  function roomTarget(roomId: string): string {
+    return finalizedByRoomId[roomId] ? `/room/${roomId}/standings` : `/room/${roomId}/predictions`
+  }
+
+  return (
+    <div>
+      <h1 className="app-page-title">Panel</h1>
+      <p className="auth-lead" style={{ textAlign: 'left', marginBottom: '20px' }}>
+        Tus salas de predicción. La sala global es independiente de cada sala privada.
+      </p>
+      {loading ? <p className="user-email">Cargando salas…</p> : null}
+      {error ? <p className="auth-error">{error}</p> : null}
+      <div className="app-card-list">
+        <article className="app-room-card" aria-label="Sala global">
+          <div className="app-room-card-top">
+            <h3 className="app-room-title">Sala global</h3>
+            <p className="app-muted">Sala abierta para todos los usuarios.</p>
+            <div className="app-room-code-row">
+              <p className="app-room-code-label">Codigo</p>
+              <button
+                type="button"
+                className="app-room-code-toggle"
+                onClick={() => toggleCode(GLOBAL_ROOM_ID)}
+              >
+                {visibleCodesByRoomId[GLOBAL_ROOM_ID] ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
+            <p className="app-room-code app-room-code--subtle">
+              {visibleCodesByRoomId[GLOBAL_ROOM_ID] ? 'GLOBAL' : '••••••'}
+            </p>
+          </div>
+          <div className="app-room-card-bottom">
+            <p className="app-room-points">Sin puntaje individual</p>
+            <Link to={roomTarget(GLOBAL_ROOM_ID)} className="app-room-open-btn">
+              Abrir predicciones
+            </Link>
+          </div>
+        </article>
+        {rooms.map((r) => (
+          <article key={r.roomId} className="app-room-card" aria-label={`Sala ${r.room.name}`}>
+            <div className="app-room-card-top">
+              <h3 className="app-room-title">{r.room.name}</h3>
+              <p className="app-muted">{r.room.description?.trim() || 'Sin descripcion de sala.'}</p>
+              <div className="app-room-code-row">
+                <p className="app-room-code-label">Codigo</p>
+                <button type="button" className="app-room-code-toggle" onClick={() => toggleCode(r.roomId)}>
+                  {visibleCodesByRoomId[r.roomId] ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+              <p className="app-room-code app-room-code--subtle">
+                {visibleCodesByRoomId[r.roomId] ? r.room.inviteCode : '••••••'}
+              </p>
+            </div>
+            <div className="app-room-card-bottom">
+              <p className="app-room-points">
+                {r.myPoints != null ? `${r.myPoints} pts` : 'Sin puntos'}
+                {r.myRank != null ? ` · Pos. ${r.myRank}` : ''}
+              </p>
+              <Link to={roomTarget(r.roomId)} className="app-room-open-btn">
+                Abrir predicciones
+              </Link>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  )
+}

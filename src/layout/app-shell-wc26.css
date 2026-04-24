@@ -1,0 +1,85 @@
+/**
+ * Shell autenticado alineado con WC26 (tipografía y colores desde tokens).
+ */
+@import '../styles/wc26-tokens.css';
+
+.app-shell--wc26 {
+  font-family: var(--wc26-font-family);
+  --text: var(--wc26-muted);
+  --text-h: var(--wc26-text);
+  --bg: var(--wc26-bg);
+  --border: var(--wc26-border);
+  --code-bg: #f1f5f9;
+  --accent: var(--wc26-accent);
+  --accent-bg: rgba(29, 78, 216, 0.1);
+  --accent-border: rgba(29, 78, 216, 0.35);
+  --social-bg: rgba(248, 250, 252, 0.8);
+  --shadow: var(--wc26-shadow);
+  --standings-surface: #ffffff;
+  --standings-row-bg: #ffffff;
+  --standings-head-bg: #f1f5f9;
+  --standings-border: #cbd5e1;
+  position: relative;
+  background: var(--wc26-bg);
+  background-image: linear-gradient(to top, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  transition:
+    background-color 220ms ease,
+    background-image 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.app-shell--wc26::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  background-image: url("/imagen%20fondo%20dia.png");
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  transition: opacity 240ms ease;
+}
+
+.app-shell--wc26 > * {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-theme='dark'] .app-shell--wc26 {
+  --code-bg: #1e293b;
+  --accent-bg: rgba(59, 130, 246, 0.15);
+  --accent-border: rgba(96, 165, 250, 0.4);
+  --social-bg: rgba(30, 41, 59, 0.5);
+  --standings-surface: #0f172a;
+  --standings-row-bg: #0f172a;
+  --standings-head-bg: #1e293b;
+  --standings-border: #334155;
+  background-image: linear-gradient(to top, rgba(2, 6, 23, 0.62), rgba(2, 6, 23, 0.2));
+}
+
+html[data-theme='dark'] .app-shell--wc26::before {
+  background-image: url("/imagen%20fondo%20noche.png");
+  opacity: 0.96;
+}
+
+@media (max-width: 768px) {
+  .app-shell--wc26,
+  .app-shell--wc26::before {
+    background-position: center bottom;
+    background-size: cover;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell--wc26,
+  .app-shell--wc26::before {
+    transition: none !important;
+  }
+}
