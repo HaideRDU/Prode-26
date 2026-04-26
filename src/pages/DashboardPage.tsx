@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
-import { Link, useOutletContext } from 'react-router-dom'
+import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import type { User } from 'firebase/auth'
 import { useRooms } from '../hooks/useRooms'
 import { ensureGlobalRoomMembership } from '../services/roomsService'
 import { getPredictionFinalized } from '../services/predictionStateService'
 import { GLOBAL_ROOM_ID } from '../constants/rooms'
 import type { AccountOutletContext } from '../types/outletContext'
+import { PrivateRoomAdminModal } from '../rooms/PrivateRoomAdminModal'
 
 export function DashboardPage({ user }: { user: User }) {
   const { publicDisplayName } = useOutletContext<AccountOutletContext>()
+  const navigate = useNavigate()
   const displayName = publicDisplayName || user.email || 'Usuario'
   const { rooms, error, loading } = useRooms(user.uid)
   const [visibleCodesByRoomId, setVisibleCodesByRoomId] = useState<Record<string, boolean>>({})
   const [finalizedByRoomId, setFinalizedByRoomId] = useState<Record<string, boolean>>({})
+  const [adminRoom, setAdminRoom] = useState<{ roomId: string; roomName: string } | null>(null)
 
   function toggleCode(roomId: string) {
     setVisibleCodesByRoomId((prev) => ({ ...prev, [roomId]: !prev[roomId] }))
@@ -103,10 +106,28 @@ export function DashboardPage({ user }: { user: User }) {
               <Link to={roomTarget(r.roomId)} className="app-room-open-btn">
                 Abrir predicciones
               </Link>
+              {r.room.type === 'private' && r.room.createdBy === user.uid ? (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setAdminRoom({ roomId: r.roomId, roomName: r.room.name })}
+                >
+                  Configurar sala
+                </button>
+              ) : null}
             </div>
           </article>
         ))}
       </div>
+      {adminRoom ? (
+        <PrivateRoomAdminModal
+          roomId={adminRoom.roomId}
+          roomName={adminRoom.roomName}
+          currentUserId={user.uid}
+          onClose={() => setAdminRoom(null)}
+          onRoomDeleted={() => navigate('/', { replace: true })}
+        />
+      ) : null}
     </div>
   )
 }

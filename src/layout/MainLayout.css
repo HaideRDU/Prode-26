@@ -593,3 +593,59 @@
 .app-rooms-hub-panel {
   margin-top: 4px;
 }
+
+.app-room-question-picker {
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.app-room-question-picker-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.app-room-question-picker-scroll {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  max-height: min(220px, 40svh);
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+  background: var(--bg);
+}
+
+.app-room-question-picker-row {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  gap: 8px;
+}
+
+.app-room-question-picker-row .app-muted {
+  line-height: 1.3;
+}
+
+.app-rooms-hub-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  margin-top: 8px;
+  background: transparent;
+}
+
+.app-rooms-hub-actions .btn-secondary {
+  align-self: center;
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+

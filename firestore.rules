@@ -5,6 +5,13 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isPrivateRoomOwner(roomId) {
+      return request.auth != null
+        && roomId != 'global'
+        && exists(/databases/$(database)/documents/rooms/$(roomId))
+        && get(/databases/$(database)/documents/rooms/$(roomId)).data.type == 'private'
+        && get(/databases/$(database)/documents/rooms/$(roomId)).data.createdBy == request.auth.uid;
+    }
 
     match /users/{userId} {
       allow read: if request.auth != null;
@@ -31,7 +38,10 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && membershipId == request.resource.data.roomId + '_' + request.auth.uid;
       allow update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+        && (
+          resource.data.userId == request.auth.uid
+          || isPrivateRoomOwner(resource.data.roomId)
+        );
     }
 
     match /teams/{teamId} {
@@ -57,7 +67,10 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+        && (
+          resource.data.userId == request.auth.uid
+          || isPrivateRoomOwner(resource.data.roomId)
+        );
     }
 
     match /tournamentResults/{questionId} {
@@ -67,7 +80,8 @@ service cloud.firestore {
 
     match /standings/{roomId}/users/{userId} {
       allow read: if request.auth != null;
-      allow write: if false;
+      allow delete: if isPrivateRoomOwner(roomId);
+      allow create, update: if false;
     }
   }
 }

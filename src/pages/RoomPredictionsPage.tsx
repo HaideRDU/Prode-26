@@ -27,8 +27,8 @@ import { buildKoPredictionsContext, canSaveKoMatch } from '../domain/koRoundSave
 import { WC26_KO_MATCHES, koMatchDocId } from '../data/wc2026/knockoutBracket'
 import { isCompleteMatchPredictionForPicker } from '../domain/matchPredictionComplete'
 import { isBonusPayloadComplete } from '../domain/bonusAnswerComplete'
-import { ALL_QUESTION_METAS } from '../data/bonusQuestionsMeta'
-import { BONUS_QUESTION_IDS } from '../data/questionIds'
+import { ALL_QUESTION_METAS, type QuestionMeta } from '../data/bonusQuestionsMeta'
+import { getRoom } from '../services/roomsService'
 import { GroupStageSection, type GroupDraftEntry } from '../predictions/GroupStageSection'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
 import { KnockoutSection } from '../predictions/KnockoutSection'
@@ -118,6 +118,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const [localError, setLocalError] = useState<string | null>(null)
   const [groupLocked, setGroupLocked] = useState(false)
   const [predictionFinalized, setPredictionFinalizedState] = useState<boolean | null>(null)
+  const [enabledQuestionIds, setEnabledQuestionIds] = useState<Set<string> | null>(null)
   const [draftGroup, setDraftGroup] = useState<Map<string, GroupDraftEntry>>(new Map())
   const draftInitRef = useRef(false)
   const roomDraftRef = useRef<string | null>(null)
@@ -185,6 +186,31 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       cancelled = true
     }
   }, [roomId, user.uid])
+
+  useEffect(() => {
+    if (!roomId) {
+      setEnabledQuestionIds(null)
+      return
+    }
+    let cancelled = false
+    getRoom(roomId)
+      .then((room) => {
+        if (cancelled) return
+        if (!room || room.type !== 'private') {
+          setEnabledQuestionIds(null)
+          return
+        }
+        setEnabledQuestionIds(
+          Array.isArray(room.enabledQuestionIds) ? new Set(room.enabledQuestionIds) : new Set(),
+        )
+      })
+      .catch(() => {
+        if (!cancelled) setEnabledQuestionIds(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [roomId])
 
   useEffect(() => {
     if (!roomId) return
@@ -354,14 +380,20 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     [bonusOverrides, predByQuestionId],
   )
 
+  const activeQuestionMetas = useMemo<QuestionMeta[]>(() => {
+    if (!enabledQuestionIds) return ALL_QUESTION_METAS
+    return ALL_QUESTION_METAS.filter((meta) => enabledQuestionIds.has(meta.id))
+  }, [enabledQuestionIds])
+  const hasActiveBonusQuestions = activeQuestionMetas.length > 0
+
   const mergedBonusByQuestionId = useMemo(() => {
     const m = new Map<string, TournamentPredictionPayload>()
-    for (const meta of ALL_QUESTION_METAS) {
+    for (const meta of activeQuestionMetas) {
       const p = getMergedBonusPayload(meta.id)
       if (p) m.set(meta.id, p)
     }
     return m
-  }, [getMergedBonusPayload])
+  }, [activeQuestionMetas, getMergedBonusPayload])
 
   const onBonusDraftChange = useCallback(
     (questionId: string, payload: TournamentPredictionPayload | null) => {
@@ -554,8 +586,8 @@ export function RoomPredictionsPage({ user }: { user: User }) {
 
   const missingBonusQuestions = useMemo(
     () =>
-      ALL_QUESTION_METAS.filter((meta) => !isBonusPayloadComplete(meta, getMergedBonusPayload(meta.id))),
-    [getMergedBonusPayload],
+      activeQuestionMetas.filter((meta) => !isBonusPayloadComplete(meta, getMergedBonusPayload(meta.id))),
+    [activeQuestionMetas, getMergedBonusPayload],
   )
 
   const allBonusComplete = missingBonusQuestions.length === 0
@@ -657,12 +689,12 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       await saveKoPredictionsBatch(roomId, user.uid, koEntries)
 
       const bonusEntries: { questionId: string; payload: TournamentPredictionPayload }[] = []
-      for (const meta of ALL_QUESTION_METAS) {
+      for (const meta of activeQuestionMetas) {
         const p = getMergedBonusPayload(meta.id)
         if (!isBonusPayloadComplete(meta, p)) continue
         bonusEntries.push({ questionId: meta.id, payload: p! })
       }
-      if (bonusEntries.length !== ALL_QUESTION_METAS.length) {
+      if (bonusEntries.length !== activeQuestionMetas.length) {
         setLocalError(`Faltan preguntas extra: ${formatMissingBonusLabels(missingBonusLabels)}.`)
         return false
       }
@@ -738,10 +770,15 @@ export function RoomPredictionsPage({ user }: { user: User }) {
             </div>
             <div className="pred-rules-modal__body">
               <p className="auth-lead small" style={{ marginBottom: 12 }}>
-                Tenés que completar <strong>todos</strong> los apartados: fase de grupos, eliminatorias,
-                podio (campeón, subcampeón, etc.) y las <strong>{BONUS_QUESTION_IDS.length}</strong>{' '}
-                preguntas del banco de extras. El botón inferior <strong>Guardar predicción</strong> persiste
-                todo de una vez y, al confirmar, queda finalizada (no editable).
+                Tenés que completar <strong>todos</strong> los apartados: fase de grupos, eliminatorias y
+                podio (campeón, subcampeón, etc.)
+                {hasActiveBonusQuestions ? (
+                  <>
+                    {', '}más las <strong>{activeQuestionMetas.length}</strong> preguntas del banco de extras
+                  </>
+                ) : null}
+                . El botón inferior <strong>Guardar predicción</strong> persiste todo de una vez y, al
+                confirmar, queda finalizada (no editable).
               </p>
               <PredictionScoringHelpBody variant="scoresWithWhenNote" />
             </div>
@@ -809,9 +846,9 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </button>
       </div>
       <p className="auth-lead" style={{ textAlign: 'left', marginBottom: 16 }}>
-        Completá fase de grupos, eliminatorias y todas las preguntas extra; un solo botón abajo guarda
-        todo en Firestore (fase de grupos, cuadro KO y banco). Los puntos de partido se aplican cuando
-        el resultado oficial exista en Firestore.
+        Completá fase de grupos, eliminatorias y podio
+        {hasActiveBonusQuestions ? ', más las preguntas extra activas' : ''}; un solo botón abajo guarda
+        todo en Firestore. Los puntos de partido se aplican cuando el resultado oficial exista en Firestore.
       </p>
       {!finalizedResolved ? (
         <p className="user-email">Cargando estado de predicción…</p>
@@ -903,14 +940,17 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         fourthId={suggestedFourthId}
       />
 
-      <BonusQuestionBank
-        mergedBonusByQuestionId={mergedBonusByQuestionId}
-        matchPickOptions={matchPickOptions}
-        groupIds={bonusGroupIds}
-        onBonusDraftChange={onBonusDraftChange}
-        incompleteQuestionIds={missingBonusQuestionIds}
-        readOnly={readOnly}
-      />
+      {hasActiveBonusQuestions ? (
+        <BonusQuestionBank
+          questionMetas={activeQuestionMetas}
+          mergedBonusByQuestionId={mergedBonusByQuestionId}
+          matchPickOptions={matchPickOptions}
+          groupIds={bonusGroupIds}
+          onBonusDraftChange={onBonusDraftChange}
+          incompleteQuestionIds={missingBonusQuestionIds}
+          readOnly={readOnly}
+        />
+      ) : null}
 
       {showGlobalSaveBar ? (
         <div className="pred-group-save-fixed" role="region" aria-label="Guardar predicción completa">

@@ -4,7 +4,7 @@ import type { MatchDoc, PredictionDoc, TournamentResultDoc } from './lib/types/p
 import { assignRanks, computeScoresForRoom } from './lib/aggregateScores'
 
 type RoomMemberLite = { userId: string; displayName?: string }
-type RoomLite = { type?: 'private' | 'global' }
+type RoomLite = { type?: 'private' | 'global'; enabledQuestionIds?: string[] }
 
 /** Recalcula y escribe standings/{roomId}/users/{userId} para una sala. */
 export async function recalculateStandingsForRoom(db: Firestore, roomId: string): Promise<void> {
@@ -27,10 +27,19 @@ export async function recalculateStandingsForRoom(db: Firestore, roomId: string)
     tournamentResultsByQuestionId.set(d.id, { ...data, questionId: d.id })
   })
 
-  const scores = computeScoresForRoom(predictions, matchesById, tournamentResultsByQuestionId)
   const roomSnap = await db.collection('rooms').doc(roomId).get()
   const room = (roomSnap.data() ?? {}) as RoomLite
   const roomType = room.type ?? 'private'
+  const enabledQuestionIds =
+    roomType === 'private' && Array.isArray(room.enabledQuestionIds) && room.enabledQuestionIds.length > 0
+      ? new Set(room.enabledQuestionIds)
+      : null
+  const scores = computeScoresForRoom(
+    predictions,
+    matchesById,
+    tournamentResultsByQuestionId,
+    enabledQuestionIds,
+  )
 
   const memberNameByUserId = new Map<string, string>()
   if (roomType === 'private') {

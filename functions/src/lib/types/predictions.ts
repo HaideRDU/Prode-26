@@ -61,3 +61,14 @@ export interface TournamentResultDoc {
   answer: TournamentPredictionPayload | null
   updatedAt?: unknown
 }
+
+export interface RoomDoc {
+  name: string
+  description?: string
+  inviteCode: string
+  maxMembers: 20 | 30 | 40 | 50 | 100
+  createdBy: string
+  createdAt: unknown
+  type: 'private' | 'global'
+  enabledQuestionIds?: string[]
+}

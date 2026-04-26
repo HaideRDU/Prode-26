@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FocusEvent, type ReactNode } from 'react'
 import { subscribeTeams } from '../services/teamsService'
 import type { TeamDoc, TournamentPredictionPayload } from '../types/predictions'
-import { ALL_QUESTION_METAS, type QuestionMeta } from '../data/bonusQuestionsMeta'
+import type { QuestionMeta } from '../data/bonusQuestionsMeta'
 import { parseGoalField, formatScorePair, parseScoreText } from '../domain/parseScoreText'
 
 export type MatchPickOption = { matchId: string; label: string; groupLabel: string }
@@ -54,6 +54,7 @@ function payloadsEqual(
 }
 
 export function BonusQuestionBank({
+  questionMetas,
   mergedBonusByQuestionId,
   matchPickOptions,
   groupIds,
@@ -61,6 +62,7 @@ export function BonusQuestionBank({
   incompleteQuestionIds,
   readOnly = false,
 }: {
+  questionMetas: QuestionMeta[]
   mergedBonusByQuestionId: Map<string, TournamentPredictionPayload>
   matchPickOptions: MatchPickOption[]
   groupIds: readonly string[]
@@ -107,7 +109,7 @@ export function BonusQuestionBank({
       {loading && <p className="user-email">Cargando equipos…</p>}
       {err && <p className="auth-error">{err}</p>}
       <div className="pred-bonus-list">
-        {ALL_QUESTION_METAS.map((meta) => (
+        {questionMetas.map((meta) => (
           <BonusRow
             key={meta.id}
             meta={meta}

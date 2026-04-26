@@ -29,6 +29,7 @@ export function computeScoresForRoom(
   predictions: PredictionDoc[],
   matchesById: Map<string, MatchDoc>,
   tournamentResultsByQuestionId: Map<string, TournamentResultDoc>,
+  enabledQuestionIds?: ReadonlySet<string> | null,
 ): Map<string, { points: number; breakdown: { matchPoints: number; tournamentPoints: number } }> {
   const byUser = new Map<
     string,
@@ -49,6 +50,7 @@ export function computeScoresForRoom(
         prediction: pr.payload,
       })
     } else if (pr.scope === 'tournament' && pr.questionId) {
+      if (enabledQuestionIds && !enabledQuestionIds.has(pr.questionId)) continue
       const res = tournamentResultsByQuestionId.get(pr.questionId)
       const official = res?.resolved ? res.answer : null
       if (!isTournamentPayload(pr.payload)) continue

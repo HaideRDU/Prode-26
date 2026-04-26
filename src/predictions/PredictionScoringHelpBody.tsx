@@ -1,4 +1,3 @@
-import { BONUS_QUESTION_IDS } from '../data/questionIds'
 import {
   GROUP_EXACT_SCORE_POINTS,
   GROUP_WINNER_POINTS,
@@ -12,8 +11,6 @@ import {
   POINTS_THIRD_PLACE,
   POINTS_TOP_SCORER,
 } from '../services/scoring'
-
-const bonusQuestionCount = BONUS_QUESTION_IDS.length
 
 /**
  * Texto de ayuda alineado con el motor en scoring.ts.
@@ -66,9 +63,8 @@ export function PredictionScoringHelpBody({
       </ul>
       <h3 className="pred-rules-modal__subtitle">Banco de preguntas extra</h3>
       <p className="app-muted" style={{ margin: 0 }}>
-        Son <strong>{bonusQuestionCount}</strong> preguntas; cada una vale{' '}
-        <strong>+{POINTS_BONUS_QUESTION}</strong> puntos si tu respuesta coincide con el resultado oficial
-        publicado para esa pregunta.
+        Cada pregunta extra acertada vale <strong>+{POINTS_BONUS_QUESTION}</strong> puntos si tu respuesta
+        coincide con el resultado oficial publicado para esa pregunta.
       </p>
     </>
   )

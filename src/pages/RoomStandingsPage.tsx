@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import { useStandings } from '../hooks/useStandings'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
 import type { AccountOutletContext } from '../types/outletContext'
+import type { RoomDoc } from '../types/predictions'
+import { getRoom } from '../services/roomsService'
+import { PrivateRoomAdminModal } from '../rooms/PrivateRoomAdminModal'
 import '../predictions/pred-theme.css'
 
 export function RoomStandingsPage() {
@@ -10,6 +13,27 @@ export function RoomStandingsPage() {
   const { user } = useOutletContext<AccountOutletContext>()
   const { standings, error, loading, isGlobalRoom } = useStandings(roomId, user?.uid)
   const [showScoringHelpModal, setShowScoringHelpModal] = useState(false)
+  const [room, setRoom] = useState<RoomDoc | null>(null)
+  const [showAdmin, setShowAdmin] = useState(false)
+
+  useEffect(() => {
+    if (!roomId) return
+    let cancelled = false
+    getRoom(roomId)
+      .then((data) => {
+        if (!cancelled) setRoom(data)
+      })
+      .catch(() => {
+        if (!cancelled) setRoom(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [roomId])
+
+  const canManageRoom = Boolean(
+    user && room && room.type === 'private' && room.createdBy === user.uid && roomId !== 'global',
+  )
 
   if (!roomId) return <p className="auth-error">Sala no válida</p>
 
@@ -53,6 +77,13 @@ export function RoomStandingsPage() {
       <p className="app-muted" style={{ marginBottom: 16 }}>
         <Link to={`/room/${roomId}/predictions`}>Ver mi predicción</Link>
       </p>
+      {canManageRoom ? (
+        <p style={{ marginTop: -10, marginBottom: 12 }}>
+          <button type="button" className="btn-secondary" onClick={() => setShowAdmin(true)}>
+            Configurar sala
+          </button>
+        </p>
+      ) : null}
       <div className="page-title-with-help">
         <h1 className="app-page-title">Clasificación</h1>
         <button
@@ -105,6 +136,18 @@ export function RoomStandingsPage() {
             ? 'Aún no hay predicciones registradas en la sala global.'
             : 'Aún no hay miembros con datos para mostrar en esta sala.'}
         </p>
+      ) : null}
+      {showAdmin && room ? (
+        <PrivateRoomAdminModal
+          roomId={roomId}
+          roomName={room.name}
+          currentUserId={user.uid}
+          onClose={() => setShowAdmin(false)}
+          onRoomDeleted={() => {
+            setShowAdmin(false)
+            window.location.replace(import.meta.env.BASE_URL || '/')
+          }}
+        />
       ) : null}
     </div>
   )

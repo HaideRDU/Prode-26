@@ -39,6 +39,7 @@ export function subscribeStandingsForRoom(
   }
 
   let roomType: RoomDoc['type'] = roomId === GLOBAL_ROOM_ID ? 'global' : 'private'
+  let enabledQuestionIds: Set<string> | null = null
   let predictions: PredictionDoc[] = []
   const matchesById = new Map<string, MatchDoc>()
   const tournamentResultsByQuestionId = new Map<string, TournamentResultDoc>()
@@ -80,7 +81,12 @@ export function subscribeStandingsForRoom(
   }
 
   function emitRows() {
-    const scores = computeScoresForRoom(predictions, matchesById, tournamentResultsByQuestionId)
+    const scores = computeScoresForRoom(
+      predictions,
+      matchesById,
+      tournamentResultsByQuestionId,
+      enabledQuestionIds,
+    )
     if (roomType !== 'global') {
       for (const uid of memberNameByUserId.keys()) {
         if (!scores.has(uid)) {
@@ -140,8 +146,13 @@ export function subscribeStandingsForRoom(
         if (snap.exists()) {
           const room = snap.data() as RoomDoc
           roomType = room.type ?? roomType
+          enabledQuestionIds =
+            room.type === 'private' && Array.isArray(room.enabledQuestionIds) && room.enabledQuestionIds.length > 0
+              ? new Set(room.enabledQuestionIds)
+              : null
         } else {
           roomType = roomId === GLOBAL_ROOM_ID ? 'global' : 'private'
+          enabledQuestionIds = null
         }
         emitRows()
       },

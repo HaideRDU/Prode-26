@@ -5,6 +5,7 @@ import type { RoomMaxMembers } from '../types/predictions'
 import { createRoom, joinRoomByCode } from '../services/roomsService'
 import { getPredictionFinalized } from '../services/predictionStateService'
 import type { AccountOutletContext } from '../types/outletContext'
+import { ALL_QUESTION_METAS } from '../data/bonusQuestionsMeta'
 
 const LIMITS: RoomMaxMembers[] = [20, 30, 40, 50, 100]
 
@@ -36,6 +37,10 @@ export function RoomsHubPage({ user }: { user: User }) {
   const [maxMembers, setMaxMembers] = useState<RoomMaxMembers>(20)
   const [createError, setCreateError] = useState<string | null>(null)
   const [createBusy, setCreateBusy] = useState(false)
+  const [customizeQuestions, setCustomizeQuestions] = useState(false)
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>(
+    ALL_QUESTION_METAS.map((q) => q.id),
+  )
 
   const [code, setCode] = useState('')
   const [joinError, setJoinError] = useState<string | null>(null)
@@ -49,9 +54,20 @@ export function RoomsHubPage({ user }: { user: User }) {
       return
     }
     const displayName = publicDisplayName || user.email || 'Usuario'
+    if (customizeQuestions && selectedQuestionIds.length === 0) {
+      setCreateError('Selecciona al menos una pregunta extra o desactiva la personalización.')
+      return
+    }
     setCreateBusy(true)
     try {
-      const { roomId } = await createRoom(name.trim(), description.trim(), maxMembers, user.uid, displayName)
+      const { roomId } = await createRoom(
+        name.trim(),
+        description.trim(),
+        maxMembers,
+        user.uid,
+        displayName,
+        customizeQuestions ? selectedQuestionIds : undefined,
+      )
       const finalized = await getPredictionFinalized(user.uid, roomId)
       navigate(`/room/${roomId}/${finalized ? 'standings' : 'predictions'}`)
     } catch (err) {
@@ -155,10 +171,59 @@ export function RoomsHubPage({ user }: { user: User }) {
                 ))}
               </select>
             </label>
-            <button type="submit" className="btn-secondary" disabled={createBusy}>
-              {createBusy ? 'Creando…' : 'Crear sala'}
-            </button>
-            {createError ? <p className="auth-error">{createError}</p> : null}
+            <div>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={customizeQuestions}
+                  onChange={(e) => setCustomizeQuestions(e.target.checked)}
+                />
+                <span className="app-muted">Personalizar “Extras y banco de preguntas”</span>
+              </label>
+            </div>
+            {customizeQuestions ? (
+              <div className="app-room-question-picker">
+                <label className="app-room-question-picker-select-all">
+                  <input
+                    type="checkbox"
+                    checked={selectedQuestionIds.length === ALL_QUESTION_METAS.length}
+                    onChange={(e) => {
+                      setSelectedQuestionIds(
+                        e.target.checked ? ALL_QUESTION_METAS.map((q) => q.id) : [],
+                      )
+                    }}
+                  />
+                  <span className="app-muted">
+                    Seleccionar todas ({selectedQuestionIds.length}/{ALL_QUESTION_METAS.length})
+                  </span>
+                </label>
+                <div className="app-room-question-picker-scroll">
+                  {ALL_QUESTION_METAS.map((meta) => {
+                    const checked = selectedQuestionIds.includes(meta.id)
+                    return (
+                      <label key={meta.id} className="app-room-question-picker-row">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            setSelectedQuestionIds((prev) =>
+                              e.target.checked ? [...prev, meta.id] : prev.filter((id) => id !== meta.id),
+                            )
+                          }}
+                        />
+                        <span className="app-muted">{meta.labelEs}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : null}
+            <div className="app-rooms-hub-actions">
+              <button type="submit" className="btn-secondary" disabled={createBusy}>
+                {createBusy ? 'Creando…' : 'Crear sala'}
+              </button>
+              {createError ? <p className="auth-error">{createError}</p> : null}
+            </div>
           </form>
         </div>
       ) : (

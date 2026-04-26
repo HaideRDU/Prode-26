@@ -88,6 +88,8 @@ export interface RoomDoc {
   createdBy: string
   createdAt: unknown
   type: RoomType
+  /** Preguntas habilitadas para la sala privada (si falta, se asume todas). */
+  enabledQuestionIds?: string[]
 }
 
 /** roomMembers: id = "{roomId}_{userId}" */

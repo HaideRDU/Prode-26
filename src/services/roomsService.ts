@@ -40,6 +40,7 @@ export async function createRoom(
   maxMembers: RoomMaxMembers,
   userId: string,
   displayName: string,
+  enabledQuestionIds?: string[],
 ): Promise<{ roomId: string; inviteCode: string }> {
   if (!db) throw new Error('Firestore no inicializado')
   const inviteCode = randomInviteCode()
@@ -53,6 +54,9 @@ export async function createRoom(
     createdBy: userId,
     createdAt: serverTimestamp(),
     type: 'private',
+    ...(enabledQuestionIds && enabledQuestionIds.length > 0
+      ? { enabledQuestionIds: [...new Set(enabledQuestionIds)] }
+      : {}),
   }
   await setDoc(roomRef, room)
   await setDoc(doc(db, ROOM_MEMBERS, membershipId(roomId, userId)), {
