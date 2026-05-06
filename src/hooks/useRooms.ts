@@ -1,6 +1,7 @@
 import { doc, getDoc, onSnapshot, query, where } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { db } from '../firebase'
+import { GLOBAL_ROOM_ID } from '../constants/rooms'
 import { getRoom, roomMembersCollectionRef } from '../services/roomsService'
 import type { RoomDoc } from '../types/predictions'
 
@@ -43,6 +44,8 @@ export function useRooms(userId: string | undefined): {
         for (const d of snap.docs) {
           const data = d.data() as { roomId: string }
           const roomId = data.roomId
+          // La sala global se muestra por separado en el dashboard/sidebar.
+          if (roomId === GLOBAL_ROOM_ID) continue
           const room = await getRoom(roomId)
           if (!room) continue
           let myPoints: number | null = null

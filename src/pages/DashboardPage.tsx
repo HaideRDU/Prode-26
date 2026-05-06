@@ -14,7 +14,6 @@ export function DashboardPage({ user }: { user: User }) {
   const navigate = useNavigate()
   const displayName = publicDisplayName || user.email || 'Usuario'
   const { rooms, error, loading } = useRooms(user.uid)
-  const [visibleCodesByRoomId, setVisibleCodesByRoomId] = useState<Record<string, boolean>>({})
   const [finalizedByRoomId, setFinalizedByRoomId] = useState<Record<string, boolean>>({})
   const [adminRoom, setAdminRoom] = useState<{
     roomId: string
@@ -22,10 +21,6 @@ export function DashboardPage({ user }: { user: User }) {
     roomDescription?: string | null
     podiumPrizes?: PrivateRoomPodiumPrizes | null
   } | null>(null)
-
-  function toggleCode(roomId: string) {
-    setVisibleCodesByRoomId((prev) => ({ ...prev, [roomId]: !prev[roomId] }))
-  }
 
   useEffect(() => {
     void ensureGlobalRoomMembership(user.uid, displayName)
@@ -66,21 +61,10 @@ export function DashboardPage({ user }: { user: User }) {
       <div className="app-card-list">
         <article className="app-room-card" aria-label="Sala global">
           <div className="app-room-card-top">
-            <h3 className="app-room-title">Sala global</h3>
+            <Link to={`/room/${GLOBAL_ROOM_ID}/standings`} className="app-room-title-link">
+              <h3 className="app-room-title">Sala global</h3>
+            </Link>
             <p className="app-muted">Sala abierta para todos los usuarios.</p>
-            <div className="app-room-code-row">
-              <p className="app-room-code-label">Codigo</p>
-              <button
-                type="button"
-                className="app-room-code-toggle"
-                onClick={() => toggleCode(GLOBAL_ROOM_ID)}
-              >
-                {visibleCodesByRoomId[GLOBAL_ROOM_ID] ? 'Ocultar' : 'Mostrar'}
-              </button>
-            </div>
-            <p className="app-room-code app-room-code--subtle">
-              {visibleCodesByRoomId[GLOBAL_ROOM_ID] ? 'GLOBAL' : '••••••'}
-            </p>
           </div>
           <div className="app-room-card-bottom">
             <p className="app-room-points">Sin puntaje individual</p>
@@ -92,17 +76,10 @@ export function DashboardPage({ user }: { user: User }) {
         {rooms.map((r) => (
           <article key={r.roomId} className="app-room-card" aria-label={`Sala ${r.room.name}`}>
             <div className="app-room-card-top">
-              <h3 className="app-room-title">{r.room.name}</h3>
+              <Link to={`/room/${r.roomId}/standings`} className="app-room-title-link">
+                <h3 className="app-room-title">{r.room.name}</h3>
+              </Link>
               <p className="app-muted">{r.room.description?.trim() || 'Sin descripcion de sala.'}</p>
-              <div className="app-room-code-row">
-                <p className="app-room-code-label">Codigo</p>
-                <button type="button" className="app-room-code-toggle" onClick={() => toggleCode(r.roomId)}>
-                  {visibleCodesByRoomId[r.roomId] ? 'Ocultar' : 'Mostrar'}
-                </button>
-              </div>
-              <p className="app-room-code app-room-code--subtle">
-                {visibleCodesByRoomId[r.roomId] ? r.room.inviteCode : '••••••'}
-              </p>
             </div>
             <div className="app-room-card-bottom">
               <p className="app-room-points">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { useStandings } from '../hooks/useStandings'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
@@ -18,6 +18,8 @@ export function RoomStandingsPage() {
   const navigate = useNavigate()
   const { user } = useOutletContext<AccountOutletContext>()
   const { standings, error, loading, isGlobalRoom } = useStandings(roomId, user?.uid)
+  const tieBreakHelpId = useId()
+  const pointsHelpId = useId()
   const [showScoringHelpModal, setShowScoringHelpModal] = useState(false)
   const [room, setRoom] = useState<RoomDoc | null>(null)
   const [showAdmin, setShowAdmin] = useState(false)
@@ -175,11 +177,17 @@ export function RoomStandingsPage() {
                 ×
               </button>
             </div>
-            <p className="app-muted" style={{ marginTop: 0 }}>
+            <div className="pred-rules-modal__body pred-rules-modal__body--compact">
+              <p className="app-muted" style={{ marginTop: 0 }}>
               Completa o revisa tu pronóstico en esta sala. Puedes volver a la clasificación cuando quieras.
-            </p>
-            <div className="button-group pred-save-modal-actions" style={{ marginTop: 16 }}>
-              <button type="button" className="btn-primary pred-save-modal-btn" onClick={goToPredictions}>
+              </p>
+            </div>
+            <div className="button-group pred-save-modal-actions">
+              <button
+                type="button"
+                className="btn-secondary pred-save-modal-btn pred-save-modal-btn--confirm"
+                onClick={goToPredictions}
+              >
                 Ir a predicciones
               </button>
               <button
@@ -231,15 +239,25 @@ export function RoomStandingsPage() {
       ) : null}
       <div className="page-title-with-help">
         <h1 className="app-page-title">Clasificación</h1>
-        <button
-          type="button"
-          className="help-points-trigger"
-          aria-label="Ver cómo suman los puntos"
-          title="Cómo suman los puntos"
-          onClick={() => setShowScoringHelpModal(true)}
-        >
-          ?
-        </button>
+        <span className="help-points-wrap" tabIndex={-1}>
+          <button
+            type="button"
+            className="help-points-trigger"
+            aria-label="Cómo suman los puntos"
+            aria-describedby={pointsHelpId}
+            title="Cómo suman los puntos"
+            onClick={() => setShowScoringHelpModal(true)}
+          >
+            ?
+          </button>
+          <span id={pointsHelpId} role="tooltip" className="help-points-tooltip">
+            <strong>¿Qué es?</strong> Resumen de cómo suman los puntos en esta sala.
+            <br />
+            Pasa por aquí para ver la ayuda rápida o haz clic para ver el detalle completo.
+            <br />
+            <strong>Desempate:</strong> si empatan en puntos, gana quien tenga más exactos → más especiales → campeón (Sí).
+          </span>
+        </span>
       </div>
       <p className="app-muted" style={{ marginTop: -4, marginBottom: 12 }}>
         {isGlobalRoom ? 'Top 50 · Sala global' : 'Miembros de la sala privada'}
@@ -255,7 +273,18 @@ export function RoomStandingsPage() {
             <th>#</th>
             <th>Usuario</th>
             <th>Puntos</th>
-            <th title="Desempates: exactos / especiales / campeón">Desempate</th>
+            <th>
+              <span className="standings-tiebreak-help" tabIndex={0} aria-describedby={tieBreakHelpId}>
+                Desempate
+                <span id={tieBreakHelpId} role="tooltip" className="standings-tiebreak-help__tooltip">
+                  <strong>¿Qué es?</strong> Se usa cuando hay empate en puntos.
+                  <br />
+                  <strong>Formato:</strong> exactos/especiales/campeón.
+                  <br />
+                  <strong>Orden:</strong> más exactos → más especiales → campeón (Sí) → criterio final.
+                </span>
+              </span>
+            </th>
           </tr>
         </thead>
         <tbody>

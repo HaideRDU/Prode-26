@@ -774,7 +774,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       className="pred-wc26 pred-wc26-page"
       style={pageBottomPad ? { paddingBottom: pageBottomPad } : undefined}
     >
-      <div className="pred-page">
+      <div className="pred-page pred-page-card">
       {showRulesIntroModal ? (
         <div className="modal-overlay pred-rules-modal-overlay" role="presentation">
           <div
@@ -865,9 +865,17 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </button>
       </div>
       <p className="auth-lead" style={{ textAlign: 'left', marginBottom: 16 }}>
-        Completá fase de grupos, eliminatorias y podio
-        {hasActiveBonusQuestions ? ', más las preguntas extra activas' : ''}; un solo botón abajo guarda
-        todo en Firestore. Los puntos de partido se aplican cuando el resultado oficial exista en Firestore.
+        Aquí llenas tu predicción en 3 pasos: <strong>grupos</strong> (marcadores), <strong>eliminatorias</strong>{' '}
+        (marcadores y, si hay empate, ganador por penales) y <strong>podio</strong> (campeón, subcampeón, etc.)
+        {hasActiveBonusQuestions ? (
+          <>
+            {' '}
+            + <strong>preguntas extra</strong>.
+          </>
+        ) : (
+          '.'
+        )}{' '}
+        Cuando todo esté completo, el botón de abajo <strong>guardará todo</strong>.
       </p>
       <PlayerPerMatchStrip nextMatch={nextKnockoutMatch} teamLabel={teamLabel} />
       {!finalizedResolved ? (
@@ -878,11 +886,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
           {predictionFinalized === true
             ? 'Predicción finalizada. Esta vista es solo lectura. Podés volver a clasificación cuando quieras.'
             : `Predicciones bloqueadas por ventana de cierre (${DEFAULT_RULESET.versionLabel}).`}
-        </p>
-      ) : null}
-      {!DEFAULT_RULESET.features.playerPerMatchEnabled ? (
-        <p className="app-muted" style={{ marginTop: -4, marginBottom: 12 }}>
-          Dinámica “Jugador por Partido”: pendiente de activar cuando exista fuente oficial de goleadores.
         </p>
       ) : null}
       {(loadingM || loadingP || loadingT) && <p className="user-email">Cargando…</p>}

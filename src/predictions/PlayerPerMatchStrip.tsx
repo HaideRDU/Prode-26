@@ -12,11 +12,17 @@ export function PlayerPerMatchStrip({
   return (
     <section className="pred-player-strip">
       <h2 className="pred-section-title">Jugador por partido (knockout)</h2>
-      {!DEFAULT_RULESET.features.playerPerMatchEnabled ? (
-        <p className="app-muted" style={{ marginTop: 4 }}>
-          Funcionalidad preparada. Se activará cuando tengamos la fuente oficial de plantillas y goleadores.
-        </p>
-      ) : null}
+      <p className="app-muted" style={{ marginTop: 4 }}>
+        Elegís <strong>un jugador</strong> para el partido KO en foco. Sumas <strong>2 pts por cada gol</strong> que
+        marque en <strong>90’ + prórroga</strong> (no cuentan penales).
+        {!DEFAULT_RULESET.features.playerPerMatchEnabled ? (
+          <>
+            {' '}
+            Está <strong>preparado</strong> y se habilitará cuando tengamos la fuente oficial de plantillas y
+            goleadores.
+          </>
+        ) : null}
+      </p>
       {nextMatch ? (
         <div className="pred-player-strip-card">
           <div>
@@ -29,9 +35,6 @@ export function PlayerPerMatchStrip({
       ) : (
         <p className="app-muted">Aún no hay partidos knockout programados.</p>
       )}
-      <p className="app-muted" style={{ marginTop: 6 }}>
-        Puntaje: 2 pts por gol del jugador elegido (válidos 90’ + prórroga; no penales).
-      </p>
     </section>
   )
 }
