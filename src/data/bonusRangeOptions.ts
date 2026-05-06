@@ -1,7 +1,7 @@
 /**
  * Franjas cerradas para preguntas tipo `kind: 'range'` (coinciden con resultado oficial en Firestore).
+ * En la metodología actual de 5 preguntas no se usan rangos, pero se mantiene el contrato por compatibilidad.
  */
-import type { BonusQuestionId } from './questionIds'
 
 export const RANGE_OPTIONS_TOTAL_GOALS = [
   { rangeId: 'tg_pm_lt_1', labelEs: 'Menos de 104 goles en total (menos de 1 por partido de media)' },
@@ -20,9 +20,5 @@ export const RANGE_OPTIONS_PENALTIES_TOTAL = [
   { rangeId: 'pk_gt_70', labelEs: 'Más de 70 penaltis señalados' },
 ] as const
 
-export const RANGE_OPTIONS_BY_QUESTION_ID: Partial<
-  Record<BonusQuestionId, readonly { rangeId: string; labelEs: string }[]>
-> = {
-  q_stats_total_goals_range: RANGE_OPTIONS_TOTAL_GOALS,
-  q_stats_penalties_total_range: RANGE_OPTIONS_PENALTIES_TOTAL,
-}
+export const RANGE_OPTIONS_BY_QUESTION_ID: Partial<Record<string, readonly { rangeId: string; labelEs: string }[]>> =
+  {}

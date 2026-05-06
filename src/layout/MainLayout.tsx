@@ -107,6 +107,17 @@ export function MainLayout({
                     </span>
                     <span className="app-sidebar-label">Sala global</span>
                   </NavLink>
+                  <NavLink
+                    to="/reglamento"
+                    className={navClass}
+                    role="menuitem"
+                    onClick={() => setNavMenuOpen(false)}
+                  >
+                    <span className="app-sidebar-icon" aria-hidden>
+                      §
+                    </span>
+                    <span className="app-sidebar-label">Reglamento</span>
+                  </NavLink>
                 </nav>
               </div>
             ) : null}

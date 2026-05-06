@@ -29,11 +29,13 @@ import { isCompleteMatchPredictionForPicker } from '../domain/matchPredictionCom
 import { isBonusPayloadComplete } from '../domain/bonusAnswerComplete'
 import { ALL_QUESTION_METAS, type QuestionMeta } from '../data/bonusQuestionsMeta'
 import { getRoom } from '../services/roomsService'
+import { DEFAULT_RULESET, getGeneralPredictionsLockAt } from '../config/ruleset'
 import { GroupStageSection, type GroupDraftEntry } from '../predictions/GroupStageSection'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
 import { KnockoutSection } from '../predictions/KnockoutSection'
 import { BonusQuestionBank, type MatchPickOption } from '../predictions/BonusQuestionBank'
 import { PodiumExtrasSection } from '../predictions/PodiumExtrasSection'
+import { PlayerPerMatchStrip, getNextKnockoutMatch } from '../predictions/PlayerPerMatchStrip'
 import '../predictions/pred-theme.css'
 
 const scheduleOrder = new Map(GROUP_STAGE_SCHEDULE.map((r, i) => [r.matchId, i]))
@@ -119,6 +121,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const [groupLocked, setGroupLocked] = useState(false)
   const [predictionFinalized, setPredictionFinalizedState] = useState<boolean | null>(null)
   const [enabledQuestionIds, setEnabledQuestionIds] = useState<Set<string> | null>(null)
+  const [nowMs, setNowMs] = useState(() => Date.now())
   const [draftGroup, setDraftGroup] = useState<Map<string, GroupDraftEntry>>(new Map())
   const draftInitRef = useRef(false)
   const roomDraftRef = useRef<string | null>(null)
@@ -253,6 +256,11 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   }, [roomId])
 
   useEffect(() => {
+    const t = window.setInterval(() => setNowMs(Date.now()), 30_000)
+    return () => window.clearInterval(t)
+  }, [])
+
+  useEffect(() => {
     setKoDraftOverrides(new Map())
     setBonusOverrides(new Map())
   }, [roomId])
@@ -284,7 +292,9 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   }, [groupLocked, groupMatchIds, predByMatchId])
 
   const finalizedResolved = predictionFinalized !== null
-  const readOnly = predictionFinalized === true
+  const generalLockAt = useMemo(() => getGeneralPredictionsLockAt(DEFAULT_RULESET), [])
+  const generalPredictionsLocked = nowMs >= generalLockAt.getTime() && predictionFinalized !== true
+  const readOnly = predictionFinalized === true || generalPredictionsLocked
 
   const onDraftChange = useCallback((matchId: string, gh: number | null, ga: number | null) => {
     if (readOnly || !finalizedResolved) return
@@ -543,6 +553,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     rows.sort((x, y) => x.sortKey - y.sortKey)
     return rows.map(({ sortKey: _sk, ...rest }) => rest)
   }, [matches, draftGroup, predByMatchId, mergedKoPredByMatchId, teamLabel, groupPredForBracket])
+  const nextKnockoutMatch = useMemo(() => getNextKnockoutMatch(matches), [matches])
 
   const { canSaveKoBatch, koResolvableCount } = useMemo(() => {
     const ctx = buildKoPredictionsContext(groupPredForBracket, mergedKoPredByMatchId)
@@ -614,6 +625,12 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       out.push('Tu predicción ya está finalizada: solo podés previsualizar las respuestas.')
       return out
     }
+    if (generalPredictionsLocked) {
+      out.push(
+        `Las predicciones generales están cerradas desde ${generalLockAt.toLocaleString('es-CO')} (${DEFAULT_RULESET.timezone}).`,
+      )
+      return out
+    }
     if (!finalizedResolved) {
       return out
     }
@@ -628,6 +645,8 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     return out
   }, [
     predictionFinalized,
+    generalPredictionsLocked,
+    generalLockAt,
     canSaveBatch,
     koResolvableCount,
     canSaveKoBatch,
@@ -850,12 +869,20 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         {hasActiveBonusQuestions ? ', más las preguntas extra activas' : ''}; un solo botón abajo guarda
         todo en Firestore. Los puntos de partido se aplican cuando el resultado oficial exista en Firestore.
       </p>
+      <PlayerPerMatchStrip nextMatch={nextKnockoutMatch} teamLabel={teamLabel} />
       {!finalizedResolved ? (
         <p className="user-email">Cargando estado de predicción…</p>
       ) : null}
       {readOnly ? (
         <p className="auth-info">
-          Predicción finalizada. Esta vista es solo lectura. Podés volver a clasificación cuando quieras.
+          {predictionFinalized === true
+            ? 'Predicción finalizada. Esta vista es solo lectura. Podés volver a clasificación cuando quieras.'
+            : `Predicciones bloqueadas por ventana de cierre (${DEFAULT_RULESET.versionLabel}).`}
+        </p>
+      ) : null}
+      {!DEFAULT_RULESET.features.playerPerMatchEnabled ? (
+        <p className="app-muted" style={{ marginTop: -4, marginBottom: 12 }}>
+          Dinámica “Jugador por Partido”: pendiente de activar cuando exista fuente oficial de goleadores.
         </p>
       ) : null}
       {(loadingM || loadingP || loadingT) && <p className="user-email">Cargando…</p>}

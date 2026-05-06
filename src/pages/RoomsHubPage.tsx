@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom'
 import type { User } from 'firebase/auth'
-import type { RoomMaxMembers } from '../types/predictions'
+import type { PrivateRoomPodiumPrizes, RoomMaxMembers } from '../types/predictions'
 import { createRoom, joinRoomByCode } from '../services/roomsService'
 import { getPredictionFinalized } from '../services/predictionStateService'
 import type { AccountOutletContext } from '../types/outletContext'
@@ -41,6 +41,9 @@ export function RoomsHubPage({ user }: { user: User }) {
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>(
     ALL_QUESTION_METAS.map((q) => q.id),
   )
+  const [prizeFirst, setPrizeFirst] = useState('')
+  const [prizeSecond, setPrizeSecond] = useState('')
+  const [prizeThird, setPrizeThird] = useState('')
 
   const [code, setCode] = useState('')
   const [joinError, setJoinError] = useState<string | null>(null)
@@ -60,6 +63,11 @@ export function RoomsHubPage({ user }: { user: User }) {
     }
     setCreateBusy(true)
     try {
+      const podiumPrizes: PrivateRoomPodiumPrizes = {
+        first: prizeFirst,
+        second: prizeSecond,
+        third: prizeThird,
+      }
       const { roomId } = await createRoom(
         name.trim(),
         description.trim(),
@@ -67,6 +75,7 @@ export function RoomsHubPage({ user }: { user: User }) {
         user.uid,
         displayName,
         customizeQuestions ? selectedQuestionIds : undefined,
+        podiumPrizes,
       )
       const finalized = await getPredictionFinalized(user.uid, roomId)
       navigate(`/room/${roomId}/${finalized ? 'standings' : 'predictions'}`)
@@ -218,6 +227,41 @@ export function RoomsHubPage({ user }: { user: User }) {
                 </div>
               </div>
             ) : null}
+            <div className="app-rooms-hub-prizes">
+              <p className="app-muted" style={{ marginBottom: 8, fontWeight: 600 }}>
+                Premios del podio (opcional)
+              </p>
+              <p className="app-muted" style={{ marginBottom: 10, fontSize: '0.88rem' }}>
+                Podés definirlos ahora o más tarde en Configurar sala.
+              </p>
+              <label>
+                <span className="app-muted">1.er lugar</span>
+                <input
+                  className="field-input"
+                  value={prizeFirst}
+                  onChange={(e) => setPrizeFirst(e.target.value)}
+                  placeholder="Ej.: Trofeo, dinero, detalle…"
+                />
+              </label>
+              <label>
+                <span className="app-muted">2.º lugar</span>
+                <input
+                  className="field-input"
+                  value={prizeSecond}
+                  onChange={(e) => setPrizeSecond(e.target.value)}
+                  placeholder="Opcional"
+                />
+              </label>
+              <label>
+                <span className="app-muted">3.er lugar</span>
+                <input
+                  className="field-input"
+                  value={prizeThird}
+                  onChange={(e) => setPrizeThird(e.target.value)}
+                  placeholder="Opcional"
+                />
+              </label>
+            </div>
             <div className="app-rooms-hub-actions">
               <button type="submit" className="btn-secondary" disabled={createBusy}>
                 {createBusy ? 'Creando…' : 'Crear sala'}

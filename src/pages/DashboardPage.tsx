@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import type { User } from 'firebase/auth'
 import { useRooms } from '../hooks/useRooms'
-import { ensureGlobalRoomMembership } from '../services/roomsService'
+import { ensureGlobalRoomMembership, getRoom } from '../services/roomsService'
 import { getPredictionFinalized } from '../services/predictionStateService'
 import { GLOBAL_ROOM_ID } from '../constants/rooms'
 import type { AccountOutletContext } from '../types/outletContext'
+import type { PrivateRoomPodiumPrizes } from '../types/predictions'
 import { PrivateRoomAdminModal } from '../rooms/PrivateRoomAdminModal'
 
 export function DashboardPage({ user }: { user: User }) {
@@ -15,7 +16,12 @@ export function DashboardPage({ user }: { user: User }) {
   const { rooms, error, loading } = useRooms(user.uid)
   const [visibleCodesByRoomId, setVisibleCodesByRoomId] = useState<Record<string, boolean>>({})
   const [finalizedByRoomId, setFinalizedByRoomId] = useState<Record<string, boolean>>({})
-  const [adminRoom, setAdminRoom] = useState<{ roomId: string; roomName: string } | null>(null)
+  const [adminRoom, setAdminRoom] = useState<{
+    roomId: string
+    roomName: string
+    roomDescription?: string | null
+    podiumPrizes?: PrivateRoomPodiumPrizes | null
+  } | null>(null)
 
   function toggleCode(roomId: string) {
     setVisibleCodesByRoomId((prev) => ({ ...prev, [roomId]: !prev[roomId] }))
@@ -110,7 +116,16 @@ export function DashboardPage({ user }: { user: User }) {
                 <button
                   type="button"
                   className="btn-secondary"
-                  onClick={() => setAdminRoom({ roomId: r.roomId, roomName: r.room.name })}
+                  onClick={() => {
+                    void getRoom(r.roomId).then((fresh) =>
+                      setAdminRoom({
+                        roomId: r.roomId,
+                        roomName: fresh?.name ?? r.room.name,
+                        roomDescription: fresh?.description ?? r.room.description,
+                        podiumPrizes: fresh?.podiumPrizes ?? r.room.podiumPrizes,
+                      }),
+                    )
+                  }}
                 >
                   Configurar sala
                 </button>
@@ -123,7 +138,22 @@ export function DashboardPage({ user }: { user: User }) {
         <PrivateRoomAdminModal
           roomId={adminRoom.roomId}
           roomName={adminRoom.roomName}
+          roomDescription={adminRoom.roomDescription}
           currentUserId={user.uid}
+          podiumPrizes={adminRoom.podiumPrizes}
+          onRoomUpdated={async () => {
+            const data = await getRoom(adminRoom.roomId)
+            setAdminRoom((prev) =>
+              prev && data
+                ? {
+                    ...prev,
+                    roomName: data.name,
+                    roomDescription: data.description,
+                    podiumPrizes: data.podiumPrizes,
+                  }
+                : prev,
+            )
+          }}
           onClose={() => setAdminRoom(null)}
           onRoomDeleted={() => navigate('/', { replace: true })}
         />

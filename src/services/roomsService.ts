@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -7,11 +8,22 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { GLOBAL_ROOM_ID } from '../constants/rooms'
-import type { RoomDoc, RoomMaxMembers, RoomMemberDoc } from '../types/predictions'
+import { DEFAULT_RULESET } from '../config/ruleset'
+import type { PrivateRoomPodiumPrizes, RoomDoc, RoomMaxMembers, RoomMemberDoc } from '../types/predictions'
+
+function normalizePodiumPrizesForWrite(input?: PrivateRoomPodiumPrizes | null): PrivateRoomPodiumPrizes | undefined {
+  if (!input) return undefined
+  const first = input.first?.trim() ?? ''
+  const second = input.second?.trim() ?? ''
+  const third = input.third?.trim() ?? ''
+  if (!first && !second && !third) return undefined
+  return { first, second, third }
+}
 
 const ROOMS = 'rooms'
 const ROOM_MEMBERS = 'roomMembers'
@@ -41,11 +53,13 @@ export async function createRoom(
   userId: string,
   displayName: string,
   enabledQuestionIds?: string[],
+  podiumPrizes?: PrivateRoomPodiumPrizes | null,
 ): Promise<{ roomId: string; inviteCode: string }> {
   if (!db) throw new Error('Firestore no inicializado')
   const inviteCode = randomInviteCode()
   const roomRef = doc(collection(db, ROOMS))
   const roomId = roomRef.id
+  const prizesWritten = normalizePodiumPrizesForWrite(podiumPrizes ?? undefined)
   const room: RoomDoc = {
     name,
     description: description.trim() || undefined,
@@ -54,9 +68,11 @@ export async function createRoom(
     createdBy: userId,
     createdAt: serverTimestamp(),
     type: 'private',
+    rulesetId: DEFAULT_RULESET.id,
     ...(enabledQuestionIds && enabledQuestionIds.length > 0
       ? { enabledQuestionIds: [...new Set(enabledQuestionIds)] }
       : {}),
+    ...(prizesWritten ? { podiumPrizes: prizesWritten } : {}),
   }
   await setDoc(roomRef, room)
   await setDoc(doc(db, ROOM_MEMBERS, membershipId(roomId, userId)), {
@@ -66,6 +82,33 @@ export async function createRoom(
     joinedAt: serverTimestamp(),
   } satisfies RoomMemberDoc)
   return { roomId, inviteCode }
+}
+
+export async function updatePrivateRoomPodiumPrizes(
+  roomId: string,
+  prizes: PrivateRoomPodiumPrizes,
+): Promise<void> {
+  if (!db) throw new Error('Firestore no inicializado')
+  const normalized = normalizePodiumPrizesForWrite(prizes)
+  if (!normalized) {
+    await updateDoc(doc(db, ROOMS, roomId), { podiumPrizes: { first: '', second: '', third: '' } })
+    return
+  }
+  await updateDoc(doc(db, ROOMS, roomId), { podiumPrizes: normalized })
+}
+
+export async function updatePrivateRoomDetails(
+  roomId: string,
+  payload: { name: string; description: string },
+): Promise<void> {
+  if (!db) throw new Error('Firestore no inicializado')
+  const name = payload.name.trim()
+  if (!name) throw new Error('El nombre de la sala no puede estar vacío.')
+  const description = payload.description.trim()
+  await updateDoc(doc(db, ROOMS, roomId), {
+    name,
+    ...(description ? { description } : { description: deleteField() }),
+  })
 }
 
 export async function joinRoomByCode(

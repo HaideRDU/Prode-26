@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Calculadora Académica",
+    "slug": "academic-rn-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#f5f5f5"
+    },
+    "android": {
+      "package": "com.academic.calculadora",
+      "versionCode": 1
+    }
+  }
+}

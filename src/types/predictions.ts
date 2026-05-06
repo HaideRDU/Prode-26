@@ -29,6 +29,11 @@ export interface MatchDoc {
   wentToPenalties?: boolean | null
   /** true = local ganó penales (si wentToPenalties) */
   penaltiesWinnerHome?: boolean | null
+  /**
+   * Contrato futuro para "Jugador por Partido" (90' + prórroga, sin tandas).
+   * Se mantiene opcional hasta definir fuente oficial de plantillas/eventos.
+   */
+  scorers?: { playerKey: string; goals: number; includesPenalties?: boolean }[]
 }
 
 /** Predicción de marcador para un partido */
@@ -41,7 +46,16 @@ export interface MatchPredictionPayload {
   penaltiesWinnerHome?: boolean
 }
 
-export type PredictionScope = 'match' | 'tournament'
+export type PredictionScope = 'match' | 'tournament' | 'player_per_match'
+
+export interface PlayerPerMatchPayload {
+  kind: 'player_match_pick'
+  /**
+   * Identificador o nombre normalizado del jugador.
+   * Queda flexible hasta tener la fuente oficial de plantillas.
+   */
+  playerKey: string
+}
 
 /** Predicción atómica: predictions/{id} */
 export interface PredictionDoc {
@@ -51,7 +65,7 @@ export interface PredictionDoc {
   scope: PredictionScope
   matchId?: string
   questionId?: string
-  payload: TournamentPredictionPayload | MatchPredictionPayload
+  payload: TournamentPredictionPayload | MatchPredictionPayload | PlayerPerMatchPayload
   updatedAt?: unknown
 }
 
@@ -79,6 +93,13 @@ export type RoomType = 'private' | 'global'
 
 export type RoomMaxMembers = 20 | 30 | 40 | 50 | 100
 
+/** Premios para el podio en salas privadas (texto libre). */
+export interface PrivateRoomPodiumPrizes {
+  first?: string
+  second?: string
+  third?: string
+}
+
 /** rooms/{roomId} */
 export interface RoomDoc {
   name: string
@@ -88,8 +109,11 @@ export interface RoomDoc {
   createdBy: string
   createdAt: unknown
   type: RoomType
+  rulesetId?: string
   /** Preguntas habilitadas para la sala privada (si falta, se asume todas). */
   enabledQuestionIds?: string[]
+  /** Premios 1.º / 2.º / 3.º (solo salas privadas). */
+  podiumPrizes?: PrivateRoomPodiumPrizes
 }
 
 /** roomMembers: id = "{roomId}_{userId}" */
@@ -107,10 +131,19 @@ export interface StandingUserDoc {
   points: number
   rank: number
   breakdown?: PointsBreakdown
+  tieBreak?: TieBreakStats
   updatedAt?: unknown
 }
 
 export interface PointsBreakdown {
   matchPoints: number
   tournamentPoints: number
+  advancementPoints?: number
+  specialsPoints?: number
+}
+
+export interface TieBreakStats {
+  exactScoreHits: number
+  specialQuestionHits: number
+  championHit: boolean
 }

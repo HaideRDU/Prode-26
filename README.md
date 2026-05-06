@@ -1,6 +1,6 @@
 # Prode-26
 
-Predicciones (Mundial 2026). Stack: React, TypeScript, Vite, Firebase. Copiá [`.env.example`](.env.example) a `.env` en local. Despliegue en GitHub Pages: [`docs/deploy-github-pages.md`](docs/deploy-github-pages.md).
+Predicciones (Mundial 2026). Stack: React, TypeScript, Vite, Firebase. Copiá `[.env.example](.env.example)` a `.env` en local. Despliegue en GitHub Pages: `[docs/deploy-github-pages.md](docs/deploy-github-pages.md)`.
 
 ## React + TypeScript + Vite (plantilla base)
 

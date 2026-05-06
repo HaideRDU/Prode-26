@@ -558,6 +558,14 @@
   margin: 0 auto;
 }
 
+.app-rooms-hub-prizes {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
 .app-rooms-hub-tab {
   flex: 1;
   min-width: 0;

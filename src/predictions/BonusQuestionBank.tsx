@@ -101,9 +101,9 @@ export function BonusQuestionBank({
 
   return (
     <section className="pred-bonus-bank">
-      <h2 className="pred-section-title">3 · Extras y banco de preguntas</h2>
+      <h2 className="pred-section-title">3 · 5 preguntas especiales</h2>
       <p className="app-muted pred-bonus-optional">
-        Todas las preguntas cuentan para el guardado global: completalas para habilitar{' '}
+        Completá las 5 preguntas para habilitar{' '}
         <strong>Guardar predicción</strong>.
       </p>
       {loading && <p className="user-email">Cargando equipos…</p>}
@@ -182,7 +182,7 @@ function BonusRow({
     if (meta.control === 'team') {
       setTeamId(value?.kind === 'team' ? value.teamId : '')
     } else if (meta.control === 'text') {
-      if (meta.id === 'q_offense_most_lopsided_score' || meta.id === 'q_fun_most_repeated_scoreline') {
+      if (meta.id === 'q_special_biggest_win_scoreline') {
         if (!scorePairFocused) {
           const p = scorePairInitial(value)
           setScoreHome(p.home)
@@ -257,13 +257,7 @@ function BonusRow({
       if (!groupId.trim()) return null
       return { kind: 'group', groupId }
     }
-    if (meta.control === 'text' && meta.id === 'q_offense_most_lopsided_score') {
-      const gh = parseGoalField(scoreHome)
-      const ga = parseGoalField(scoreAway)
-      if (gh === null || ga === null) return null
-      return { kind: 'text', value: formatScorePair(gh, ga) }
-    }
-    if (meta.control === 'text' && meta.id === 'q_fun_most_repeated_scoreline') {
+    if (meta.control === 'text' && meta.id === 'q_special_biggest_win_scoreline') {
       const gh = parseGoalField(scoreHome)
       const ga = parseGoalField(scoreAway)
       if (gh === null || ga === null) return null
@@ -415,49 +409,7 @@ function BonusRow({
             ))}
           </select>
         </div>
-      ) : meta.control === 'text' && meta.id === 'q_offense_most_lopsided_score' ? (
-        <div className="pred-bonus-controls">
-          <div
-            className="pred-score-split pred-score-split--bonus pred-bonus-score-split"
-            role="group"
-            aria-label="Marcador"
-            onFocusCapture={() => setScorePairFocused(true)}
-            onBlurCapture={onScorePairBlurCapture}
-          >
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={20}
-              step={1}
-              className="field-input pred-score-split-input"
-              autoComplete="off"
-              placeholder="0"
-              value={scoreHome}
-              onChange={(e) => setScoreHome(e.target.value)}
-              aria-label="Goles local"
-              disabled={readOnly}
-            />
-            <span className="pred-score-split-sep" aria-hidden>
-              -
-            </span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={20}
-              step={1}
-              className="field-input pred-score-split-input"
-              autoComplete="off"
-              placeholder="0"
-              value={scoreAway}
-              onChange={(e) => setScoreAway(e.target.value)}
-              aria-label="Goles visita"
-              disabled={readOnly}
-            />
-          </div>
-        </div>
-      ) : meta.control === 'text' && meta.id === 'q_fun_most_repeated_scoreline' ? (
+      ) : meta.control === 'text' && meta.id === 'q_special_biggest_win_scoreline' ? (
         <div className="pred-bonus-controls">
           <div
             className="pred-score-split pred-score-split--bonus pred-bonus-score-split"

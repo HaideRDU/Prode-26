@@ -92,7 +92,8 @@ export function subscribeStandingsForRoom(
         if (!scores.has(uid)) {
           scores.set(uid, {
             points: 0,
-            breakdown: { matchPoints: 0, tournamentPoints: 0 },
+            breakdown: { matchPoints: 0, tournamentPoints: 0, advancementPoints: 0, specialsPoints: 0 },
+            tieBreak: { exactScoreHits: 0, specialQuestionHits: 0, championHit: false },
           })
         }
       }
@@ -106,6 +107,7 @@ export function subscribeStandingsForRoom(
       points: row.points,
       rank: row.rank,
       breakdown: row.breakdown,
+      tieBreak: row.tieBreak,
       isCurrentUser: currentUserId ? uid === currentUserId : false,
     }))
     rows.sort((a, b) => {

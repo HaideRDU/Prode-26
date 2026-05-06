@@ -24,6 +24,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { RoomsHubPage } from './pages/RoomsHubPage'
 import { RoomPredictionsPage } from './pages/RoomPredictionsPage'
 import { RoomStandingsPage } from './pages/RoomStandingsPage'
+import { ReglamentoPage } from './pages/ReglamentoPage'
 import type { AccountOutletContext } from './types/outletContext'
 import { AuthLayout } from './auth/AuthLayout'
 import { BrandLogo } from './auth/BrandLogo'
@@ -676,6 +677,7 @@ function App() {
             <Route path="join" element={<Navigate to="/rooms?tab=join" replace />} />
             <Route path="room/:roomId/predictions" element={<RoomPredictionsPage user={user} />} />
             <Route path="room/:roomId/standings" element={<RoomStandingsPage />} />
+            <Route path="reglamento" element={<ReglamentoPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

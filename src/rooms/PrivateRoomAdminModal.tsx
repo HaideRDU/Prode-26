@@ -1,24 +1,59 @@
 import { useEffect, useState } from 'react'
-import { deletePrivateRoom, listRoomMembers, removePrivateRoomMember, type RoomMemberLite } from '../services/roomAdminService'
+import '../predictions/pred-theme.css'
+import {
+  deletePrivateRoom,
+  listRoomMembers,
+  removePrivateRoomMember,
+  type RoomMemberLite,
+} from '../services/roomAdminService'
+import { updatePrivateRoomDetails, updatePrivateRoomPodiumPrizes } from '../services/roomsService'
+import type { PrivateRoomPodiumPrizes } from '../types/predictions'
+
+type AdminTab = 'users' | 'advanced'
 
 export function PrivateRoomAdminModal({
   roomId,
   currentUserId,
   roomName,
+  roomDescription,
+  podiumPrizes,
+  onRoomUpdated,
   onClose,
   onRoomDeleted,
 }: {
   roomId: string
   currentUserId: string
   roomName: string
+  roomDescription?: string | null
+  podiumPrizes?: PrivateRoomPodiumPrizes | null
+  onRoomUpdated?: () => void | Promise<void>
   onClose: () => void
   onRoomDeleted?: () => void
 }) {
+  const [tab, setTab] = useState<AdminTab>('users')
   const [members, setMembers] = useState<RoomMemberLite[]>([])
   const [loading, setLoading] = useState(true)
   const [busyUserId, setBusyUserId] = useState<string | null>(null)
   const [busyDeleteRoom, setBusyDeleteRoom] = useState(false)
+  const [busySavePrizes, setBusySavePrizes] = useState(false)
+  const [busySaveRoom, setBusySaveRoom] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editName, setEditName] = useState(roomName)
+  const [editDescription, setEditDescription] = useState(roomDescription?.trim() ?? '')
+  const [prizeFirst, setPrizeFirst] = useState('')
+  const [prizeSecond, setPrizeSecond] = useState('')
+  const [prizeThird, setPrizeThird] = useState('')
+
+  useEffect(() => {
+    setEditName(roomName)
+    setEditDescription(roomDescription?.trim() ?? '')
+  }, [roomId, roomName, roomDescription])
+
+  useEffect(() => {
+    setPrizeFirst(podiumPrizes?.first?.trim() ?? '')
+    setPrizeSecond(podiumPrizes?.second?.trim() ?? '')
+    setPrizeThird(podiumPrizes?.third?.trim() ?? '')
+  }, [roomId, podiumPrizes?.first, podiumPrizes?.second, podiumPrizes?.third])
 
   useEffect(() => {
     let cancelled = false
@@ -41,8 +76,40 @@ export function PrivateRoomAdminModal({
     }
   }, [roomId])
 
+  async function handleSaveRoomDetails() {
+    if (busySaveRoom || busyDeleteRoom || busySavePrizes || busyUserId) return
+    setError(null)
+    setBusySaveRoom(true)
+    try {
+      await updatePrivateRoomDetails(roomId, { name: editName, description: editDescription })
+      await onRoomUpdated?.()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudieron guardar los datos de la sala.')
+    } finally {
+      setBusySaveRoom(false)
+    }
+  }
+
+  async function handleSavePrizes() {
+    if (busySavePrizes || busyDeleteRoom || busyUserId || busySaveRoom) return
+    setError(null)
+    setBusySavePrizes(true)
+    try {
+      await updatePrivateRoomPodiumPrizes(roomId, {
+        first: prizeFirst,
+        second: prizeSecond,
+        third: prizeThird,
+      })
+      await onRoomUpdated?.()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudieron guardar los premios.')
+    } finally {
+      setBusySavePrizes(false)
+    }
+  }
+
   async function handleRemove(userId: string) {
-    if (busyUserId || busyDeleteRoom) return
+    if (busyUserId || busyDeleteRoom || busySaveRoom || busySavePrizes) return
     setError(null)
     setBusyUserId(userId)
     try {
@@ -56,9 +123,10 @@ export function PrivateRoomAdminModal({
   }
 
   async function handleDeleteRoom() {
-    if (busyDeleteRoom || busyUserId) return
+    if (busyDeleteRoom || busyUserId || busySaveRoom || busySavePrizes) return
+    const displayName = editName.trim() || roomName
     const ok = window.confirm(
-      `¿Seguro que deseas borrar la sala "${roomName}"? Esta acción elimina usuarios, predicciones y clasificación de la sala.`,
+      `¿Seguro que deseas borrar la sala "${displayName}"? Esta acción elimina usuarios, predicciones y clasificación de la sala.`,
     )
     if (!ok) return
     setError(null)
@@ -76,63 +144,181 @@ export function PrivateRoomAdminModal({
 
   return (
     <div className="modal-overlay" role="presentation">
-      <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="room-admin-title">
+      <div
+        className="modal-card room-admin-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="room-admin-title"
+      >
         <div className="modal-header">
           <h2 id="room-admin-title">Configurar sala privada</h2>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Cerrar">
             ×
           </button>
         </div>
-        <p className="app-muted" style={{ marginTop: 4 }}>
-          Sala: <strong>{roomName}</strong>
-        </p>
-        {loading ? <p className="user-email">Cargando miembros…</p> : null}
-        {!loading ? (
-          <div style={{ display: 'grid', gap: 8, marginTop: 8, maxHeight: 280, overflow: 'auto' }}>
-            {members.map((m) => (
-              <div
-                key={m.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: 10,
-                  border: '1px solid var(--border)',
-                  borderRadius: 8,
-                  padding: '8px 10px',
-                }}
-              >
-                <div>
-                  <div>{m.displayName}</div>
-                  <div className="app-muted" style={{ fontSize: 12 }}>
-                    {m.userId === currentUserId ? 'Líder' : m.userId}
+
+        <div className="room-admin-modal-tabs" role="tablist" aria-label="Secciones de configuración">
+          <button
+            type="button"
+            role="tab"
+            id="room-admin-tab-users"
+            aria-selected={tab === 'users'}
+            aria-controls="room-admin-panel-users"
+            className={`room-admin-modal-tab${tab === 'users' ? ' room-admin-modal-tab--active' : ''}`}
+            onClick={() => setTab('users')}
+          >
+            Usuarios
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="room-admin-tab-advanced"
+            aria-selected={tab === 'advanced'}
+            aria-controls="room-admin-panel-advanced"
+            className={`room-admin-modal-tab${tab === 'advanced' ? ' room-admin-modal-tab--active' : ''}`}
+            onClick={() => setTab('advanced')}
+          >
+            Avanzado
+          </button>
+        </div>
+
+        {tab === 'users' ? (
+          <div
+            id="room-admin-panel-users"
+            role="tabpanel"
+            aria-labelledby="room-admin-tab-users"
+            className="room-admin-modal-panel"
+          >
+            <p className="app-muted" style={{ marginTop: 0 }}>
+              Miembros de la sala. El líder no puede eliminarse.
+            </p>
+            {loading ? <p className="user-email">Cargando miembros…</p> : null}
+            {!loading ? (
+              <div className="room-admin-members-scroll">
+                {members.map((m) => (
+                  <div key={m.id} className="room-admin-member-row">
+                    <div>
+                      <div>{m.displayName}</div>
+                      <div className="app-muted" style={{ fontSize: 12 }}>
+                        {m.userId === currentUserId ? 'Líder' : m.userId}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={m.userId === currentUserId || busyUserId === m.userId || busyDeleteRoom}
+                      onClick={() => handleRemove(m.userId)}
+                    >
+                      {busyUserId === m.userId ? 'Eliminando…' : 'Eliminar usuario'}
+                    </button>
                   </div>
-                </div>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  disabled={m.userId === currentUserId || busyUserId === m.userId || busyDeleteRoom}
-                  onClick={() => handleRemove(m.userId)}
-                >
-                  {busyUserId === m.userId ? 'Eliminando…' : 'Eliminar usuario'}
-                </button>
+                ))}
               </div>
-            ))}
+            ) : null}
           </div>
-        ) : null}
+        ) : (
+          <div
+            id="room-admin-panel-advanced"
+            role="tabpanel"
+            aria-labelledby="room-admin-tab-advanced"
+            className="room-admin-modal-panel"
+          >
+            <div className="room-admin-modal-section room-admin-modal-section--nested">
+              <h3 className="room-admin-modal-section__title">Nombre y descripción</h3>
+              <label className="room-admin-modal-field">
+                <span className="app-muted">Nombre de la sala</span>
+                <input
+                  className="field-input"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Nombre visible para los miembros"
+                  autoComplete="off"
+                />
+              </label>
+              <label className="room-admin-modal-field">
+                <span className="app-muted">Descripción (opcional)</span>
+                <textarea
+                  className="field-input"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Reglas locales, forma de pago del premio, etc."
+                  rows={3}
+                />
+              </label>
+              <button
+                type="button"
+                className="btn-secondary"
+                disabled={busySaveRoom || busyDeleteRoom || !editName.trim()}
+                onClick={() => void handleSaveRoomDetails()}
+              >
+                {busySaveRoom ? 'Guardando…' : 'Guardar nombre y descripción'}
+              </button>
+            </div>
+
+            <div className="room-admin-modal-section room-admin-modal-section--nested">
+              <h3 className="room-admin-modal-section__title">Premios del podio (top 3)</h3>
+              <p className="app-muted room-admin-modal-section__hint">
+                Texto visible para todos los miembros junto a la clasificación.
+              </p>
+              <label className="room-admin-modal-field">
+                <span className="app-muted">1.er lugar</span>
+                <input
+                  className="field-input"
+                  value={prizeFirst}
+                  onChange={(e) => setPrizeFirst(e.target.value)}
+                  placeholder="Ej.: Camiseta oficial, $50, trofeo…"
+                />
+              </label>
+              <label className="room-admin-modal-field">
+                <span className="app-muted">2.º lugar</span>
+                <input
+                  className="field-input"
+                  value={prizeSecond}
+                  onChange={(e) => setPrizeSecond(e.target.value)}
+                  placeholder="Ej.: Premio simbólico…"
+                />
+              </label>
+              <label className="room-admin-modal-field">
+                <span className="app-muted">3.er lugar</span>
+                <input
+                  className="field-input"
+                  value={prizeThird}
+                  onChange={(e) => setPrizeThird(e.target.value)}
+                  placeholder="Ej.: Mención honorífica…"
+                />
+              </label>
+              <button
+                type="button"
+                className="btn-secondary"
+                disabled={busySavePrizes || busyDeleteRoom}
+                onClick={() => void handleSavePrizes()}
+              >
+                {busySavePrizes ? 'Guardando premios…' : 'Guardar premios'}
+              </button>
+            </div>
+
+            <div className="room-admin-modal-section room-admin-modal-section--nested room-admin-modal-section--danger">
+              <h3 className="room-admin-modal-section__title">Zona peligrosa</h3>
+              <p className="app-muted room-admin-modal-section__hint">
+                Elimina la sala y todos los datos asociados. No se puede deshacer.
+              </p>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ borderColor: '#b91c1c', color: '#b91c1c' }}
+                onClick={handleDeleteRoom}
+                disabled={busyDeleteRoom}
+              >
+                {busyDeleteRoom ? 'Borrando sala…' : 'Borrar sala'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {error ? <p className="auth-error">{error}</p> : null}
         <div className="button-group" style={{ marginTop: 16 }}>
           <button type="button" className="btn-secondary" onClick={onClose} disabled={busyDeleteRoom}>
             Cerrar
-          </button>
-          <button
-            type="button"
-            className="btn-secondary"
-            style={{ borderColor: '#b91c1c', color: '#b91c1c' }}
-            onClick={handleDeleteRoom}
-            disabled={busyDeleteRoom}
-          >
-            {busyDeleteRoom ? 'Borrando sala…' : 'Borrar sala'}
           </button>
         </div>
       </div>

@@ -546,6 +546,760 @@
   margin-bottom: 8px;
 }
 
+.pred-player-strip {
+  margin: 14px 0 10px;
+  padding: 12px;
+  border: 1px solid var(--wc26-border);
+  border-radius: var(--wc26-radius-sm);
+  background: var(--wc26-surface);
+}
+
+.pred-player-strip-card {
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--wc26-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--wc26-surface) 88%, #ffffff);
+}
+
+/* Sala principal: maqueta próximo partido + jugador (tema WC26) */
+.room-home-player-banner {
+  margin: 0 0 20px;
+  padding: 14px 16px 16px;
+  border-radius: var(--wc26-radius-sm);
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface);
+  box-shadow: var(--wc26-shadow);
+}
+
+.room-home-player-banner__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.room-home-player-banner__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--wc26-text);
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+}
+
+.room-home-player-banner__description {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: var(--wc26-muted);
+  line-height: 1.45;
+}
+
+.room-home-player-banner__help-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.room-home-player-banner__help-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--wc26-border-strong);
+  background: var(--wc26-surface-panel);
+  color: var(--wc26-accent);
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: help;
+}
+
+.room-home-player-banner__help-btn:hover {
+  border-color: color-mix(in srgb, var(--wc26-accent) 40%, var(--wc26-border-strong));
+  background: color-mix(in srgb, var(--wc26-accent) 10%, var(--wc26-surface));
+}
+
+.room-home-player-banner__help-btn:focus-visible {
+  outline: 2px solid var(--wc26-accent);
+  outline-offset: 2px;
+}
+
+.room-home-player-banner__help-btn--text {
+  width: auto;
+  min-height: 26px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.room-home-player-banner__matches-grid {
+  margin-top: 14px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.room-home-player-banner__matches-grid--dual {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.room-home-player-banner__column-card {
+  padding: 12px 12px 14px;
+  border-radius: var(--wc26-radius-sm);
+  border: 1px solid var(--wc26-border);
+  background: color-mix(in srgb, var(--wc26-surface-panel) 92%, var(--wc26-surface));
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.room-home-player-banner__column-tag {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--wc26-accent);
+}
+
+.room-home-player-banner__column-kickoff {
+  margin: 6px 0 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--wc26-muted);
+}
+
+.room-home-player-banner__match--in-column {
+  margin-top: 10px;
+  max-width: none;
+  margin-inline: 0;
+  width: 100%;
+}
+
+.room-home-player-banner__player-block--compact {
+  margin-top: 12px;
+  max-width: none;
+  margin-inline: 0;
+}
+
+.room-home-player-banner__player-hint--below-grid {
+  margin-top: 12px;
+}
+
+.room-home-player-banner--dual .room-home-player-banner__vs-column {
+  min-width: 72px;
+}
+
+.room-home-player-banner__tooltip {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 24px));
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--wc26-text);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+}
+
+.room-home-player-banner__tooltip-lead {
+  margin: 0 0 8px;
+}
+
+.room-home-player-banner__tooltip-p {
+  margin: 0 0 8px;
+}
+
+.room-home-player-banner__tooltip-p:last-child {
+  margin-bottom: 0;
+}
+
+.room-home-player-banner__tooltip-p--muted {
+  color: var(--wc26-muted);
+  font-size: 0.76rem;
+}
+
+.room-home-player-banner__help-wrap:hover .room-home-player-banner__tooltip,
+.room-home-player-banner__help-wrap:focus-within .room-home-player-banner__tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Fila equipo — VS — equipo (salas privadas) */
+.room-home-player-banner__match {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+  max-width: 580px;
+  margin-inline: auto;
+}
+
+/* Cajas independientes con espacio respecto al VS */
+.room-home-player-banner__match .room-home-player-banner__tile--left,
+.room-home-player-banner__match .room-home-player-banner__tile--right {
+  border-radius: 10px;
+  border-width: 1px;
+  border-right-width: 1px;
+  border-left-width: 1px;
+}
+
+/* Fila legacy global: país — VS — jugador en línea */
+.room-home-player-banner__row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+  max-width: 540px;
+  margin-inline: auto;
+}
+
+.room-home-player-banner__row .room-home-player-banner__tile--left,
+.room-home-player-banner__row .room-home-player-banner__tile--right {
+  border-radius: 10px;
+  border-width: 1px;
+  border-right-width: 1px;
+  border-left-width: 1px;
+}
+
+.room-home-player-banner__tile {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--wc26-surface);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.room-home-player-banner__tile--team,
+.room-home-player-banner__row > .room-home-player-banner__tile {
+  border: 1px solid var(--wc26-border-strong);
+}
+
+.room-home-player-banner__tile--left {
+  border-radius: 10px 0 0 10px;
+  border-right-width: 0;
+}
+
+.room-home-player-banner__tile--right {
+  border-radius: 0 10px 10px 0;
+  border-left-width: 0;
+}
+
+.room-home-player-banner__tile-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wc26-muted);
+}
+
+.room-home-player-banner__team-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--wc26-text);
+  line-height: 1.25;
+}
+
+.room-home-player-banner__team-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.room-home-player-banner__team-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.room-home-player-banner__team-text--end {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.room-home-player-banner__flag {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px dashed color-mix(in srgb, var(--wc26-accent) 35%, var(--wc26-border-strong));
+  background: color-mix(in srgb, var(--wc26-surface-panel) 88%, var(--wc26-accent));
+  color: var(--wc26-accent);
+  box-sizing: border-box;
+}
+
+.room-home-player-banner__flag-svg {
+  display: block;
+  opacity: 0.92;
+}
+
+.room-home-player-banner__vs-column {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  align-self: stretch;
+  min-width: 88px;
+}
+
+.room-home-player-banner__vs {
+  padding: 10px 14px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--wc26-accent) 88%, #ffffff) 0%,
+    var(--wc26-accent) 100%
+  );
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--wc26-accent) 65%, #0f172a);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--wc26-accent) 28%, transparent);
+}
+
+.room-home-player-banner__score-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.room-home-player-banner__score-box {
+  min-width: 42px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid var(--wc26-border-strong);
+  border-radius: 8px;
+  background: var(--wc26-surface-panel);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--wc26-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.room-home-player-banner__score-sep {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--wc26-text);
+}
+
+.room-home-player-banner__player-block {
+  margin-top: 14px;
+  max-width: 560px;
+  margin-inline: auto;
+  padding: 12px 14px;
+  border-radius: var(--wc26-radius-sm);
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface-panel);
+  box-sizing: border-box;
+}
+
+.room-home-player-banner__player-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wc26-muted);
+  margin-bottom: 8px;
+}
+
+.room-home-player-banner__player-hint {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: var(--wc26-muted);
+  line-height: 1.35;
+}
+
+.room-home-player-banner__select {
+  width: 100%;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--wc26-border-strong);
+  background: var(--wc26-surface);
+  color: var(--wc26-muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 420px) {
+  .room-home-player-banner__row {
+    flex-wrap: wrap;
+    max-width: none;
+  }
+
+  .room-home-player-banner__match {
+    flex-wrap: wrap;
+    max-width: none;
+  }
+
+  .room-home-player-banner__tile--left {
+    flex: 1 1 100%;
+    border-radius: 10px 10px 0 0;
+    border-right-width: 1px;
+    border-bottom-width: 0;
+  }
+
+  .room-home-player-banner__vs-column {
+    margin-inline: 0;
+    margin-block: 4px;
+    width: 100%;
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .room-home-player-banner__vs-column .room-home-player-banner__vs {
+    flex: 1 1 auto;
+    text-align: center;
+    min-width: 72px;
+  }
+
+  .room-home-player-banner__score-row {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .room-home-player-banner__tile--right {
+    flex: 1 1 100%;
+    border-radius: 0 0 10px 10px;
+    border-left-width: 1px;
+    border-top-width: 0;
+  }
+
+  .room-home-player-banner--private .room-home-player-banner__tile--team.room-home-player-banner__tile--left {
+    border-radius: 10px 10px 0 0;
+  }
+
+  .room-home-player-banner--private .room-home-player-banner__tile--team.room-home-player-banner__tile--right {
+    border-radius: 0 0 10px 10px;
+    border-top-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .room-home-player-banner__matches-grid--dual {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Clasificación sala: FAB predicción + tuerca configuración */
+.room-standings-page {
+  position: relative;
+  padding-bottom: 96px;
+  box-sizing: border-box;
+}
+
+.room-standings-fab-predictions {
+  position: fixed;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 25;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(340px, calc(100vw - 32px));
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wc26-accent) 55%, #ffffff);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--wc26-accent) 92%, #ffffff) 0%, var(--wc26-accent) 100%);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--wc26-accent) 38%, transparent);
+  text-align: center;
+}
+
+.room-standings-fab-predictions:hover {
+  filter: brightness(1.06);
+}
+
+.room-standings-fab-predictions:focus-visible {
+  outline: 2px solid var(--wc26-accent);
+  outline-offset: 3px;
+}
+
+.room-standings-settings-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface);
+  color: var(--wc26-muted);
+  cursor: pointer;
+  box-shadow: var(--wc26-shadow);
+}
+
+.room-standings-settings-btn:hover {
+  color: var(--wc26-accent);
+  border-color: color-mix(in srgb, var(--wc26-accent) 35%, var(--wc26-border));
+}
+
+.room-standings-settings-btn:focus-visible {
+  outline: 2px solid var(--wc26-accent);
+  outline-offset: 2px;
+}
+
+.room-standings-settings-btn__icon {
+  display: block;
+}
+
+.room-standings-page:has(.room-standings-settings-btn) .room-home-player-banner {
+  padding-right: 52px;
+}
+
+/* Podio + premios (salas privadas, clasificación) */
+.room-private-podium {
+  margin: 4px 0 20px;
+  padding: 14px 16px 16px;
+  border-radius: var(--wc26-radius-sm);
+  border: 1px solid var(--wc26-border);
+  background: color-mix(in srgb, var(--wc26-surface-panel) 85%, var(--wc26-surface));
+}
+
+.room-private-podium__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--wc26-text);
+}
+
+.room-private-podium__lead {
+  margin: 6px 0 14px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.room-private-podium__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .room-private-podium__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+}
+
+.room-private-podium__card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface);
+  display: grid;
+  gap: 4px;
+}
+
+.room-private-podium__rank {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--wc26-muted);
+}
+
+.room-private-podium__user {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--wc26-text);
+  line-height: 1.25;
+}
+
+.room-private-podium__points {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--wc26-accent);
+}
+
+.room-private-podium__prize-label {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--wc26-border);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wc26-muted);
+}
+
+.room-private-podium__prize {
+  font-size: 0.88rem;
+  color: var(--wc26-text);
+  line-height: 1.35;
+}
+
+/* Modal admin: secciones */
+.room-admin-modal-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.room-admin-modal-section:first-of-type {
+  margin-top: 12px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.room-admin-modal-section__title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.room-admin-modal-section__hint {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+}
+
+.room-admin-modal-field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.room-admin-modal-card {
+  max-height: min(92vh, 640px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.room-admin-modal-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-shrink: 0;
+}
+
+.room-admin-modal-tab {
+  flex: 1;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.room-admin-modal-tab:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--text-h);
+}
+
+.room-admin-modal-tab--active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.room-admin-modal-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.room-admin-modal-panel {
+  margin-top: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.room-admin-members-scroll {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: min(44vh, 340px);
+  overflow-y: auto;
+}
+
+.room-admin-member-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.room-admin-modal-section--nested {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.room-admin-modal-section--nested:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.room-admin-modal-section--danger {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px dashed color-mix(in srgb, #b91c1c 40%, var(--border));
+}
+
 .pred-podium-grid {
   display: grid;
   grid-template-columns: 1fr;
