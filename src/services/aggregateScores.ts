@@ -8,6 +8,7 @@ import type {
   TournamentPredictionPayload,
   TournamentResultDoc,
 } from '../types/predictions'
+import { getPredictedKoLineupForMatch } from '../domain/koPredictedLineup'
 import { totalPointsFromParts, type MatchScoreInput, type TournamentScoreInput } from './scoring'
 
 function isMatchPayload(p: unknown): p is MatchPredictionPayload {
@@ -47,6 +48,12 @@ export function computeScoresForRoom(
     }
   }
 > {
+  const predsByUser = new Map<string, PredictionDoc[]>()
+  for (const pr of predictions) {
+    if (!predsByUser.has(pr.userId)) predsByUser.set(pr.userId, [])
+    predsByUser.get(pr.userId)!.push(pr)
+  }
+
   const byUser = new Map<
     string,
     { matchParts: MatchScoreInput[]; tournamentParts: TournamentScoreInput[] }
@@ -76,6 +83,15 @@ export function computeScoresForRoom(
         prediction: pr.payload,
       })
     }
+  }
+
+  for (const [uid, bucket] of byUser.entries()) {
+    const userPreds = predsByUser.get(uid) ?? []
+    bucket.matchParts = bucket.matchParts.map((mp) => {
+      if (mp.match.phase !== 'knockout') return mp
+      const lineup = getPredictedKoLineupForMatch(userPreds, mp.matchId)
+      return { ...mp, predictedLineup: lineup }
+    })
   }
 
   const out = new Map<

@@ -574,9 +574,32 @@
 
 .room-home-player-banner__title-row {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.room-home-player-banner__title-cluster {
+  display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.room-home-player-banner__title-actions {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 480px) {
+  .room-home-player-banner__title-actions {
+    max-width: min(400px, 58vw);
+  }
 }
 
 .room-home-player-banner__title {
@@ -1063,23 +1086,74 @@
   outline-offset: 3px;
 }
 
+.room-standings-admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--wc26-border) 65%, transparent);
+  background: color-mix(in srgb, var(--wc26-surface) 78%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-sizing: border-box;
+}
+
+/* Dentro del banner “Próximos partidos”: flujo normal, misma fila que el título cuando cabe */
+.room-standings-admin-toolbar--banner-inline {
+  position: static;
+  z-index: auto;
+  max-width: 100%;
+  flex: 0 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  padding: 6px 8px;
+  gap: 5px;
+}
+
+@media (max-width: 420px) {
+  .room-standings-admin-toolbar--banner-inline {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    flex-basis: 100%;
+  }
+}
+
 .room-standings-settings-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
   padding: 0;
+  flex-shrink: 0;
   border-radius: 12px;
   border: 1px solid var(--wc26-border);
   background: var(--wc26-surface);
   color: var(--wc26-muted);
   cursor: pointer;
   box-shadow: var(--wc26-shadow);
+}
+
+/* En la barra de sala: controles secundarios, más compactos y sin protagonismo */
+.room-standings-admin-toolbar .room-standings-settings-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--wc26-border) 55%, transparent);
+  background: color-mix(in srgb, var(--wc26-surface) 55%, transparent);
+  color: color-mix(in srgb, var(--wc26-muted) 92%, var(--wc26-text));
+}
+
+.room-standings-admin-toolbar .room-standings-settings-btn:hover {
+  background: color-mix(in srgb, var(--wc26-surface) 88%, transparent);
+  color: var(--wc26-accent);
+  border-color: color-mix(in srgb, var(--wc26-accent) 28%, var(--wc26-border));
 }
 
 .room-standings-settings-btn:hover {
@@ -1096,8 +1170,126 @@
   display: block;
 }
 
-.room-standings-page:has(.room-standings-settings-btn) .room-home-player-banner {
-  padding-right: 52px;
+.room-standings-admin-toolbar .room-standings-settings-btn__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.invite-code-quick-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.invite-code-quick-strip__row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.invite-code-quick-strip__field {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.invite-code-quick-strip__input.field-input {
+  margin: 0;
+  padding: 8px 12px;
+  min-height: 40px;
+  box-sizing: border-box;
+  font-family: ui-monospace, monospace;
+  letter-spacing: normal;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-standings-admin-toolbar .invite-code-quick-strip__input.field-input {
+  background: color-mix(in srgb, var(--wc26-surface) 70%, transparent);
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  border-color: color-mix(in srgb, var(--wc26-border) 55%, transparent);
+}
+
+.room-standings-admin-toolbar .invite-code-quick-strip {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+/* Una fila de código + iconos cuando hay sitio; en móvil muy estrecho permite segunda línea */
+.room-standings-admin-toolbar--banner-inline .invite-code-quick-strip__row {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 420px) {
+  .room-standings-admin-toolbar--banner-inline .invite-code-quick-strip__row {
+    flex-wrap: wrap;
+  }
+}
+
+.room-standings-admin-toolbar .invite-code-quick-strip__field {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+@media (min-width: 560px) {
+  .room-standings-admin-toolbar .invite-code-quick-strip__field {
+    flex: 1 1 0;
+  }
+}
+
+.invite-code-quick-strip__icon-btn.room-standings-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface);
+  color: var(--wc26-muted);
+  cursor: pointer;
+  box-shadow: var(--wc26-shadow);
+}
+
+.invite-code-quick-strip__icon-btn.room-standings-icon-btn:hover {
+  color: var(--wc26-accent);
+  border-color: color-mix(in srgb, var(--wc26-accent) 35%, var(--wc26-border));
+}
+
+.room-standings-admin-toolbar .invite-code-quick-strip__icon-btn.room-standings-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--wc26-border) 55%, transparent);
+  background: color-mix(in srgb, var(--wc26-surface) 55%, transparent);
+}
+
+.room-standings-admin-toolbar .invite-code-quick-strip__icon-btn.room-standings-icon-btn:hover {
+  background: color-mix(in srgb, var(--wc26-surface) 88%, transparent);
+  border-color: color-mix(in srgb, var(--wc26-accent) 28%, var(--wc26-border));
+}
+
+.invite-code-quick-strip__feedback {
+  font-size: 0.78rem;
+  color: var(--wc26-accent);
+  white-space: nowrap;
+  width: 100%;
+  padding-left: 2px;
 }
 
 /* Podio + premios (salas privadas, clasificación) */

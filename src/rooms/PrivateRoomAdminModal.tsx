@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 import '../predictions/pred-theme.css'
 import {
   deletePrivateRoom,
@@ -6,6 +6,11 @@ import {
   removePrivateRoomMember,
   type RoomMemberLite,
 } from '../services/roomAdminService'
+import {
+  ROOM_DESCRIPTION_MAX_CHARS,
+  ROOM_NAME_MAX_CHARS,
+  ROOM_PRIZE_MAX_CHARS,
+} from '../constants/roomFieldLimits'
 import { updatePrivateRoomDetails, updatePrivateRoomPodiumPrizes } from '../services/roomsService'
 import type { PrivateRoomPodiumPrizes } from '../types/predictions'
 
@@ -45,14 +50,14 @@ export function PrivateRoomAdminModal({
   const [prizeThird, setPrizeThird] = useState('')
 
   useEffect(() => {
-    setEditName(roomName)
-    setEditDescription(roomDescription?.trim() ?? '')
+    setEditName(roomName.slice(0, ROOM_NAME_MAX_CHARS))
+    setEditDescription((roomDescription?.trim() ?? '').slice(0, ROOM_DESCRIPTION_MAX_CHARS))
   }, [roomId, roomName, roomDescription])
 
   useEffect(() => {
-    setPrizeFirst(podiumPrizes?.first?.trim() ?? '')
-    setPrizeSecond(podiumPrizes?.second?.trim() ?? '')
-    setPrizeThird(podiumPrizes?.third?.trim() ?? '')
+    setPrizeFirst((podiumPrizes?.first?.trim() ?? '').slice(0, ROOM_PRIZE_MAX_CHARS))
+    setPrizeSecond((podiumPrizes?.second?.trim() ?? '').slice(0, ROOM_PRIZE_MAX_CHARS))
+    setPrizeThird((podiumPrizes?.third?.trim() ?? '').slice(0, ROOM_PRIZE_MAX_CHARS))
   }, [roomId, podiumPrizes?.first, podiumPrizes?.second, podiumPrizes?.third])
 
   useEffect(() => {
@@ -142,6 +147,162 @@ export function PrivateRoomAdminModal({
     }
   }
 
+  let panel: ReactElement
+  if (tab === 'users') {
+    panel = (
+      <div
+        id="room-admin-panel-users"
+        role="tabpanel"
+        aria-labelledby="room-admin-tab-users"
+        className="room-admin-modal-panel"
+      >
+        <p className="app-muted" style={{ marginTop: 0 }}>
+          Miembros de la sala. El líder no puede eliminarse.
+        </p>
+        {loading ? <p className="user-email">Cargando miembros…</p> : null}
+        {!loading ? (
+          <div className="room-admin-members-scroll">
+            {members.map((m) => (
+              <div key={m.id} className="room-admin-member-row">
+                <div>
+                  <div>{m.displayName}</div>
+                  <div className="app-muted" style={{ fontSize: 12 }}>
+                    {m.userId === currentUserId ? 'Líder' : m.userId}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={m.userId === currentUserId || busyUserId === m.userId || busyDeleteRoom}
+                  onClick={() => handleRemove(m.userId)}
+                >
+                  {busyUserId === m.userId ? 'Eliminando…' : 'Eliminar usuario'}
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    )
+  } else {
+    panel = (
+      <div
+        id="room-admin-panel-advanced"
+        role="tabpanel"
+        aria-labelledby="room-admin-tab-advanced"
+        className="room-admin-modal-panel"
+      >
+        <div className="room-admin-modal-section room-admin-modal-section--nested">
+          <h3 className="room-admin-modal-section__title">Nombre y descripción</h3>
+          <label className="room-admin-modal-field">
+            <span className="app-muted">
+              Nombre de la sala <span className="room-admin-char-hint">({editName.length}/{ROOM_NAME_MAX_CHARS})</span>
+            </span>
+            <input
+              className="field-input"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value.slice(0, ROOM_NAME_MAX_CHARS))}
+              placeholder="Nombre visible para los miembros"
+              autoComplete="off"
+              maxLength={ROOM_NAME_MAX_CHARS}
+            />
+          </label>
+          <label className="room-admin-modal-field">
+            <span className="app-muted">
+              Descripción (opcional){' '}
+              <span className="room-admin-char-hint">
+                ({editDescription.length}/{ROOM_DESCRIPTION_MAX_CHARS})
+              </span>
+            </span>
+            <textarea
+              className="field-input"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value.slice(0, ROOM_DESCRIPTION_MAX_CHARS))}
+              placeholder="Reglas locales, forma de pago del premio, etc."
+              rows={3}
+              maxLength={ROOM_DESCRIPTION_MAX_CHARS}
+            />
+          </label>
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={busySaveRoom || busyDeleteRoom || !editName.trim()}
+            onClick={() => void handleSaveRoomDetails()}
+          >
+            {busySaveRoom ? 'Guardando…' : 'Guardar nombre y descripción'}
+          </button>
+        </div>
+
+        <div className="room-admin-modal-section room-admin-modal-section--nested">
+          <h3 className="room-admin-modal-section__title">Premios del podio (top 3)</h3>
+          <p className="app-muted room-admin-modal-section__hint">
+            Texto visible para todos los miembros junto a la clasificación.
+          </p>
+          <label className="room-admin-modal-field">
+            <span className="app-muted">
+              1.er lugar <span className="room-admin-char-hint">({prizeFirst.length}/{ROOM_PRIZE_MAX_CHARS})</span>
+            </span>
+            <input
+              className="field-input"
+              value={prizeFirst}
+              onChange={(e) => setPrizeFirst(e.target.value.slice(0, ROOM_PRIZE_MAX_CHARS))}
+              placeholder="Ej.: Camiseta oficial, $50, trofeo…"
+              maxLength={ROOM_PRIZE_MAX_CHARS}
+            />
+          </label>
+          <label className="room-admin-modal-field">
+            <span className="app-muted">
+              2.º lugar <span className="room-admin-char-hint">({prizeSecond.length}/{ROOM_PRIZE_MAX_CHARS})</span>
+            </span>
+            <input
+              className="field-input"
+              value={prizeSecond}
+              onChange={(e) => setPrizeSecond(e.target.value.slice(0, ROOM_PRIZE_MAX_CHARS))}
+              placeholder="Ej.: Premio simbólico…"
+              maxLength={ROOM_PRIZE_MAX_CHARS}
+            />
+          </label>
+          <label className="room-admin-modal-field">
+            <span className="app-muted">
+              3.er lugar <span className="room-admin-char-hint">({prizeThird.length}/{ROOM_PRIZE_MAX_CHARS})</span>
+            </span>
+            <input
+              className="field-input"
+              value={prizeThird}
+              onChange={(e) => setPrizeThird(e.target.value.slice(0, ROOM_PRIZE_MAX_CHARS))}
+              placeholder="Ej.: Mención honorífica…"
+              maxLength={ROOM_PRIZE_MAX_CHARS}
+            />
+          </label>
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={busySavePrizes || busyDeleteRoom}
+            onClick={() => void handleSavePrizes()}
+          >
+            {busySavePrizes ? 'Guardando premios…' : 'Guardar premios'}
+          </button>
+        </div>
+
+        <div className="room-admin-modal-section room-admin-modal-section--nested room-admin-modal-section--danger">
+          <h3 className="room-admin-modal-section__title">Zona peligrosa</h3>
+          <p className="app-muted room-admin-modal-section__hint">
+            Elimina la sala y todos los datos asociados. No se puede deshacer.
+          </p>
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{ borderColor: '#b91c1c', color: '#b91c1c' }}
+            onClick={handleDeleteRoom}
+            disabled={busyDeleteRoom}
+          >
+            {busyDeleteRoom ? 'Borrando sala…' : 'Borrar sala'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="modal-overlay" role="presentation">
       <div
@@ -182,138 +343,7 @@ export function PrivateRoomAdminModal({
           </button>
         </div>
 
-        {tab === 'users' ? (
-          <div
-            id="room-admin-panel-users"
-            role="tabpanel"
-            aria-labelledby="room-admin-tab-users"
-            className="room-admin-modal-panel"
-          >
-            <p className="app-muted" style={{ marginTop: 0 }}>
-              Miembros de la sala. El líder no puede eliminarse.
-            </p>
-            {loading ? <p className="user-email">Cargando miembros…</p> : null}
-            {!loading ? (
-              <div className="room-admin-members-scroll">
-                {members.map((m) => (
-                  <div key={m.id} className="room-admin-member-row">
-                    <div>
-                      <div>{m.displayName}</div>
-                      <div className="app-muted" style={{ fontSize: 12 }}>
-                        {m.userId === currentUserId ? 'Líder' : m.userId}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn-secondary"
-                      disabled={m.userId === currentUserId || busyUserId === m.userId || busyDeleteRoom}
-                      onClick={() => handleRemove(m.userId)}
-                    >
-                      {busyUserId === m.userId ? 'Eliminando…' : 'Eliminar usuario'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <div
-            id="room-admin-panel-advanced"
-            role="tabpanel"
-            aria-labelledby="room-admin-tab-advanced"
-            className="room-admin-modal-panel"
-          >
-            <div className="room-admin-modal-section room-admin-modal-section--nested">
-              <h3 className="room-admin-modal-section__title">Nombre y descripción</h3>
-              <label className="room-admin-modal-field">
-                <span className="app-muted">Nombre de la sala</span>
-                <input
-                  className="field-input"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  placeholder="Nombre visible para los miembros"
-                  autoComplete="off"
-                />
-              </label>
-              <label className="room-admin-modal-field">
-                <span className="app-muted">Descripción (opcional)</span>
-                <textarea
-                  className="field-input"
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  placeholder="Reglas locales, forma de pago del premio, etc."
-                  rows={3}
-                />
-              </label>
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={busySaveRoom || busyDeleteRoom || !editName.trim()}
-                onClick={() => void handleSaveRoomDetails()}
-              >
-                {busySaveRoom ? 'Guardando…' : 'Guardar nombre y descripción'}
-              </button>
-            </div>
-
-            <div className="room-admin-modal-section room-admin-modal-section--nested">
-              <h3 className="room-admin-modal-section__title">Premios del podio (top 3)</h3>
-              <p className="app-muted room-admin-modal-section__hint">
-                Texto visible para todos los miembros junto a la clasificación.
-              </p>
-              <label className="room-admin-modal-field">
-                <span className="app-muted">1.er lugar</span>
-                <input
-                  className="field-input"
-                  value={prizeFirst}
-                  onChange={(e) => setPrizeFirst(e.target.value)}
-                  placeholder="Ej.: Camiseta oficial, $50, trofeo…"
-                />
-              </label>
-              <label className="room-admin-modal-field">
-                <span className="app-muted">2.º lugar</span>
-                <input
-                  className="field-input"
-                  value={prizeSecond}
-                  onChange={(e) => setPrizeSecond(e.target.value)}
-                  placeholder="Ej.: Premio simbólico…"
-                />
-              </label>
-              <label className="room-admin-modal-field">
-                <span className="app-muted">3.er lugar</span>
-                <input
-                  className="field-input"
-                  value={prizeThird}
-                  onChange={(e) => setPrizeThird(e.target.value)}
-                  placeholder="Ej.: Mención honorífica…"
-                />
-              </label>
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={busySavePrizes || busyDeleteRoom}
-                onClick={() => void handleSavePrizes()}
-              >
-                {busySavePrizes ? 'Guardando premios…' : 'Guardar premios'}
-              </button>
-            </div>
-
-            <div className="room-admin-modal-section room-admin-modal-section--nested room-admin-modal-section--danger">
-              <h3 className="room-admin-modal-section__title">Zona peligrosa</h3>
-              <p className="app-muted room-admin-modal-section__hint">
-                Elimina la sala y todos los datos asociados. No se puede deshacer.
-              </p>
-              <button
-                type="button"
-                className="btn-secondary"
-                style={{ borderColor: '#b91c1c', color: '#b91c1c' }}
-                onClick={handleDeleteRoom}
-                disabled={busyDeleteRoom}
-              >
-                {busyDeleteRoom ? 'Borrando sala…' : 'Borrar sala'}
-              </button>
-            </div>
-          </div>
-        )}
+        {panel}
 
         {error ? <p className="auth-error">{error}</p> : null}
         <div className="button-group" style={{ marginTop: 16 }}>

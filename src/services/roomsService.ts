@@ -13,14 +13,24 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { GLOBAL_ROOM_ID } from '../constants/rooms'
+import {
+  ROOM_DESCRIPTION_MAX_CHARS,
+  ROOM_NAME_MAX_CHARS,
+  ROOM_PRIZE_MAX_CHARS,
+} from '../constants/roomFieldLimits'
 import { DEFAULT_RULESET } from '../config/ruleset'
 import type { PrivateRoomPodiumPrizes, RoomDoc, RoomMaxMembers, RoomMemberDoc } from '../types/predictions'
 
+function clipLen(s: string, max: number): string {
+  if (s.length <= max) return s
+  return s.slice(0, max)
+}
+
 function normalizePodiumPrizesForWrite(input?: PrivateRoomPodiumPrizes | null): PrivateRoomPodiumPrizes | undefined {
   if (!input) return undefined
-  const first = input.first?.trim() ?? ''
-  const second = input.second?.trim() ?? ''
-  const third = input.third?.trim() ?? ''
+  const first = clipLen(input.first?.trim() ?? '', ROOM_PRIZE_MAX_CHARS)
+  const second = clipLen(input.second?.trim() ?? '', ROOM_PRIZE_MAX_CHARS)
+  const third = clipLen(input.third?.trim() ?? '', ROOM_PRIZE_MAX_CHARS)
   if (!first && !second && !third) return undefined
   return { first, second, third }
 }
@@ -56,13 +66,16 @@ export async function createRoom(
   podiumPrizes?: PrivateRoomPodiumPrizes | null,
 ): Promise<{ roomId: string; inviteCode: string }> {
   if (!db) throw new Error('Firestore no inicializado')
+  const nameClipped = clipLen(name.trim(), ROOM_NAME_MAX_CHARS)
+  if (!nameClipped) throw new Error('Indica un nombre de sala.')
+  const descriptionClipped = clipLen(description.trim(), ROOM_DESCRIPTION_MAX_CHARS)
   const inviteCode = randomInviteCode()
   const roomRef = doc(collection(db, ROOMS))
   const roomId = roomRef.id
   const prizesWritten = normalizePodiumPrizesForWrite(podiumPrizes ?? undefined)
   const room: RoomDoc = {
-    name,
-    description: description.trim() || undefined,
+    name: nameClipped,
+    description: descriptionClipped || undefined,
     inviteCode,
     maxMembers,
     createdBy: userId,
@@ -102,9 +115,9 @@ export async function updatePrivateRoomDetails(
   payload: { name: string; description: string },
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
-  const name = payload.name.trim()
+  const name = clipLen(payload.name.trim(), ROOM_NAME_MAX_CHARS)
   if (!name) throw new Error('El nombre de la sala no puede estar vacío.')
-  const description = payload.description.trim()
+  const description = clipLen(payload.description.trim(), ROOM_DESCRIPTION_MAX_CHARS)
   await updateDoc(doc(db, ROOMS, roomId), {
     name,
     ...(description ? { description } : { description: deleteField() }),

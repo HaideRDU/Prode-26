@@ -10,6 +10,7 @@ import {
   type DocumentReference,
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
+import { ROOM_JOIN_REQUESTS } from './roomInviteService'
 import type { RoomDoc } from '../types/predictions'
 
 export type RoomMemberLite = {
@@ -126,16 +127,18 @@ export async function deletePrivateRoom(roomId: string): Promise<void> {
   try {
     await assertPrivateRoomOwner(roomId)
 
-    const [membersSnap, predsSnap, standingsSnap] = await Promise.all([
+    const [membersSnap, predsSnap, standingsSnap, joinReqSnap] = await Promise.all([
       getDocs(query(collection(db, 'roomMembers'), where('roomId', '==', roomId))),
       getDocs(query(collection(db, 'predictions'), where('roomId', '==', roomId))),
       getDocs(collection(db, 'standings', roomId, 'users')),
+      getDocs(query(collection(db, ROOM_JOIN_REQUESTS), where('roomId', '==', roomId))),
     ])
 
     const refs: DocumentReference[] = []
     membersSnap.forEach((d) => refs.push(d.ref))
     predsSnap.forEach((d) => refs.push(d.ref))
     standingsSnap.forEach((d) => refs.push(d.ref))
+    joinReqSnap.forEach((d) => refs.push(d.ref))
     refs.push(doc(db, 'rooms', roomId))
     await deleteRefsInChunks(refs)
   } catch (err) {

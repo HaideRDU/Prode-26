@@ -10,12 +10,14 @@
     "visualizer": "tsc -b && vite build --mode analyze",
     "lint": "eslint .",
     "test:assign-thirds": "tsx src/domain/assignThirdsGreedy.test.ts",
+    "test:scoring-ko": "tsx src/services/scoringKoMismatch.test.ts",
     "preview": "vite preview",
     "seed:teams": "tsx scripts/seed-teams.ts",
     "seed:group-matches": "tsx scripts/seed-group-matches.ts",
     "seed:wc2026-group-stage": "tsx scripts/seed-teams.ts && tsx scripts/seed-group-matches.ts",
     "cleanup:rooms-predictions": "tsx scripts/cleanup-firestore.ts",
     "deploy:firestore-rules": "firebase deploy --only firestore:rules",
+    "deploy:firestore-indexes": "firebase deploy --only firestore:indexes",
     "verify:firebase-project": "tsx scripts/verify-firebase-project.ts"
   },
   "dependencies": {

@@ -1,19 +1,33 @@
-import { DEFAULT_RULESET } from '../config/ruleset'
+import { DEFAULT_RULESET, type KnockoutRoundId } from '../config/ruleset'
+import { ALL_QUESTION_METAS } from '../data/bonusQuestionsMeta'
 import {
+  ADVANCEMENT_POINTS,
   GROUP_EXACT_SCORE_POINTS,
   GROUP_ONE_SCORE_POINTS,
   GROUP_WINNER_POINTS,
+  KO_EXACT_SCORE_BY_ROUND,
   KO_ONE_SCORE_POINTS,
   KO_WINNER_POINTS,
   POINTS_BEST_GOALKEEPER_AVERAGE,
   POINTS_BONUS_QUESTION,
-  POINTS_CHAMPION,
-  POINTS_RUNNER_UP,
-  POINTS_THIRD_PLACE,
+  POINTS_FOURTH_PLACE,
   POINTS_TOP_SCORER,
 } from '../services/scoring'
 
+const KO_ROUND_ORDER: KnockoutRoundId[] = ['r32', 'r16', 'qf', 'sf', 'third', 'final']
+
+const KO_ROUND_LABEL_ES: Record<KnockoutRoundId, string> = {
+  r32: 'Dieciseisavos de final',
+  r16: 'Octavos de final',
+  qf: 'Cuartos de final',
+  sf: 'Semifinales',
+  third: 'Tercer puesto',
+  final: 'Final',
+}
+
 export function ReglamentoPage() {
+  const koPickMin = DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff
+
   return (
     <section>
       <div className="rules-page-card">
@@ -30,41 +44,128 @@ export function ReglamentoPage() {
             antes del inicio del torneo.
           </li>
           <li>
-            Dinámica KO por partido: cierre <strong>1 hora</strong> antes del inicio de cada encuentro.
+            Dinámica KO por partido: cierre <strong>{koPickMin === 60 ? '1 hora' : `${koPickMin} minutos`}</strong>{' '}
+            antes del inicio de cada encuentro.
           </li>
         </ul>
 
-        <h2>Puntos por partido</h2>
+        <h2>Sistema de puntajes</h2>
+
+        <h3>3.1 Fase de grupos (por partido)</h3>
         <ul>
           <li>
-            Grupos: exacto <strong>{GROUP_EXACT_SCORE_POINTS}</strong>, un marcador{' '}
-            <strong>{GROUP_ONE_SCORE_POINTS}</strong>, ganador/empate <strong>{GROUP_WINNER_POINTS}</strong>.
+            Marcador exacto: <strong>{GROUP_EXACT_SCORE_POINTS}</strong> puntos.
           </li>
           <li>
-            KO (90 minutos): exacto por ronda (R32=6, R16=7, QF=8, SF=10, 3er puesto=9, final=12).
+            Acertar solo uno de los dos goles (sin marcador exacto): <strong>{GROUP_ONE_SCORE_POINTS}</strong> puntos.
           </li>
           <li>
-            KO sin exacto: un marcador <strong>{KO_ONE_SCORE_POINTS}</strong>, ganador/empate{' '}
-            <strong>{KO_WINNER_POINTS}</strong>.
+            Sin marcador exacto pero acertar resultado (ganador o empate): <strong>{GROUP_WINNER_POINTS}</strong> punto(s).
           </li>
         </ul>
 
-        <h2>Avance y especiales</h2>
+        <h3>3.2 Eliminatorias — enfrentamiento correcto</h3>
+        <p>
+          Cuando la pareja de equipos predicha coincide con la pareja real del partido (el orden de local/visitante o el
+          intercambio equivalente no penaliza: cuenta como misma llave).
+        </p>
         <ul>
-          <li>Campeón: <strong>{POINTS_CHAMPION}</strong></li>
-          <li>Subcampeón: <strong>{POINTS_RUNNER_UP}</strong></li>
-          <li>Tercer puesto: <strong>{POINTS_THIRD_PLACE}</strong></li>
-          <li>Goleador: <strong>{POINTS_TOP_SCORER}</strong></li>
-          <li>Arquero mejor promedio: <strong>{POINTS_BEST_GOALKEEPER_AVERAGE}</strong></li>
-          <li>Cada pregunta especial del banco: <strong>{POINTS_BONUS_QUESTION}</strong></li>
+          <li>
+            Marcador exacto (90 minutos): puntos según la ronda:
+            <ul>
+              {KO_ROUND_ORDER.map((rid) => (
+                <li key={rid}>
+                  {KO_ROUND_LABEL_ES[rid]}: <strong>{KO_EXACT_SCORE_BY_ROUND[rid]}</strong>
+                </li>
+              ))}
+            </ul>
+          </li>
+          <li>
+            Sin marcador exacto: hasta <strong>{KO_ONE_SCORE_POINTS}</strong> por acertar los goles de uno de los equipos
+            en el resultado oficial, y <strong>{KO_WINNER_POINTS}</strong> adicional si acertás resultado (1X2).
+          </li>
         </ul>
+
+        <h3>3.3 Eliminatorias — rival incorrecto</h3>
+        <p>
+          Si tu bracket predijo una pareja distinta a la que efectivamente se enfrentó en ese cruce (los dos equipos
+          oficiales no coinciden con tus dos equipos predichos para ese partido), no aplican los puntos de “marcador
+          exacto” ni la tabla normal anterior sobre ese choque. En su lugar:
+        </p>
+        <ul>
+          <li>Marcador exacto del papel respecto al resultado oficial: <strong>0</strong> puntos.</li>
+          <li>
+            Por cada equipo oficial que también figuraba en tu predicción de ese partido, podés sumar hasta{' '}
+            <strong>{KO_ONE_SCORE_POINTS}</strong> si acertaste sus goles en el resultado real.
+          </li>
+          <li>
+            Si acertás el resultado (ganador o empate) entre los goles que pusiste: <strong>{KO_WINNER_POINTS}</strong>{' '}
+            punto(s).
+          </li>
+          <li>
+            Los puntos por <em>avance</em> en la tabla de posiciones del torneo se calculan por apartado 3.4 y no se duplican
+            aquí por el mismo acierto.
+          </li>
+        </ul>
+
+        <h3>3.4 Avance (pronósticos “quién llega”)</h3>
+        <p>Puntos por acertar hasta qué instancia llega cada selección en tus pronósticos generales:</p>
+        <ul>
+          <li>
+            A dieciseisavos: <strong>{ADVANCEMENT_POINTS.toR32}</strong>
+          </li>
+          <li>
+            A octavos: <strong>{ADVANCEMENT_POINTS.toR16}</strong>
+          </li>
+          <li>
+            A cuartos: <strong>{ADVANCEMENT_POINTS.toQf}</strong>
+          </li>
+          <li>
+            A semifinales: <strong>{ADVANCEMENT_POINTS.toSf}</strong>
+          </li>
+          <li>
+            A la final: <strong>{ADVANCEMENT_POINTS.toFinal}</strong>
+          </li>
+          <li>
+            Tercer puesto: <strong>{ADVANCEMENT_POINTS.thirdPlace}</strong>
+          </li>
+          <li>
+            Campeón: <strong>{ADVANCEMENT_POINTS.champion}</strong>
+          </li>
+          <li>
+            Subcampeón: <strong>{ADVANCEMENT_POINTS.runnerUp}</strong>
+          </li>
+          <li>
+            Cuarto lugar (cuando aplica la pregunta): <strong>{POINTS_FOURTH_PLACE}</strong>
+          </li>
+        </ul>
+
+        <h3>3.5 Extras y banco de preguntas especiales</h3>
+        <ul>
+          <li>
+            Goleador: <strong>{POINTS_TOP_SCORER}</strong>
+          </li>
+          <li>
+            Mejor promedio de arqueros: <strong>{POINTS_BEST_GOALKEEPER_AVERAGE}</strong>
+          </li>
+          <li>
+            Cada acierto en el banco de preguntas especiales configuradas para la sala:{' '}
+            <strong>{POINTS_BONUS_QUESTION}</strong>
+          </li>
+        </ul>
+        <p>Las cinco preguntas típicas del banco (cuando la sala las incluye) son:</p>
+        <ol>
+          {ALL_QUESTION_METAS.map((q) => (
+            <li key={q.id}>{q.labelEs}</li>
+          ))}
+        </ol>
 
         <h2>Desempates</h2>
         <ol>
           <li>Mayor cantidad de marcadores exactos.</li>
           <li>Mayor cantidad de aciertos en preguntas especiales.</li>
           <li>Acierto del campeón.</li>
-          <li>Sorteo manual (si persiste).</li>
+          <li>Sorteo manual (si persiste el empate).</li>
         </ol>
       </div>
     </section>

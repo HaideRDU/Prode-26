@@ -3,7 +3,7 @@
  * dos columnas si hay dos partidos knockout el mismo día (zona del torneo).
  */
 
-import { useId, useMemo } from 'react'
+import { useId, useMemo, type ReactNode } from 'react'
 import { useMatchList } from '../hooks/useMatchList'
 import { useTeamLabels } from '../hooks/useTeamLabels'
 import type { MatchDoc } from '../types/predictions'
@@ -335,7 +335,13 @@ function GlobalMatchColumn({
   )
 }
 
-export function RoomHomePlayerPickBanner({ variant }: { variant: BannerVariant }) {
+export function RoomHomePlayerPickBanner({
+  variant,
+  titleTrailing,
+}: {
+  variant: BannerVariant
+  titleTrailing?: ReactNode
+}) {
   const isPrivate = variant === 'private'
   const { matches } = useMatchList()
   const { label: teamLabel } = useTeamLabels()
@@ -369,8 +375,13 @@ export function RoomHomePlayerPickBanner({ variant }: { variant: BannerVariant }
       aria-label="Próximos partidos y jugador por partido"
     >
       <div className="room-home-player-banner__title-row">
-        <h2 className="room-home-player-banner__title">Próximos partidos</h2>
-        <NextMatchesHelp variant={variant} dualSameDay={dualSameDay} />
+        <div className="room-home-player-banner__title-cluster">
+          <h2 className="room-home-player-banner__title">Próximos partidos</h2>
+          <NextMatchesHelp variant={variant} dualSameDay={dualSameDay} />
+        </div>
+        {titleTrailing ? (
+          <div className="room-home-player-banner__title-actions">{titleTrailing}</div>
+        ) : null}
       </div>
       <p className="room-home-player-banner__description">{description}</p>
 

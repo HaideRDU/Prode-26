@@ -46,6 +46,14 @@
         { "fieldPath": "matchId", "order": "ASCENDING" },
         { "fieldPath": "scope", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "roomJoinRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -24,6 +24,12 @@ export const POINTS_TOP_SCORER = DEFAULT_RULESET.points.specials.topScorer
 export const POINTS_BONUS_QUESTION = DEFAULT_RULESET.points.specials.bonusQuestion
 export const POINTS_BEST_GOALKEEPER_AVERAGE = DEFAULT_RULESET.points.specials.bestGoalkeeperAverage
 
+/** Tabla de puntos por marcador exacto en KO (por ronda), para reglamento/UI. */
+export const KO_EXACT_SCORE_BY_ROUND = DEFAULT_RULESET.points.knockout.exactScoreByRound
+
+/** Puntos por aciertos de llaves (avance), para reglamento/UI. */
+export const ADVANCEMENT_POINTS = DEFAULT_RULESET.points.advancement
+
 export const SPECIAL_IDS = {
   topScorer: EXTRA_IDS.topScorer,
   bestGoalkeeperAverage: EXTRA_IDS.bestGoalkeeperAverage,
@@ -38,7 +44,77 @@ type MatchForScore = Pick<
   | 'wentToPenalties'
   | 'penaltiesWinnerHome'
   | 'round'
+  | 'teamHomeId'
+  | 'teamAwayId'
 >
+
+/** Slots predichos en KO (`resolveKoMatchTeams`) cuando existe bracket para la sala/usuario. */
+export interface PredictedKoLineup {
+  predictedHomeId: string | null
+  predictedAwayId: string | null
+}
+
+function koPairMatchesOfficial(
+  predHomeId: string,
+  predAwayId: string,
+  actualHomeId: string,
+  actualAwayId: string,
+): boolean {
+  return (
+    (predHomeId === actualHomeId && predAwayId === actualAwayId) ||
+    (predHomeId === actualAwayId && predAwayId === actualHomeId)
+  )
+}
+
+/**
+ * KO con enfrentamiento distinto al real (rival equivocado): 0 por marcador exacto “del papel”,
+ * hasta +2 por acertar goles del equipo que sí jugó, +1 por resultado (1X2).
+ */
+function scoreKnockoutWrongOpponents(
+  prediction: MatchPredictionPayload,
+  actualHomeId: string,
+  actualAwayId: string,
+  predHomeId: string,
+  predAwayId: string,
+  actualH: number,
+  actualA: number,
+): MatchScoreDetails {
+  const actualResult = matchResultSign(actualH, actualA)
+  const predResult = matchResultSign(prediction.goalsHome, prediction.goalsAway)
+  const winnerOrDrawHit = predResult === actualResult
+
+  function predGoalsForActualTeam(teamId: string): number | null {
+    if (teamId === predHomeId) return prediction.goalsHome
+    if (teamId === predAwayId) return prediction.goalsAway
+    return null
+  }
+  function actualGoals(teamId: string): number | null {
+    if (teamId === actualHomeId) return actualH
+    if (teamId === actualAwayId) return actualA
+    return null
+  }
+
+  let hitTeamGoals = false
+  for (const tid of [actualHomeId, actualAwayId]) {
+    const pg = predGoalsForActualTeam(tid)
+    const ag = actualGoals(tid)
+    if (pg !== null && ag !== null && pg === ag) {
+      hitTeamGoals = true
+      break
+    }
+  }
+
+  let points = 0
+  if (hitTeamGoals) points += KO_ONE_SCORE_POINTS
+  if (winnerOrDrawHit) points += KO_WINNER_POINTS
+
+  return {
+    points,
+    exactScoreHit: false,
+    oneScoreHit: hitTeamGoals,
+    winnerOrDrawHit,
+  }
+}
 
 function matchResultSign(goalsHome: number, goalsAway: number): -1 | 0 | 1 {
   if (goalsHome > goalsAway) return 1
@@ -102,6 +178,7 @@ export interface MatchScoreDetails {
 export function scoreMatchPredictionDetails(
   match: MatchForScore,
   prediction: MatchPredictionPayload | null | undefined,
+  predictedLineup?: PredictedKoLineup | null,
 ): MatchScoreDetails {
   if (match.status !== 'finished' || prediction == null) {
     return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
@@ -138,6 +215,22 @@ export function scoreMatchPredictionDetails(
     }
   }
 
+  const ahId = match.teamHomeId
+  const aaId = match.teamAwayId
+  const phId = predictedLineup?.predictedHomeId ?? null
+  const paId = predictedLineup?.predictedAwayId ?? null
+
+  if (
+    match.phase === 'knockout' &&
+    ahId &&
+    aaId &&
+    phId &&
+    paId &&
+    !koPairMatchesOfficial(phId, paId, ahId, aaId)
+  ) {
+    return scoreKnockoutWrongOpponents(prediction, ahId, aaId, phId, paId, actualH, actualA)
+  }
+
   if (exact) {
     const roundId = normalizeKoRoundId(match.round)
     return {
@@ -162,8 +255,9 @@ export function scoreMatchPredictionDetails(
 export function scoreMatchPrediction(
   match: MatchForScore,
   prediction: MatchPredictionPayload | null | undefined,
+  predictedLineup?: PredictedKoLineup | null,
 ): number {
-  return scoreMatchPredictionDetails(match, prediction).points
+  return scoreMatchPredictionDetails(match, prediction, predictedLineup).points
 }
 
 function payloadsEqual(
@@ -217,6 +311,7 @@ export interface MatchScoreInput {
   matchId: string
   match: MatchForScore
   prediction: MatchPredictionPayload | null
+  predictedLineup?: PredictedKoLineup | null
 }
 
 export interface TournamentScoreInput {
@@ -263,7 +358,7 @@ export function totalPointsFromParts(
   let matchPoints = 0
   let exactScoreHits = 0
   for (const p of matchParts) {
-    const details = scoreMatchPredictionDetails(p.match, p.prediction)
+    const details = scoreMatchPredictionDetails(p.match, p.prediction, p.predictedLineup)
     matchPoints += details.points
     if (details.exactScoreHit) exactScoreHits += 1
   }

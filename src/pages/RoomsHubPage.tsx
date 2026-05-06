@@ -1,11 +1,17 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom'
 import type { User } from 'firebase/auth'
 import type { PrivateRoomPodiumPrizes, RoomMaxMembers } from '../types/predictions'
-import { createRoom, joinRoomByCode } from '../services/roomsService'
+import { createRoom } from '../services/roomsService'
+import { requestJoinByInviteCode } from '../services/roomInviteService'
 import { getPredictionFinalized } from '../services/predictionStateService'
 import type { AccountOutletContext } from '../types/outletContext'
 import { ALL_QUESTION_METAS } from '../data/bonusQuestionsMeta'
+import {
+  ROOM_DESCRIPTION_MAX_CHARS,
+  ROOM_NAME_MAX_CHARS,
+  ROOM_PRIZE_MAX_CHARS,
+} from '../constants/roomFieldLimits'
 
 const LIMITS: RoomMaxMembers[] = [20, 30, 40, 50, 100]
 
@@ -48,6 +54,7 @@ export function RoomsHubPage({ user }: { user: User }) {
   const [code, setCode] = useState('')
   const [joinError, setJoinError] = useState<string | null>(null)
   const [joinBusy, setJoinBusy] = useState(false)
+  const [joinPendingInfo, setJoinPendingInfo] = useState<string | null>(null)
 
   async function handleCreateSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -89,6 +96,7 @@ export function RoomsHubPage({ user }: { user: User }) {
   async function handleJoinSubmit(e: React.FormEvent) {
     e.preventDefault()
     setJoinError(null)
+    setJoinPendingInfo(null)
     const c = code.trim().toUpperCase()
     if (!c) {
       setJoinError('Introduce el código')
@@ -97,9 +105,15 @@ export function RoomsHubPage({ user }: { user: User }) {
     const displayName = publicDisplayName || user.email || 'Usuario'
     setJoinBusy(true)
     try {
-      const roomId = await joinRoomByCode(c, user.uid, displayName)
-      const finalized = await getPredictionFinalized(user.uid, roomId)
-      navigate(`/room/${roomId}/${finalized ? 'standings' : 'predictions'}`)
+      const result = await requestJoinByInviteCode(c, user.uid, displayName)
+      if (result.kind === 'joined') {
+        const finalized = await getPredictionFinalized(user.uid, result.roomId)
+        navigate(`/room/${result.roomId}/${finalized ? 'standings' : 'predictions'}`)
+        return
+      }
+      setJoinPendingInfo(
+        'Solicitud enviada. El líder de la sala debe aceptarte antes de que puedas entrar a las predicciones.',
+      )
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : 'No se pudo unir')
     } finally {
@@ -148,22 +162,32 @@ export function RoomsHubPage({ user }: { user: User }) {
         >
           <form onSubmit={handleCreateSubmit} className="form-fields app-rooms-hub-form">
             <label>
-              <span className="app-muted">Nombre</span>
+              <span className="app-muted">
+                Nombre{' '}
+                <span className="room-admin-char-hint">({name.length}/{ROOM_NAME_MAX_CHARS})</span>
+              </span>
               <input
                 className="field-input"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value.slice(0, ROOM_NAME_MAX_CHARS))}
                 placeholder="Nombre de la sala"
+                maxLength={ROOM_NAME_MAX_CHARS}
               />
             </label>
             <label>
-              <span className="app-muted">Descripcion (opcional)</span>
+              <span className="app-muted">
+                Descripcion (opcional){' '}
+                <span className="room-admin-char-hint">
+                  ({description.length}/{ROOM_DESCRIPTION_MAX_CHARS})
+                </span>
+              </span>
               <textarea
                 className="field-input"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => setDescription(e.target.value.slice(0, ROOM_DESCRIPTION_MAX_CHARS))}
                 placeholder="Describe brevemente la sala"
                 rows={3}
+                maxLength={ROOM_DESCRIPTION_MAX_CHARS}
               />
             </label>
             <label>
@@ -235,30 +259,42 @@ export function RoomsHubPage({ user }: { user: User }) {
                 Podés definirlos ahora o más tarde en Configurar sala.
               </p>
               <label>
-                <span className="app-muted">1.er lugar</span>
+                <span className="app-muted">
+                  1.er lugar{' '}
+                  <span className="room-admin-char-hint">({prizeFirst.length}/{ROOM_PRIZE_MAX_CHARS})</span>
+                </span>
                 <input
                   className="field-input"
                   value={prizeFirst}
-                  onChange={(e) => setPrizeFirst(e.target.value)}
+                  onChange={(e) => setPrizeFirst(e.target.value.slice(0, ROOM_PRIZE_MAX_CHARS))}
                   placeholder="Ej.: Trofeo, dinero, detalle…"
+                  maxLength={ROOM_PRIZE_MAX_CHARS}
                 />
               </label>
               <label>
-                <span className="app-muted">2.º lugar</span>
+                <span className="app-muted">
+                  2.º lugar{' '}
+                  <span className="room-admin-char-hint">({prizeSecond.length}/{ROOM_PRIZE_MAX_CHARS})</span>
+                </span>
                 <input
                   className="field-input"
                   value={prizeSecond}
-                  onChange={(e) => setPrizeSecond(e.target.value)}
+                  onChange={(e) => setPrizeSecond(e.target.value.slice(0, ROOM_PRIZE_MAX_CHARS))}
                   placeholder="Opcional"
+                  maxLength={ROOM_PRIZE_MAX_CHARS}
                 />
               </label>
               <label>
-                <span className="app-muted">3.er lugar</span>
+                <span className="app-muted">
+                  3.er lugar{' '}
+                  <span className="room-admin-char-hint">({prizeThird.length}/{ROOM_PRIZE_MAX_CHARS})</span>
+                </span>
                 <input
                   className="field-input"
                   value={prizeThird}
-                  onChange={(e) => setPrizeThird(e.target.value)}
+                  onChange={(e) => setPrizeThird(e.target.value.slice(0, ROOM_PRIZE_MAX_CHARS))}
                   placeholder="Opcional"
+                  maxLength={ROOM_PRIZE_MAX_CHARS}
                 />
               </label>
             </div>
@@ -283,7 +319,10 @@ export function RoomsHubPage({ user }: { user: User }) {
               <input
                 className="field-input"
                 value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  setJoinPendingInfo(null)
+                  setCode(e.target.value.toUpperCase())
+                }}
                 placeholder="Código de invitación"
                 maxLength={8}
               />
@@ -292,6 +331,12 @@ export function RoomsHubPage({ user }: { user: User }) {
               {joinBusy ? 'Uniendo…' : 'Unirse'}
             </button>
             {joinError ? <p className="auth-error">{joinError}</p> : null}
+            {joinPendingInfo ? (
+              <p className="auth-lead" style={{ textAlign: 'left', marginTop: 12, fontSize: '0.95rem' }}>
+                {joinPendingInfo}{' '}
+                <Link to="/">Volver al panel</Link>
+              </p>
+            ) : null}
           </form>
         </div>
       )}

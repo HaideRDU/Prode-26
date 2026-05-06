@@ -6,7 +6,9 @@ import type { AccountOutletContext } from '../types/outletContext'
 import type { RoomDoc } from '../types/predictions'
 import { getPredictionFinalized } from '../services/predictionStateService'
 import { getRoom } from '../services/roomsService'
+import { InviteCodeQuickStrip } from '../rooms/InviteCodeQuickStrip'
 import { PrivateRoomAdminModal } from '../rooms/PrivateRoomAdminModal'
+import { RoomInviteModal } from '../rooms/RoomInviteModal'
 import { RoomPrivatePodiumSection } from '../rooms/RoomPrivatePodiumSection'
 import { RoomHomePlayerPickBanner } from '../predictions/RoomHomePlayerPickBanner'
 import '../predictions/pred-theme.css'
@@ -23,6 +25,7 @@ export function RoomStandingsPage() {
   const [showScoringHelpModal, setShowScoringHelpModal] = useState(false)
   const [room, setRoom] = useState<RoomDoc | null>(null)
   const [showAdmin, setShowAdmin] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
   const [showPredictionPrompt, setShowPredictionPrompt] = useState(false)
   const [predictionFinalized, setPredictionFinalized] = useState<boolean | null>(null)
 
@@ -119,40 +122,6 @@ export function RoomStandingsPage() {
       >
         {fabPredictionsLabel}
       </button>
-      {canManageRoom ? (
-        <button
-          type="button"
-          className="room-standings-settings-btn"
-          aria-label="Configurar sala"
-          title="Configurar sala"
-          onClick={() => setShowAdmin(true)}
-        >
-          <svg
-            className="room-standings-settings-btn__icon"
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden
-          >
-            <path
-              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      ) : null}
       {showPredictionPrompt && roomId ? (
         <div
           className="modal-overlay pred-rules-modal-overlay"
@@ -201,7 +170,74 @@ export function RoomStandingsPage() {
           </div>
         </div>
       ) : null}
-      <RoomHomePlayerPickBanner variant={isGlobalRoom ? 'global' : 'private'} />
+      <RoomHomePlayerPickBanner
+        variant={isGlobalRoom ? 'global' : 'private'}
+        titleTrailing={
+          canManageRoom && room ? (
+            <div className="room-standings-admin-toolbar room-standings-admin-toolbar--banner-inline">
+              <InviteCodeQuickStrip inviteCode={room.inviteCode} />
+              <button
+                type="button"
+                className="room-standings-settings-btn"
+                aria-label="Invitaciones y solicitudes"
+                title="Invitaciones"
+                onClick={() => setShowInviteModal(true)}
+              >
+                <svg
+                  className="room-standings-settings-btn__icon"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden
+                >
+                  <path
+                    d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="8.5" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
+                  <path d="M20 8v6M23 11h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="room-standings-settings-btn"
+                aria-label="Configurar sala"
+                title="Configurar sala"
+                onClick={() => setShowAdmin(true)}
+              >
+                <svg
+                  className="room-standings-settings-btn__icon"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden
+                >
+                  <path
+                    d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          ) : undefined
+        }
+      />
       {showScoringHelpModal ? (
         <div className="modal-overlay pred-rules-modal-overlay" role="presentation">
           <div
@@ -333,6 +369,13 @@ export function RoomStandingsPage() {
             setShowAdmin(false)
             window.location.replace(import.meta.env.BASE_URL || '/')
           }}
+        />
+      ) : null}
+      {showInviteModal && room ? (
+        <RoomInviteModal
+          roomId={roomId}
+          inviteCode={room.inviteCode}
+          onClose={() => setShowInviteModal(false)}
         />
       ) : null}
     </div>

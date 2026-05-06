@@ -7,7 +7,9 @@ import { getPredictionFinalized } from '../services/predictionStateService'
 import { GLOBAL_ROOM_ID } from '../constants/rooms'
 import type { AccountOutletContext } from '../types/outletContext'
 import type { PrivateRoomPodiumPrizes } from '../types/predictions'
+import { InviteCodeQuickStrip } from '../rooms/InviteCodeQuickStrip'
 import { PrivateRoomAdminModal } from '../rooms/PrivateRoomAdminModal'
+import { RoomInviteModal } from '../rooms/RoomInviteModal'
 
 export function DashboardPage({ user }: { user: User }) {
   const { publicDisplayName } = useOutletContext<AccountOutletContext>()
@@ -21,6 +23,8 @@ export function DashboardPage({ user }: { user: User }) {
     roomDescription?: string | null
     podiumPrizes?: PrivateRoomPodiumPrizes | null
   } | null>(null)
+  const [inviteModalRoomId, setInviteModalRoomId] = useState<string | null>(null)
+  const [inviteModalCode, setInviteModalCode] = useState<string>('')
 
   useEffect(() => {
     void ensureGlobalRoomMembership(user.uid, displayName)
@@ -90,22 +94,37 @@ export function DashboardPage({ user }: { user: User }) {
                 Abrir predicciones
               </Link>
               {r.room.type === 'private' && r.room.createdBy === user.uid ? (
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => {
-                    void getRoom(r.roomId).then((fresh) =>
-                      setAdminRoom({
-                        roomId: r.roomId,
-                        roomName: fresh?.name ?? r.room.name,
-                        roomDescription: fresh?.description ?? r.room.description,
-                        podiumPrizes: fresh?.podiumPrizes ?? r.room.podiumPrizes,
-                      }),
-                    )
-                  }}
-                >
-                  Configurar sala
-                </button>
+                <div className="app-room-card-admin-actions">
+                  <InviteCodeQuickStrip inviteCode={r.room.inviteCode} />
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      void getRoom(r.roomId).then((fresh) => {
+                        setInviteModalRoomId(r.roomId)
+                        setInviteModalCode(fresh?.inviteCode ?? r.room.inviteCode)
+                      })
+                    }}
+                  >
+                    Invitaciones
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      void getRoom(r.roomId).then((fresh) =>
+                        setAdminRoom({
+                          roomId: r.roomId,
+                          roomName: fresh?.name ?? r.room.name,
+                          roomDescription: fresh?.description ?? r.room.description,
+                          podiumPrizes: fresh?.podiumPrizes ?? r.room.podiumPrizes,
+                        }),
+                      )
+                    }}
+                  >
+                    Configurar sala
+                  </button>
+                </div>
               ) : null}
             </div>
           </article>
@@ -133,6 +152,16 @@ export function DashboardPage({ user }: { user: User }) {
           }}
           onClose={() => setAdminRoom(null)}
           onRoomDeleted={() => navigate('/', { replace: true })}
+        />
+      ) : null}
+      {inviteModalRoomId ? (
+        <RoomInviteModal
+          roomId={inviteModalRoomId}
+          inviteCode={inviteModalCode}
+          onClose={() => {
+            setInviteModalRoomId(null)
+            setInviteModalCode('')
+          }}
         />
       ) : null}
     </div>

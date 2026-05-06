@@ -273,6 +273,12 @@
   margin: 0 0 16px;
 }
 
+.room-admin-char-hint {
+  font-weight: 400;
+  font-size: 0.88em;
+  opacity: 0.82;
+}
+
 .page-title-with-help {
   display: flex;
   align-items: center;
@@ -347,40 +353,40 @@
   pointer-events: auto;
 }
 
+/* Salas: columnas fluidas (no “N columnas fijas”); respeta mín/máx por tarjeta y móvil */
 .app-card-list {
+  /* Ancho mínimo del carril ≈ “cuántas caben”; sube si querés menos columnas en escritorio */
+  --room-card-min: 288px;
+  --room-card-max: 440px;
   display: grid;
+  gap: clamp(12px, 2.8vw, 20px);
+  justify-items: center;
+  align-items: start;
   grid-template-columns: 1fr;
-  gap: 12px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 420px) {
   .app-card-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 960px) {
-  .app-card-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .app-card-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--room-card-min)), 1fr)
+    );
   }
 }
 
 .app-room-card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
-  padding: 12px;
+  padding: 14px 14px 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--bg);
-  min-height: 176px;
+  width: min(100%, var(--room-card-max));
+  box-sizing: border-box;
+  min-height: 0;
+  min-width: 0;
   transition: box-shadow 0.2s;
 }
 
@@ -398,7 +404,46 @@
 .app-room-card-bottom {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
+
+.app-room-card-admin-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.app-room-card-admin-actions > * {
+  min-width: 0;
+}
+
+.app-room-card-admin-actions .invite-code-quick-strip {
+  grid-column: 1 / -1;
+  align-self: stretch;
+}
+
+.app-room-card-admin-actions > .btn-secondary {
+  width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  text-align: center;
+  justify-self: stretch;
+  height: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
+  line-height: 1.25;
 }
 
 .app-room-code-label {

@@ -51,7 +51,17 @@ export async function recalculateStandingsForRoom(db: Firestore, roomId: string)
       if (!scores.has(data.userId)) {
         scores.set(data.userId, {
           points: 0,
-          breakdown: { matchPoints: 0, tournamentPoints: 0 },
+          breakdown: {
+            matchPoints: 0,
+            tournamentPoints: 0,
+            advancementPoints: 0,
+            specialsPoints: 0,
+          },
+          tieBreak: {
+            exactScoreHits: 0,
+            specialQuestionHits: 0,
+            championHit: false,
+          },
         })
       }
     })
@@ -71,6 +81,7 @@ export async function recalculateStandingsForRoom(db: Firestore, roomId: string)
       points: row.points,
       rank: row.rank,
       breakdown: row.breakdown,
+      tieBreak: row.tieBreak,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     })
   }

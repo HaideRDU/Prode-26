@@ -1,5 +1,6 @@
 rules_version = '2';
-// Colecciones: users, rooms, roomMembers, teams, matches, predictions, tournamentResults,
+// Colecciones: users, rooms, roomMembers, roomJoinRequests,
+// teams, matches, predictions, tournamentResults,
 // standings/{roomId}/users/{userId}
 // Escritura de matches, tournamentResults y standings: solo backend (Functions/admin SDK).
 
@@ -35,14 +36,40 @@ service cloud.firestore {
     match /roomMembers/{membershipId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid
-        && membershipId == request.resource.data.roomId + '_' + request.auth.uid;
+        && membershipId == request.resource.data.roomId + '_' + request.resource.data.userId
+        && request.resource.data.keys().hasAll(['roomId', 'userId', 'displayName'])
+        && (
+          request.resource.data.userId == request.auth.uid
+          || isPrivateRoomOwner(request.resource.data.roomId)
+        );
       allow update, delete: if request.auth != null
         && (
           resource.data.userId == request.auth.uid
           || isPrivateRoomOwner(resource.data.roomId)
         );
     }
+
+    match /roomJoinRequests/{requestId} {
+      allow read: if request.auth != null
+        && (
+          resource.data.userId == request.auth.uid
+          || isPrivateRoomOwner(resource.data.roomId)
+        );
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasAll(['roomId', 'userId', 'displayName', 'status'])
+        && exists(/databases/$(database)/documents/rooms/$(request.resource.data.roomId))
+        && get(/databases/$(database)/documents/rooms/$(request.resource.data.roomId)).data.type == 'private';
+      allow delete: if request.auth != null
+        && (
+          resource.data.userId == request.auth.uid
+          || isPrivateRoomOwner(resource.data.roomId)
+        );
+      allow update: if false;
+    }
+
+    // Tras cambiar reglas: npm run deploy:firestore-rules (índices: npm run deploy:firestore-indexes)
 
     match /teams/{teamId} {
       allow read: if request.auth != null;
@@ -58,7 +85,7 @@ service cloud.firestore {
       allow read: if request.auth != null
         && (
           resource.data.roomId == 'global'
-          || 
+          ||
           resource.data.userId == request.auth.uid
           || exists(
             /databases/$(database)/documents/roomMembers/$(resource.data.roomId + '_' + request.auth.uid)

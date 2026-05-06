@@ -1,3 +1,6 @@
+/**
+ * Agrega puntos por usuario a partir de datos ya cargados (útil en Cloud Functions y tests).
+ */
 import type {
   MatchDoc,
   MatchPredictionPayload,
@@ -5,6 +8,7 @@ import type {
   TournamentPredictionPayload,
   TournamentResultDoc,
 } from './types/predictions'
+import { getPredictedKoLineupForMatch } from './koPredictedLineup'
 import { totalPointsFromParts, type MatchScoreInput, type TournamentScoreInput } from './scoring'
 
 function isMatchPayload(p: unknown): p is MatchPredictionPayload {
@@ -21,12 +25,35 @@ function isTournamentPayload(p: unknown): p is TournamentPredictionPayload {
   return typeof p === 'object' && p !== null && 'kind' in p
 }
 
+/** Calcula puntos totales por userId para una sala */
 export function computeScoresForRoom(
   predictions: PredictionDoc[],
   matchesById: Map<string, MatchDoc>,
   tournamentResultsByQuestionId: Map<string, TournamentResultDoc>,
   enabledQuestionIds?: ReadonlySet<string> | null,
-): Map<string, { points: number; breakdown: { matchPoints: number; tournamentPoints: number } }> {
+): Map<
+  string,
+  {
+    points: number
+    breakdown: {
+      matchPoints: number
+      tournamentPoints: number
+      advancementPoints: number
+      specialsPoints: number
+    }
+    tieBreak: {
+      exactScoreHits: number
+      specialQuestionHits: number
+      championHit: boolean
+    }
+  }
+> {
+  const predsByUser = new Map<string, PredictionDoc[]>()
+  for (const pr of predictions) {
+    if (!predsByUser.has(pr.userId)) predsByUser.set(pr.userId, [])
+    predsByUser.get(pr.userId)!.push(pr)
+  }
+
   const byUser = new Map<
     string,
     { matchParts: MatchScoreInput[]; tournamentParts: TournamentScoreInput[] }
@@ -58,40 +85,131 @@ export function computeScoresForRoom(
     }
   }
 
+  for (const [uid, bucket] of byUser.entries()) {
+    const userPreds = predsByUser.get(uid) ?? []
+    bucket.matchParts = bucket.matchParts.map((mp) => {
+      if (mp.match.phase !== 'knockout') return mp
+      const lineup = getPredictedKoLineupForMatch(userPreds, mp.matchId)
+      return { ...mp, predictedLineup: lineup }
+    })
+  }
+
   const out = new Map<
     string,
-    { points: number; breakdown: { matchPoints: number; tournamentPoints: number } }
+    {
+      points: number
+      breakdown: {
+        matchPoints: number
+        tournamentPoints: number
+        advancementPoints: number
+        specialsPoints: number
+      }
+      tieBreak: {
+        exactScoreHits: number
+        specialQuestionHits: number
+        championHit: boolean
+      }
+    }
   >()
   for (const [uid, parts] of byUser) {
-    const { total, matchPoints, tournamentPoints } = totalPointsFromParts(
+    const {
+      total,
+      matchPoints,
+      tournamentPoints,
+      advancementPoints,
+      specialsPoints,
+      tieBreak,
+    } = totalPointsFromParts(
       parts.matchParts,
       parts.tournamentParts,
     )
     out.set(uid, {
       points: total,
-      breakdown: { matchPoints, tournamentPoints },
+      breakdown: { matchPoints, tournamentPoints, advancementPoints, specialsPoints },
+      tieBreak,
     })
   }
   return out
 }
 
+/** Asigna rank 1..N por puntos descendente; empates = mismo rank (estilo competición) */
 export function assignRanks(
-  scores: Map<string, { points: number; breakdown: { matchPoints: number; tournamentPoints: number } }>,
-): Map<string, { rank: number; points: number; breakdown: { matchPoints: number; tournamentPoints: number } }> {
-  const sorted = [...scores.entries()].sort((a, b) => b[1].points - a[1].points)
+  scores: Map<
+    string,
+    {
+      points: number
+      breakdown: {
+        matchPoints: number
+        tournamentPoints: number
+        advancementPoints: number
+        specialsPoints: number
+      }
+      tieBreak: {
+        exactScoreHits: number
+        specialQuestionHits: number
+        championHit: boolean
+      }
+    }
+  >,
+): Map<
+  string,
+  {
+    rank: number
+    points: number
+    breakdown: {
+      matchPoints: number
+      tournamentPoints: number
+      advancementPoints: number
+      specialsPoints: number
+    }
+    tieBreak: {
+      exactScoreHits: number
+      specialQuestionHits: number
+      championHit: boolean
+    }
+  }
+> {
+  const sorted = [...scores.entries()].sort((a, b) => {
+    if (a[1].points !== b[1].points) return b[1].points - a[1].points
+    if (a[1].tieBreak.exactScoreHits !== b[1].tieBreak.exactScoreHits) {
+      return b[1].tieBreak.exactScoreHits - a[1].tieBreak.exactScoreHits
+    }
+    if (a[1].tieBreak.specialQuestionHits !== b[1].tieBreak.specialQuestionHits) {
+      return b[1].tieBreak.specialQuestionHits - a[1].tieBreak.specialQuestionHits
+    }
+    if (a[1].tieBreak.championHit !== b[1].tieBreak.championHit) {
+      return a[1].tieBreak.championHit ? -1 : 1
+    }
+    return a[0].localeCompare(b[0])
+  })
   const result = new Map<
     string,
-    { rank: number; points: number; breakdown: { matchPoints: number; tournamentPoints: number } }
+    {
+      rank: number
+      points: number
+      breakdown: {
+        matchPoints: number
+        tournamentPoints: number
+        advancementPoints: number
+        specialsPoints: number
+      }
+      tieBreak: {
+        exactScoreHits: number
+        specialQuestionHits: number
+        championHit: boolean
+      }
+    }
   >()
   let rank = 0
-  let lastPoints = Number.NaN
+  let lastComparable = ''
   for (let i = 0; i < sorted.length; i++) {
     const [uid, data] = sorted[i]
-    if (data.points !== lastPoints) {
+    const comparable = `${data.points}|${data.tieBreak.exactScoreHits}|${data.tieBreak.specialQuestionHits}|${data.tieBreak.championHit ? 1 : 0}`
+    if (comparable !== lastComparable) {
       rank = i + 1
-      lastPoints = data.points
+      lastComparable = comparable
     }
-    result.set(uid, { rank, points: data.points, breakdown: data.breakdown })
+    result.set(uid, { rank, points: data.points, breakdown: data.breakdown, tieBreak: data.tieBreak })
   }
   return result
 }
