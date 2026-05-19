@@ -151,7 +151,7 @@ export function DashboardPage({ user }: { user: User }) {
             )
           }}
           onClose={() => setAdminRoom(null)}
-          onRoomDeleted={() => navigate('/', { replace: true })}
+          onRoomDeleted={() => navigate('/inicio', { replace: true })}
         />
       ) : null}
       {inviteModalRoomId ? (

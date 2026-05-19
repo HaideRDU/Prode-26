@@ -334,7 +334,7 @@ export function RoomsHubPage({ user }: { user: User }) {
             {joinPendingInfo ? (
               <p className="auth-lead" style={{ textAlign: 'left', marginTop: 12, fontSize: '0.95rem' }}>
                 {joinPendingInfo}{' '}
-                <Link to="/">Volver al panel</Link>
+                <Link to="/inicio">Volver al panel</Link>
               </p>
             ) : null}
           </form>

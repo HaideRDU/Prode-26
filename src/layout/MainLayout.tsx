@@ -84,7 +84,7 @@ export function MainLayout({
                 aria-label="Navegación"
               >
                 <nav className="app-nav-dropdown-nav">
-                  <NavLink to="/" end className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
+                  <NavLink to="/inicio" end className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
                     <span className="app-sidebar-icon" aria-hidden>
                       ⌂
                     </span>

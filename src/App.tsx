@@ -25,6 +25,7 @@ import { RoomsHubPage } from './pages/RoomsHubPage'
 import { RoomPredictionsPage } from './pages/RoomPredictionsPage'
 import { RoomStandingsPage } from './pages/RoomStandingsPage'
 import { ReglamentoPage } from './pages/ReglamentoPage'
+import { LandingPage } from './landing/LandingPage'
 import type { AccountOutletContext } from './types/outletContext'
 import { AuthLayout } from './auth/AuthLayout'
 import { BrandLogo } from './auth/BrandLogo'
@@ -657,68 +658,8 @@ function App() {
     )
   }
 
-  if (user && !needsUsername && accountOutletContext) {
-    return (
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <MainLayout
-                user={user}
-                publicDisplayName={username.trim() || user.email?.split('@')[0] || 'usuario'}
-                accountOutletContext={accountOutletContext}
-              />
-            }
-          >
-            <Route index element={<DashboardPage user={user} />} />
-            <Route path="rooms" element={<RoomsHubPage user={user} />} />
-            <Route path="rooms/new" element={<Navigate to="/rooms" replace />} />
-            <Route path="join" element={<Navigate to="/rooms?tab=join" replace />} />
-            <Route path="room/:roomId/predictions" element={<RoomPredictionsPage user={user} />} />
-            <Route path="room/:roomId/standings" element={<RoomStandingsPage />} />
-            <Route path="reglamento" element={<ReglamentoPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    )
-  }
-
-  return (
-    <AuthLayout themeControl={authThemeControl}>
-      <LoginView
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        rememberMe={rememberMe}
-        setRememberMe={setRememberMe}
-        onEmailLogin={handleEmailLogin}
-        onRegisterClick={() => {
-          setAuthError(null)
-          setInfo(null)
-          setRegisterEmail(email)
-          setRegisterPassword('')
-          setRegisterPasswordConfirm('')
-          setRegisterError(null)
-          setRegisterSuccess(false)
-          setIsRegisterModalOpen(true)
-        }}
-        onForgotClick={() => {
-          setAuthError(null)
-          setInfo(null)
-          setForgotEmail(email)
-          setForgotError(null)
-          setForgotSuccess(false)
-          setForgotSending(false)
-          setIsForgotModalOpen(true)
-        }}
-        onGoogleSignIn={handleGoogleSignIn}
-        authError={authError}
-        info={info}
-        profileError={profileError}
-      >
+  const loginModals = (
+    <>
             {isVerifyEmailModalOpen ? (
               <div className="modal-overlay" role="presentation">
                 <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="verify-email-title">
@@ -944,8 +885,85 @@ function App() {
                 </div>
               </div>
             ) : null}
-      </LoginView>
-    </AuthLayout>
+    </>
+  )
+
+  const isAuthed = Boolean(user && accountOutletContext)
+
+  return (
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <Routes>
+        <Route path="/" element={isAuthed ? <Navigate to="/inicio" replace /> : <LandingPage />} />
+        <Route
+          path="/login"
+          element={
+            isAuthed ? (
+              <Navigate to="/inicio" replace />
+            ) : (
+              <AuthLayout themeControl={authThemeControl}>
+                <LoginView
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  rememberMe={rememberMe}
+                  setRememberMe={setRememberMe}
+                  onEmailLogin={handleEmailLogin}
+                  onRegisterClick={() => {
+                    setAuthError(null)
+                    setInfo(null)
+                    setRegisterEmail(email)
+                    setRegisterPassword('')
+                    setRegisterPasswordConfirm('')
+                    setRegisterError(null)
+                    setRegisterSuccess(false)
+                    setIsRegisterModalOpen(true)
+                  }}
+                  onForgotClick={() => {
+                    setAuthError(null)
+                    setInfo(null)
+                    setForgotEmail(email)
+                    setForgotError(null)
+                    setForgotSuccess(false)
+                    setForgotSending(false)
+                    setIsForgotModalOpen(true)
+                  }}
+                  onGoogleSignIn={handleGoogleSignIn}
+                  authError={authError}
+                  info={info}
+                  profileError={profileError}
+                  showBackToHome
+                >
+                  {loginModals}
+                </LoginView>
+              </AuthLayout>
+            )
+          }
+        />
+        <Route path="/reglamento" element={<ReglamentoPage />} />
+        <Route
+          element={
+            isAuthed && user && accountOutletContext ? (
+              <MainLayout
+                user={user}
+                publicDisplayName={username.trim() || user.email?.split('@')[0] || 'usuario'}
+                accountOutletContext={accountOutletContext}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        >
+          <Route path="inicio" element={<DashboardPage user={user!} />} />
+          <Route path="rooms" element={<RoomsHubPage user={user!} />} />
+          <Route path="rooms/new" element={<Navigate to="/rooms" replace />} />
+          <Route path="join" element={<Navigate to="/rooms?tab=join" replace />} />
+          <Route path="room/:roomId/predictions" element={<RoomPredictionsPage user={user!} />} />
+          <Route path="room/:roomId/standings" element={<RoomStandingsPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to={isAuthed ? '/inicio' : '/'} replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

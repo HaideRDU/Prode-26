@@ -849,7 +849,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </div>
       ) : null}
       <p className="app-muted" style={{ marginBottom: 16 }}>
-        <Link to="/">Inicio</Link> ·{' '}
+        <Link to="/inicio">Inicio</Link> ·{' '}
         <Link to={`/room/${roomId}/standings`}>Ver clasificación</Link>
       </p>
       <div className="page-title-with-help">

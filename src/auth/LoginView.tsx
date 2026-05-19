@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { BrandLogo } from './BrandLogo'
 
 export function LoginView({
@@ -15,6 +16,7 @@ export function LoginView({
   authError,
   info,
   profileError,
+  showBackToHome,
   children,
 }: {
   email: string
@@ -30,10 +32,18 @@ export function LoginView({
   authError: string | null
   info: string | null
   profileError: string | null
+  showBackToHome?: boolean
   children?: ReactNode
 }) {
   return (
     <>
+      {showBackToHome ? (
+        <p style={{ margin: '0 0 1rem', textAlign: 'left' }}>
+          <Link to="/" className="auth-wc26-link">
+            ← Volver al inicio
+          </Link>
+        </p>
+      ) : null}
       <BrandLogo />
       <h1>Bienvenido</h1>
       <p className="auth-wc26-lead">Inicia sesión con tu correo o con Google.</p>

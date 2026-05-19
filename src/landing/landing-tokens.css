@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&display=swap');
+
+.landing-root {
+  --landing-navy: #07111f;
+  --landing-card: #101b2d;
+  --landing-cream: #f8fafc;
+  --landing-gold: #facc15;
+  --landing-gold-hover: #fde047;
+  --landing-lime: #a3e635;
+  --landing-emerald: #12b76a;
+  --landing-orange: #f97316;
+  --landing-slate-400: #94a3b8;
+  --landing-slate-500: #64748b;
+  --landing-white-soft: #f1f5f9;
+  --landing-radius-card: 2rem;
+  --landing-radius-pill: 9999px;
+  --landing-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --landing-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  --landing-shadow-soft: 0 12px 40px rgba(15, 23, 42, 0.12);
+  --landing-glass-bg: rgba(16, 27, 45, 0.72);
+  --landing-glass-border: rgba(255, 255, 255, 0.12);
+  --landing-max: 1200px;
+  --landing-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
