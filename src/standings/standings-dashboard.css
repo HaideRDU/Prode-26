@@ -260,9 +260,25 @@ h2.standings-dashboard-card__label {
   border: 1px solid color-mix(in srgb, #84cc16 25%, var(--border));
 }
 
-.app-shell--wc26 .standings-my-status__panel {
+html[data-theme='dark'] .app-shell--wc26 .standings-my-status__panel {
   background: color-mix(in srgb, #166534 35%, #0f172a);
   border-color: color-mix(in srgb, #84cc16 30%, #334155);
+}
+
+html[data-theme='light'] .app-shell--wc26 .standings-my-status__panel,
+html:not([data-theme='dark']) .app-shell--wc26 .standings-my-status__panel {
+  background: color-mix(in srgb, #22c55e 14%, var(--standings-surface, var(--bg)));
+  border-color: color-mix(in srgb, #84cc16 28%, var(--border));
+}
+
+html[data-theme='light'] .app-shell--wc26 .standings-my-status__user,
+html:not([data-theme='dark']) .app-shell--wc26 .standings-my-status__user {
+  color: var(--text-h);
+}
+
+html[data-theme='light'] .app-shell--wc26 .standings-my-status__summary,
+html:not([data-theme='dark']) .app-shell--wc26 .standings-my-status__summary {
+  color: var(--text);
 }
 
 .standings-my-status__panel-top {

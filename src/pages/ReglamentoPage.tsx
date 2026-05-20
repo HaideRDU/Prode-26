@@ -1,5 +1,4 @@
 import { DEFAULT_RULESET, type KnockoutRoundId } from '../config/ruleset'
-import { ALL_QUESTION_METAS } from '../data/bonusQuestionsMeta'
 import {
   ADVANCEMENT_POINTS,
   GROUP_EXACT_SCORE_POINTS,
@@ -32,9 +31,6 @@ export function ReglamentoPage() {
     <div>
       <div className="rules-page-card">
         <h1 className="app-page-title">Reglamento</h1>
-        <p className="auth-lead" style={{ textAlign: 'left' }}>
-          Versión activa: <strong>{DEFAULT_RULESET.versionLabel}</strong>
-        </p>
 
         <h2>Fechas límite</h2>
         <ul>
@@ -51,7 +47,7 @@ export function ReglamentoPage() {
 
         <h2>Sistema de puntajes</h2>
 
-        <h3>3.1 Fase de grupos (por partido)</h3>
+        <h3>Fase de grupos (por partido)</h3>
         <ul>
           <li>
             Marcador exacto: <strong>{GROUP_EXACT_SCORE_POINTS}</strong> puntos.
@@ -64,7 +60,7 @@ export function ReglamentoPage() {
           </li>
         </ul>
 
-        <h3>3.2 Eliminatorias — enfrentamiento correcto</h3>
+        <h3>Eliminatorias — enfrentamiento correcto</h3>
         <p>
           Cuando la pareja de equipos predicha coincide con la pareja real del partido (el orden de local/visitante o el
           intercambio equivalente no penaliza: cuenta como misma llave).
@@ -86,7 +82,7 @@ export function ReglamentoPage() {
           </li>
         </ul>
 
-        <h3>3.3 Eliminatorias — rival incorrecto</h3>
+        <h3>Eliminatorias — rival incorrecto</h3>
         <p>
           Si tu bracket predijo una pareja distinta a la que efectivamente se enfrentó en ese cruce (los dos equipos
           oficiales no coinciden con tus dos equipos predichos para ese partido), no aplican los puntos de “marcador
@@ -103,12 +99,12 @@ export function ReglamentoPage() {
             punto(s).
           </li>
           <li>
-            Los puntos por <em>avance</em> en la tabla de posiciones del torneo se calculan por apartado 3.4 y no se duplican
-            aquí por el mismo acierto.
+            Los puntos por <em>avance</em> en la tabla de posiciones del torneo se calculan en la sección Avance y no se
+            duplican aquí por el mismo acierto.
           </li>
         </ul>
 
-        <h3>3.4 Avance (pronósticos “quién llega”)</h3>
+        <h3>Avance (pronósticos “quién llega”)</h3>
         <p>Puntos por acertar hasta qué instancia llega cada selección en tus pronósticos generales:</p>
         <ul>
           <li>
@@ -140,7 +136,7 @@ export function ReglamentoPage() {
           </li>
         </ul>
 
-        <h3>3.5 Extras y banco de preguntas especiales</h3>
+        <h3>Extras y preguntas especiales</h3>
         <ul>
           <li>
             Goleador: <strong>{POINTS_TOP_SCORER}</strong>
@@ -149,16 +145,10 @@ export function ReglamentoPage() {
             Mejor promedio de arqueros: <strong>{POINTS_BEST_GOALKEEPER_AVERAGE}</strong>
           </li>
           <li>
-            Cada acierto en el banco de preguntas especiales configuradas para la sala:{' '}
+            Cada acierto en las preguntas especiales que la sala tenga habilitadas:{' '}
             <strong>{POINTS_BONUS_QUESTION}</strong>
           </li>
         </ul>
-        <p>Las cinco preguntas típicas del banco (cuando la sala las incluye) son:</p>
-        <ol>
-          {ALL_QUESTION_METAS.map((q) => (
-            <li key={q.id}>{q.labelEs}</li>
-          ))}
-        </ol>
 
         <h2>Desempates</h2>
         <ol>

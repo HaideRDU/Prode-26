@@ -391,14 +391,14 @@ html:not([data-theme='dark']) .app-shell--wc26 .app-topbar {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 10px;
-  padding: 14px 14px 16px;
+  gap: 0;
+  padding: 20px 18px 18px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 24px;
   background: var(--bg);
   width: min(100%, var(--room-card-max));
   box-sizing: border-box;
-  min-height: 0;
+  min-height: 220px;
   min-width: 0;
   transition: box-shadow 0.2s;
 }
@@ -408,55 +408,103 @@ html:not([data-theme='dark']) .app-shell--wc26 .app-topbar {
 }
 
 .app-room-title {
-  margin: 0 0 8px;
-  font-size: 1.1rem;
+  margin: 0 0 12px;
+  font-size: clamp(1.35rem, 4.5vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.15;
   color: var(--text-h);
+  letter-spacing: -0.02em;
 }
 
-.app-room-card-top,
-.app-room-card-bottom {
+.app-room-card-desc {
+  margin: 0;
+  flex: 1 1 auto;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--text-h) 88%, var(--text));
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  min-height: 3.9em;
+}
+
+.app-room-card-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
+.app-room-card-stats {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.app-room-card-stat-pts {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-h);
+  letter-spacing: -0.02em;
+}
+
+.app-room-card-stat-rank {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--text-h) 75%, var(--text));
+}
+
+.app-room-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 10px;
-  min-width: 0;
-  width: 100%;
+  flex-shrink: 0;
 }
 
-.app-room-card-admin-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 4px;
-  padding-top: 14px;
-  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-  align-items: stretch;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.app-room-card-admin-actions > * {
-  min-width: 0;
-}
-
-.app-room-card-admin-actions .invite-code-quick-strip {
-  grid-column: 1 / -1;
-  align-self: stretch;
-}
-
-.app-room-card-admin-actions > .btn-secondary {
-  width: 100%;
-  box-sizing: border-box;
-  white-space: normal;
-  text-align: center;
-  justify-self: stretch;
-  height: 100%;
-  min-height: 44px;
+.app-room-card-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 0;
-  line-height: 1.25;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--text-h) 35%, var(--border));
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  color: var(--text-h);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.app-room-card-icon-btn:hover {
+  color: var(--accent, var(--link));
+  border-color: color-mix(in srgb, var(--accent, var(--link)) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent-bg, var(--bg)) 55%, var(--bg));
+}
+
+.app-room-card-icon-btn:focus-visible {
+  outline: 2px solid var(--accent, var(--link));
+  outline-offset: 2px;
+}
+
+.app-room-card-icon-btn svg {
+  display: block;
 }
 
 .app-room-code-label {

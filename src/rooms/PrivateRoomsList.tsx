@@ -1,13 +1,50 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { User } from 'firebase/auth'
 import { useRooms } from '../hooks/useRooms'
 import { getRoom } from '../services/roomsService'
-import { getPredictionFinalized } from '../services/predictionStateService'
 import type { PrivateRoomPodiumPrizes } from '../types/predictions'
-import { InviteCodeQuickStrip } from './InviteCodeQuickStrip'
 import { PrivateRoomAdminModal } from './PrivateRoomAdminModal'
 import { RoomInviteModal } from './RoomInviteModal'
+
+function ShareIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="2" />
+      <circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+      <circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="2" />
+      <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  )
+}
+
+function RoomSettingsIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
 export function PrivateRoomsList({
   user,
@@ -18,9 +55,9 @@ export function PrivateRoomsList({
 }) {
   const navigate = useNavigate()
   const { rooms, error, loading } = useRooms(user.uid)
-  const [finalizedByRoomId, setFinalizedByRoomId] = useState<Record<string, boolean>>({})
   const [adminRoom, setAdminRoom] = useState<{
     roomId: string
+    roomOwnerId: string
     roomName: string
     roomDescription?: string | null
     podiumPrizes?: PrivateRoomPodiumPrizes | null
@@ -28,32 +65,23 @@ export function PrivateRoomsList({
   const [inviteModalRoomId, setInviteModalRoomId] = useState<string | null>(null)
   const [inviteModalCode, setInviteModalCode] = useState<string>('')
 
-  useEffect(() => {
-    const ids = rooms.map((r) => r.roomId)
-    if (ids.length === 0) {
-      setFinalizedByRoomId({})
-      return
-    }
-    let cancelled = false
-    Promise.all(
-      ids.map(async (id) => ({ id, finalized: await getPredictionFinalized(user.uid, id) })),
-    )
-      .then((pairs) => {
-        if (cancelled) return
-        const next: Record<string, boolean> = {}
-        for (const p of pairs) next[p.id] = p.finalized
-        setFinalizedByRoomId(next)
-      })
-      .catch(() => {
-        if (!cancelled) setFinalizedByRoomId({})
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [rooms, user.uid])
+  function openInviteModal(roomId: string, fallbackCode: string) {
+    void getRoom(roomId).then((fresh) => {
+      setInviteModalRoomId(roomId)
+      setInviteModalCode(fresh?.inviteCode ?? fallbackCode)
+    })
+  }
 
-  function roomTarget(roomId: string): string {
-    return finalizedByRoomId[roomId] ? `/room/${roomId}/standings` : `/room/${roomId}/predictions`
+  function openAdminModal(room: (typeof rooms)[number]) {
+    void getRoom(room.roomId).then((fresh) =>
+      setAdminRoom({
+        roomId: room.roomId,
+        roomOwnerId: fresh?.createdBy ?? room.room.createdBy,
+        roomName: fresh?.name ?? room.room.name,
+        roomDescription: fresh?.description ?? room.room.description,
+        podiumPrizes: fresh?.podiumPrizes ?? room.room.podiumPrizes,
+      }),
+    )
   }
 
   return (
@@ -66,65 +94,57 @@ export function PrivateRoomsList({
         </p>
       ) : null}
       <div className="app-card-list">
-        {rooms.map((r) => (
-          <article key={r.roomId} className="app-room-card" aria-label={`Sala ${r.room.name}`}>
-            <div className="app-room-card-top">
+        {rooms.map((r) => {
+          const isOwner = r.room.type === 'private' && r.room.createdBy === user.uid
+          const description = r.room.description?.trim() || 'Sin descripción de sala.'
+          return (
+            <article key={r.roomId} className="app-room-card" aria-label={`Sala ${r.room.name}`}>
               <Link to={`/room/${r.roomId}/standings`} className="app-room-title-link">
                 <h3 className="app-room-title">{r.room.name}</h3>
               </Link>
-              <p className="app-muted">{r.room.description?.trim() || 'Sin descripcion de sala.'}</p>
-            </div>
-            <div className="app-room-card-bottom">
-              <p className="app-room-points">
-                {r.myPoints != null ? `${r.myPoints} pts` : 'Sin puntos'}
-                {r.myRank != null ? ` · Pos. ${r.myRank}` : ''}
-              </p>
-              <Link to={roomTarget(r.roomId)} className="app-room-open-btn">
-                Abrir predicciones
-              </Link>
-              {r.room.type === 'private' && r.room.createdBy === user.uid ? (
-                <div className="app-room-card-admin-actions">
-                  <InviteCodeQuickStrip inviteCode={r.room.inviteCode} />
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => {
-                      void getRoom(r.roomId).then((fresh) => {
-                        setInviteModalRoomId(r.roomId)
-                        setInviteModalCode(fresh?.inviteCode ?? r.room.inviteCode)
-                      })
-                    }}
-                  >
-                    Invitaciones
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => {
-                      void getRoom(r.roomId).then((fresh) =>
-                        setAdminRoom({
-                          roomId: r.roomId,
-                          roomName: fresh?.name ?? r.room.name,
-                          roomDescription: fresh?.description ?? r.room.description,
-                          podiumPrizes: fresh?.podiumPrizes ?? r.room.podiumPrizes,
-                        }),
-                      )
-                    }}
-                  >
-                    Configurar sala
-                  </button>
+              <p className="app-room-card-desc">{description}</p>
+              <div className="app-room-card-footer">
+                <div className="app-room-card-stats">
+                  <p className="app-room-card-stat-pts">
+                    {r.myPoints != null ? `${r.myPoints} Pts` : 'Sin puntos'}
+                  </p>
+                  <p className="app-room-card-stat-rank">
+                    {r.myRank != null ? `Puesto ${r.myRank}` : 'Sin posición'}
+                  </p>
                 </div>
-              ) : null}
-            </div>
-          </article>
-        ))}
+                {isOwner ? (
+                  <div className="app-room-card-actions" role="group" aria-label="Acciones de sala">
+                    <button
+                      type="button"
+                      className="app-room-card-icon-btn"
+                      aria-label="Compartir invitación"
+                      title="Compartir"
+                      onClick={() => openInviteModal(r.roomId, r.room.inviteCode)}
+                    >
+                      <ShareIcon />
+                    </button>
+                    <button
+                      type="button"
+                      className="app-room-card-icon-btn"
+                      aria-label="Configurar sala"
+                      title="Configurar sala"
+                      onClick={() => openAdminModal(r)}
+                    >
+                      <RoomSettingsIcon />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          )
+        })}
       </div>
       {adminRoom ? (
         <PrivateRoomAdminModal
           roomId={adminRoom.roomId}
+          roomOwnerId={adminRoom.roomOwnerId}
           roomName={adminRoom.roomName}
           roomDescription={adminRoom.roomDescription}
-          currentUserId={user.uid}
           podiumPrizes={adminRoom.podiumPrizes}
           onRoomUpdated={async () => {
             const data = await getRoom(adminRoom.roomId)
@@ -132,6 +152,7 @@ export function PrivateRoomsList({
               prev && data
                 ? {
                     ...prev,
+                    roomOwnerId: data.createdBy,
                     roomName: data.name,
                     roomDescription: data.description,
                     podiumPrizes: data.podiumPrizes,

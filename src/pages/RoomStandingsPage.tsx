@@ -325,9 +325,9 @@ export function RoomStandingsPage() {
       {showAdmin && room ? (
         <PrivateRoomAdminModal
           roomId={roomId}
+          roomOwnerId={room.createdBy}
           roomName={room.name}
           roomDescription={room.description}
-          currentUserId={user.uid}
           podiumPrizes={room.podiumPrizes}
           onRoomUpdated={() => void refreshRoomDoc()}
           onClose={() => setShowAdmin(false)}

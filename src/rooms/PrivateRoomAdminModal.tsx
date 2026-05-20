@@ -18,7 +18,7 @@ type AdminTab = 'users' | 'advanced'
 
 export function PrivateRoomAdminModal({
   roomId,
-  currentUserId,
+  roomOwnerId,
   roomName,
   roomDescription,
   podiumPrizes,
@@ -27,7 +27,8 @@ export function PrivateRoomAdminModal({
   onRoomDeleted,
 }: {
   roomId: string
-  currentUserId: string
+  /** UID del creador/líder de la sala (no puede eliminarse a sí mismo). */
+  roomOwnerId: string
   roomName: string
   roomDescription?: string | null
   podiumPrizes?: PrivateRoomPodiumPrizes | null
@@ -114,6 +115,7 @@ export function PrivateRoomAdminModal({
   }
 
   async function handleRemove(userId: string) {
+    if (userId === roomOwnerId) return
     if (busyUserId || busyDeleteRoom || busySaveRoom || busySavePrizes) return
     setError(null)
     setBusyUserId(userId)
@@ -162,24 +164,33 @@ export function PrivateRoomAdminModal({
         {loading ? <p className="user-email">Cargando miembros…</p> : null}
         {!loading ? (
           <div className="room-admin-members-scroll">
-            {members.map((m) => (
-              <div key={m.id} className="room-admin-member-row">
-                <div>
-                  <div>{m.displayName}</div>
-                  <div className="app-muted" style={{ fontSize: 12 }}>
-                    {m.userId === currentUserId ? 'Líder' : m.userId}
+            {members.map((m) => {
+              const isLeader = m.userId === roomOwnerId
+              return (
+                <div key={m.id} className="room-admin-member-row">
+                  <div>
+                    <div>{m.displayName}</div>
+                    <div className="app-muted" style={{ fontSize: 12 }}>
+                      {isLeader ? 'Líder' : m.userId}
+                    </div>
                   </div>
+                  {isLeader ? (
+                    <span className="room-admin-member-row__leader-hint app-muted" aria-hidden>
+                      —
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={busyUserId === m.userId || busyDeleteRoom}
+                      onClick={() => void handleRemove(m.userId)}
+                    >
+                      {busyUserId === m.userId ? 'Eliminando…' : 'Eliminar usuario'}
+                    </button>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  disabled={m.userId === currentUserId || busyUserId === m.userId || busyDeleteRoom}
-                  onClick={() => handleRemove(m.userId)}
-                >
-                  {busyUserId === m.userId ? 'Eliminando…' : 'Eliminar usuario'}
-                </button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : null}
       </div>
