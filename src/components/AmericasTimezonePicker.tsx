@@ -1,6 +1,5 @@
 import {
   AMERICAS_TIMEZONE_GROUPS,
-  getRegionForTimeZone,
   getZonesForRegion,
   normalizeAmericasTimeZone,
   type AmericasRegion,
