@@ -1,21 +1,27 @@
 import type { ReactNode } from 'react'
-import type { AppTheme } from '../theme/appTheme'
+import { LanguageSwitch } from '../components/LanguageSwitch'
 import { ThemeSwitch } from '../components/ThemeSwitch'
+import type { UiControl } from '../theme/uiControl'
 
 export function AuthLayout({
   children,
-  themeControl,
+  uiControl,
 }: {
   children: ReactNode
-  themeControl?: { theme: AppTheme; onThemeChange: (t: AppTheme) => void }
+  uiControl?: UiControl
 }) {
   return (
     <main className="auth-wc26 auth-wc26-shell">
-      {themeControl ? (
-        <div className="auth-wc26-theme-corner">
+      {uiControl ? (
+        <div className="auth-wc26-prefs-corner">
           <ThemeSwitch
-            value={themeControl.theme}
-            onChange={themeControl.onThemeChange}
+            value={uiControl.theme}
+            onChange={uiControl.onThemeChange}
+            variant="auth"
+          />
+          <LanguageSwitch
+            value={uiControl.locale}
+            onChange={uiControl.onLocaleChange}
             variant="auth"
           />
         </div>

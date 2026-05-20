@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import type { UiControl } from '../theme/uiControl'
 import './landing.css'
 import { LandingNavbar } from './components/LandingNavbar'
 import { LandingHero } from './components/LandingHero'
@@ -11,14 +12,13 @@ import { LandingTooltip } from './components/LandingTooltip'
 import { ParticiparLink } from './components/ParticiparLink'
 import {
   LANDING_FEATURES,
-  LANDING_STEPS,
+  LANDING_HOW_TO_PLAY,
   LANDING_FIXTURE_MATCHES,
   LANDING_RANKING,
-  LANDING_BRACKET_ROUNDS,
   TEAM_NAME_ES,
 } from './landingDemoData'
 import { DEFAULT_RULESET } from '../config/ruleset'
-import { ALL_QUESTION_METAS } from '../data/bonusQuestionsMeta'
+import { LandingBracketBoard } from './components/LandingBracketBoard'
 import { TeamFlagName } from '../predictions/TeamFlagName'
 
 const POINT_TABS = [
@@ -93,12 +93,12 @@ function PointsPanel({ tab }: { tab: (typeof POINT_TABS)[number]['id'] }) {
   )
 }
 
-export function LandingPage() {
+export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
   const [pointTab, setPointTab] = useState<(typeof POINT_TABS)[number]['id']>('grupos')
 
   return (
     <div className="landing-root">
-      <LandingNavbar />
+      <LandingNavbar uiControl={uiControl} />
       <main id="top">
         <LandingHero />
 
@@ -122,21 +122,25 @@ export function LandingPage() {
           </div>
         </LandingSection>
 
-        <LandingSection id="como-funciona" tone="navy">
-          <div className="landing-section__head">
-            <p className="landing-label">Recorrido</p>
-            <h2 className="landing-display landing-display--sm">Cómo funciona</h2>
-            <p className="landing-muted">Cuatro pasos. Siempre sabes qué sigue.</p>
+        <LandingSection id="como-jugar" tone="cream">
+          <div className="landing-how-play__head">
+            <LandingBadge variant="lime">Guía rápida</LandingBadge>
+            <h2 className="landing-display landing-display--sm landing-how-play__title">
+              Cómo jugar sin perderse en las reglas
+            </h2>
+            <p className="landing-how-play__lead">
+              La experiencia está diseñada como un recorrido progresivo: primero entiendes la dinámica,
+              luego completas tus pronósticos y finalmente ves cómo se calculan tus puntos.
+            </p>
           </div>
-          <div className="landing-steps">
-            {LANDING_STEPS.map((step, i) => (
-              <article key={step.title} className="landing-card landing-card--dark landing-step">
-                <p className="landing-step__num">{String(i + 1).padStart(2, '0')}</p>
-                <h3>{step.title}</h3>
-                <p className="landing-muted">{step.desc}</p>
-                <div style={{ marginTop: '1rem' }}>
-                  <LandingProgressBar value={step.progress} />
-                </div>
+          <div className="landing-how-play__grid">
+            {LANDING_HOW_TO_PLAY.map((step, i) => (
+              <article key={step.title} className="landing-how-play__card">
+                <span className="landing-how-play__icon" aria-hidden>
+                  {i + 1}
+                </span>
+                <h3 className="landing-how-play__card-title">{step.title}</h3>
+                <p className="landing-how-play__card-desc">{step.desc}</p>
               </article>
             ))}
           </div>
@@ -160,43 +164,6 @@ export function LandingPage() {
           />
           <div className="landing-points-panel">
             <PointsPanel tab={pointTab} />
-          </div>
-        </LandingSection>
-
-        <LandingSection tone="navy">
-          <div className="landing-section__head">
-            <p className="landing-label">Extras</p>
-            <h2 className="landing-display landing-display--sm">Predicciones especiales</h2>
-            <p className="landing-muted">Bonus que pueden definir el ranking.</p>
-          </div>
-          <div className="landing-cards-grid">
-            {ALL_QUESTION_METAS.slice(0, 4).map((q) => (
-              <article key={q.id} className="landing-card landing-card--dark">
-                <LandingBadge variant="gold">+{p.specials.bonusQuestion} pts</LandingBadge>
-                <h3 style={{ marginTop: '0.75rem' }}>{q.labelEs}</h3>
-              </article>
-            ))}
-          </div>
-        </LandingSection>
-
-        <LandingSection tone="cream">
-          <div className="landing-section__head landing-section__head--center">
-            <p className="landing-label">Experiencia</p>
-            <h2 className="landing-display landing-display--sm">Predice como en la app</h2>
-          </div>
-          <div className="landing-sim" style={{ maxWidth: 480, margin: '0 auto' }}>
-            <LandingBadge variant="emerald">Guardado</LandingBadge>
-            <p className="landing-muted" style={{ marginTop: 8 }}>
-              Brasil vs Marruecos · Grupo C
-            </p>
-            <div className="landing-sim__scores">
-              <input className="landing-sim__input" defaultValue="2" disabled aria-label="Goles local" />
-              <span style={{ fontWeight: 900, opacity: 0.5 }}>—</span>
-              <input className="landing-sim__input" defaultValue="1" disabled aria-label="Goles visita" />
-            </div>
-            <p style={{ textAlign: 'center', margin: 0 }}>
-              <LandingBadge variant="lime">+6 pts posibles</LandingBadge>
-            </p>
           </div>
         </LandingSection>
 
@@ -238,55 +205,17 @@ export function LandingPage() {
           </div>
         </LandingSection>
 
-        <LandingSection tone="cream">
+        <LandingSection tone="cream" compactEdge="bottom">
           <div className="landing-section__head landing-section__head--center">
             <p className="landing-label">Eliminatorias</p>
             <h2 className="landing-display landing-display--sm">Bracket del torneo</h2>
           </div>
           <div className="landing-bracket-wrap">
-            <div className="landing-bracket">
-              {LANDING_BRACKET_ROUNDS.map((round) => (
-                <div key={round.id} className="landing-bracket__round">
-                  <p className="landing-label" style={{ marginBottom: 8 }}>
-                    {round.label}
-                  </p>
-                  {round.matches.map((match, idx) => (
-                    <div
-                      key={idx}
-                      className={`landing-bracket__match${'champion' in match && match.champion ? ' landing-bracket__match--champ' : ''}`}
-                    >
-                      <TeamFlagName
-                        teamId={match.home}
-                        name={TEAM_NAME_ES[match.home] ?? match.home}
-                        size={24}
-                        compact
-                      />
-                      <br />
-                      <TeamFlagName
-                        teamId={match.away}
-                        name={TEAM_NAME_ES[match.away] ?? match.away}
-                        size={24}
-                        compact
-                      />
-                      <p style={{ margin: '8px 0 0', color: 'var(--landing-gold)' }}>{match.score}</p>
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div className="landing-bracket__trophy" aria-hidden>
-                🏆
-                <p className="landing-label" style={{ fontSize: '0.75rem', marginTop: 8 }}>
-                  Campeón
-                </p>
-                <strong style={{ color: 'var(--landing-gold)' }}>
-                  {TEAM_NAME_ES.BRA ?? 'Brasil'}
-                </strong>
-              </div>
-            </div>
+            <LandingBracketBoard />
           </div>
         </LandingSection>
 
-        <LandingSection id="ranking" tone="cream">
+        <LandingSection id="ranking" tone="cream" compactEdge="top">
           <div className="landing-section__head">
             <p className="landing-label">Clasificación</p>
             <h2 className="landing-display landing-display--sm">Ranking en vivo</h2>

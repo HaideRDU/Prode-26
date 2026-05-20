@@ -29,7 +29,7 @@ export function ReglamentoPage() {
   const koPickMin = DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff
 
   return (
-    <section>
+    <div>
       <div className="rules-page-card">
         <h1 className="app-page-title">Reglamento</h1>
         <p className="auth-lead" style={{ textAlign: 'left' }}>
@@ -168,6 +168,6 @@ export function ReglamentoPage() {
           <li>Sorteo manual (si persiste el empate).</li>
         </ol>
       </div>
-    </section>
+    </div>
   )
 }

@@ -1,4 +1,5 @@
 @import './landing-tokens.css';
+@import './landing-bracket.css';
 
 @media (prefers-reduced-motion: reduce) {
   .landing-root *,
@@ -25,6 +26,33 @@
   color: var(--landing-cream);
   background: var(--landing-navy);
   min-height: 100vh;
+}
+
+/* Evita que index.css (--text-h) pise títulos en secciones claras */
+.landing-root h1,
+.landing-root h2,
+.landing-root h3 {
+  color: inherit;
+  font-family: var(--landing-font);
+  font-weight: 900;
+  margin: 0;
+}
+
+.landing-section--cream .landing-display,
+.landing-section--cream h2,
+.landing-section--cream h3 {
+  color: var(--landing-navy);
+}
+
+.landing-section--navy .landing-display,
+.landing-section--navy h2,
+.landing-section--navy h3 {
+  color: var(--landing-cream);
+}
+
+.landing-hero .landing-display,
+.landing-final-cta .landing-display {
+  color: var(--landing-cream);
 }
 
 .landing-display {
@@ -58,6 +86,14 @@
 
 .landing-section {
   padding-block: clamp(4rem, 10vw, 6rem);
+}
+
+.landing-section--compact-bottom {
+  padding-bottom: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.landing-section--compact-top {
+  padding-top: clamp(1.5rem, 4vw, 2.25rem);
 }
 
 .landing-section--cream {
@@ -150,6 +186,17 @@
   gap: 0.75rem;
 }
 
+.landing-nav__theme.theme-switch {
+  --theme-switch-border: var(--landing-glass-border);
+  --theme-switch-border-hover: rgba(250, 204, 21, 0.45);
+  --theme-switch-track-bg: rgba(255, 255, 255, 0.08);
+  --theme-switch-thumb-bg: var(--landing-card);
+  --theme-switch-icon-muted: var(--landing-slate-400);
+  --theme-switch-icon-active: var(--landing-gold);
+  --theme-switch-focus: var(--landing-gold);
+  flex-shrink: 0;
+}
+
 .landing-btn {
   display: inline-flex;
   align-items: center;
@@ -217,6 +264,7 @@
 .landing-hero {
   position: relative;
   overflow: hidden;
+  background-color: var(--landing-navy);
   padding-block: clamp(3rem, 8vw, 6rem) clamp(4rem, 10vw, 7rem);
 }
 
@@ -420,34 +468,87 @@
   transition: width 400ms var(--landing-ease);
 }
 
-/* Steps */
-.landing-steps {
-  display: grid;
-  gap: 1.25rem;
+/* Cómo jugar */
+.landing-how-play__head {
+  max-width: 40rem;
+  margin-bottom: 2rem;
 }
 
-@media (min-width: 768px) {
-  .landing-steps {
+.landing-how-play__head .landing-badge {
+  margin-bottom: 1rem;
+}
+
+.landing-how-play__title {
+  margin: 0 0 0.75rem;
+  color: var(--landing-navy);
+}
+
+.landing-how-play__lead {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--landing-slate-500);
+}
+
+.landing-how-play__grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .landing-how-play__grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 1024px) {
-  .landing-steps {
-    grid-template-columns: repeat(4, 1fr);
+@media (min-width: 960px) {
+  .landing-how-play__grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-.landing-step {
-  padding: 1.5rem;
+.landing-how-play__card {
+  padding: 1.35rem 1.25rem 1.4rem;
+  background: #fff;
+  border-radius: 1.15rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: var(--landing-shadow-soft);
 }
 
-.landing-step__num {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: rgba(250, 204, 21, 0.25);
+.landing-how-play__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.85rem;
+  border-radius: 0.5rem;
+  background: var(--landing-navy);
+  color: var(--landing-cream);
+  font-size: 0.875rem;
+  font-weight: 800;
   line-height: 1;
-  margin-bottom: 0.5rem;
+}
+
+.landing-how-play__card:nth-child(n + 4) .landing-how-play__icon {
+  background: var(--landing-emerald);
+  color: #fff;
+}
+
+.landing-how-play__card-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--landing-navy);
+  line-height: 1.25;
+}
+
+.landing-how-play__card-desc {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--landing-slate-500);
 }
 
 /* Pill tabs */
@@ -588,41 +689,6 @@
   background: rgba(250, 204, 21, 0.08);
 }
 
-/* Simulated UI */
-.landing-sim {
-  background: var(--landing-card);
-  border-radius: var(--landing-radius-card);
-  padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.landing-sim__scores {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin: 1.5rem 0;
-}
-
-.landing-sim__input {
-  width: 4rem;
-  height: 3.5rem;
-  text-align: center;
-  font-size: 1.75rem;
-  font-weight: 900;
-  font-family: inherit;
-  color: var(--landing-cream);
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-}
-
-.landing-sim__input:focus {
-  outline: none;
-  border-color: var(--landing-gold);
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25);
-}
-
 /* Fixture */
 .landing-fixture-grid {
   display: grid;
@@ -664,14 +730,23 @@
   margin: 0.75rem 0;
 }
 
-.landing-fixture-card__teams .team-flag-name,
-.landing-bracket__match .team-flag-name {
+.landing-fixture-card__teams .team-flag-name {
   color: var(--landing-cream);
   font-weight: 700;
 }
 
-.landing-fixture-card__teams .team-flag-name__flag,
-.landing-bracket__match .team-flag-name__flag {
+.landing-fixture-card__teams .team-flag-name__flag {
+  width: 24px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.landing-fixture-card__teams .team-flag-name__placeholder {
+  width: 24px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.12);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
@@ -687,50 +762,6 @@
   color: var(--landing-slate-400);
   display: flex;
   justify-content: space-between;
-}
-
-/* Bracket */
-.landing-bracket-wrap {
-  overflow-x: auto;
-  padding-bottom: 1rem;
-  -webkit-overflow-scrolling: touch;
-}
-
-.landing-bracket {
-  display: flex;
-  gap: 2rem;
-  min-width: min-content;
-  padding: 1rem 0.5rem 2rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.landing-bracket__round {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.landing-bracket__match {
-  min-width: 160px;
-  padding: 1rem 1.25rem;
-  background: var(--landing-card);
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.8125rem;
-  font-weight: 700;
-}
-
-.landing-bracket__match--champ {
-  border-color: rgba(250, 204, 21, 0.5);
-  box-shadow: 0 0 40px rgba(250, 204, 21, 0.2);
-}
-
-.landing-bracket__trophy {
-  text-align: center;
-  padding: 2rem 1.5rem;
-  font-size: 4rem;
-  filter: drop-shadow(0 0 24px rgba(250, 204, 21, 0.4));
 }
 
 /* Ranking table */

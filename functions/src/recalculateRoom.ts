@@ -5,6 +5,42 @@ import { assignRanks, computeScoresForRoom } from './lib/aggregateScores'
 
 type RoomMemberLite = { userId: string; displayName?: string }
 type RoomLite = { type?: 'private' | 'global'; enabledQuestionIds?: string[] }
+type UserProfileLite = { username?: string; email?: string }
+
+function isUidPlaceholder(name: string | undefined, userId: string): boolean {
+  const s = name?.trim()
+  if (!s) return true
+  return s === userId
+}
+
+function resolveDisplayName(
+  userId: string,
+  memberDisplayName: string | undefined,
+  profile?: UserProfileLite,
+): string {
+  const member = memberDisplayName?.trim()
+  if (member && !isUidPlaceholder(member, userId)) return member
+  const username = profile?.username?.trim()
+  if (username) return username
+  const emailLocal = profile?.email?.split('@')[0]?.trim()
+  if (emailLocal) return emailLocal
+  return userId
+}
+
+async function loadUserProfiles(
+  db: Firestore,
+  userIds: string[],
+): Promise<Map<string, UserProfileLite>> {
+  const map = new Map<string, UserProfileLite>()
+  await Promise.all(
+    userIds.map(async (uid) => {
+      const snap = await db.collection('users').doc(uid).get()
+      if (!snap.exists) return
+      map.set(uid, snap.data() as UserProfileLite)
+    }),
+  )
+  return map
+}
 
 /** Recalcula y escribe standings/{roomId}/users/{userId} para una sala. */
 export async function recalculateStandingsForRoom(db: Firestore, roomId: string): Promise<void> {
@@ -41,13 +77,13 @@ export async function recalculateStandingsForRoom(db: Firestore, roomId: string)
     enabledQuestionIds,
   )
 
-  const memberNameByUserId = new Map<string, string>()
+  const memberRawNameByUserId = new Map<string, string>()
   if (roomType === 'private') {
     const membersSnap = await db.collection('roomMembers').where('roomId', '==', roomId).get()
     membersSnap.forEach((d) => {
       const data = d.data() as RoomMemberLite
       if (typeof data.userId !== 'string' || data.userId.length === 0) return
-      memberNameByUserId.set(data.userId, data.displayName?.trim() || data.userId)
+      memberRawNameByUserId.set(data.userId, data.displayName?.trim() ?? '')
       if (!scores.has(data.userId)) {
         scores.set(data.userId, {
           points: 0,
@@ -67,19 +103,37 @@ export async function recalculateStandingsForRoom(db: Firestore, roomId: string)
     })
   }
 
+  const allUserIds = new Set([...scores.keys(), ...memberRawNameByUserId.keys()])
+  const profiles = await loadUserProfiles(db, [...allUserIds])
+  const displayNameByUserId = new Map<string, string>()
+  for (const uid of allUserIds) {
+    displayNameByUserId.set(
+      uid,
+      resolveDisplayName(uid, memberRawNameByUserId.get(uid), profiles.get(uid)),
+    )
+  }
+
   const ranked = assignRanks(scores)
   const existingStandingsSnap = await db.collection('standings').doc(roomId).collection('users').get()
+  const previousRankByUserId = new Map<string, number>()
+  existingStandingsSnap.forEach((d) => {
+    const prev = d.data().rank
+    if (typeof prev === 'number' && Number.isFinite(prev)) previousRankByUserId.set(d.id, prev)
+  })
   const existingUserIds = new Set(existingStandingsSnap.docs.map((d) => d.id))
   const nextUserIds = new Set(ranked.keys())
 
   const writer = db.bulkWriter()
   for (const [uid, row] of ranked) {
     const ref = db.collection('standings').doc(roomId).collection('users').doc(uid)
+    const prevRank = previousRankByUserId.get(uid)
+    const rankDelta = typeof prevRank === 'number' ? prevRank - row.rank : 0
     writer.set(ref, {
       userId: uid,
-      ...(memberNameByUserId.has(uid) ? { displayName: memberNameByUserId.get(uid) } : {}),
+      displayName: displayNameByUserId.get(uid) ?? uid,
       points: row.points,
       rank: row.rank,
+      rankDelta,
       breakdown: row.breakdown,
       tieBreak: row.tieBreak,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),

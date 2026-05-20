@@ -1054,6 +1054,153 @@
   box-sizing: border-box;
 }
 
+/* Leaderboard (esquema tipo landing ranking) */
+.standings-rank-card {
+  max-width: 920px;
+  margin: 0 auto 16px;
+  padding: 1.35rem 1.5rem 1.25rem;
+  border-radius: 1.15rem;
+  border: 1px solid var(--standings-border, var(--border));
+  background: var(--standings-surface, var(--bg));
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.1);
+  box-sizing: border-box;
+}
+
+.standings-rank-card__meta {
+  margin: 0 0 1.1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.standings-rank-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  table-layout: auto;
+}
+
+.standings-rank-table th {
+  padding: 0 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--standings-border, var(--border));
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: 0.72;
+  white-space: nowrap;
+}
+
+.standings-rank-table th:nth-child(1),
+.standings-rank-table td:nth-child(1) {
+  width: 2.75rem;
+  padding-left: 0;
+  padding-right: 0.35rem;
+  text-align: center;
+}
+
+.standings-rank-table th:nth-child(2),
+.standings-rank-table td:nth-child(2) {
+  width: 38%;
+  min-width: 7rem;
+}
+
+.standings-rank-table__center {
+  text-align: center;
+  min-width: 4.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.standings-rank-table__col-especiales {
+  min-width: 5.5rem;
+}
+
+.standings-rank-table td {
+  padding: 0.8rem 0.6rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--standings-border, var(--border)) 55%, transparent);
+  color: var(--text-h);
+  vertical-align: middle;
+}
+
+.standings-rank-table td:nth-child(1) {
+  padding-left: 0;
+  padding-right: 0.35rem;
+}
+
+.standings-rank-table tbody tr:last-child td {
+  border-bottom: none;
+  padding-bottom: 0.15rem;
+}
+
+.standings-rank-table__you td {
+  background: color-mix(in srgb, var(--wc26-accent, #facc15) 14%, var(--standings-surface, var(--bg)));
+  font-weight: 700;
+}
+
+.standings-rank-table__you--outside td {
+  border-top: 2px solid color-mix(in srgb, var(--wc26-accent, #facc15) 35%, var(--border));
+}
+
+.standings-rank-table__name {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.standings-rank-table__pts {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+}
+
+.standings-move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.standings-move--up {
+  background: #bef264;
+  color: #14532d;
+}
+
+.standings-move--down {
+  background: #fb7185;
+  color: #4c0519;
+}
+
+.standings-move--flat {
+  background: color-mix(in srgb, var(--standings-head-bg, #334155) 88%, #000);
+  color: color-mix(in srgb, var(--text) 85%, #fff);
+}
+
+.app-shell--wc26 .standings-move--flat {
+  background: #334155;
+  color: #94a3b8;
+}
+
+.standings-rank-pos {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+}
+
+.standings-rank-table .standings-own-rank-tag {
+  margin-left: 0.5rem;
+}
+
 .room-standings-fab-predictions {
   position: fixed;
   left: 50%;
@@ -1594,7 +1741,7 @@
 
 /* Modal informativo de reglas / puntos (centrado en viewport) */
 .pred-wc26 .pred-rules-modal-overlay {
-  z-index: 40;
+  z-index: 1200;
   align-items: center;
   justify-content: center;
   padding: max(16px, env(safe-area-inset-top, 0px)) 20px max(16px, env(safe-area-inset-bottom, 0px));

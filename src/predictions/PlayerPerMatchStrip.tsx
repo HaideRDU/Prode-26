@@ -1,5 +1,6 @@
 import type { MatchDoc } from '../types/predictions'
 import { DEFAULT_RULESET, getKnockoutPickLockAt, toDate } from '../config/ruleset'
+import { formatMatchTimeCOL } from '../utils/formatMatchTime'
 
 export function PlayerPerMatchStrip({
   nextMatch,
@@ -29,7 +30,7 @@ export function PlayerPerMatchStrip({
             <strong>Próximo partido:</strong> {teamLabel(nextMatch.teamHomeId)} vs {teamLabel(nextMatch.teamAwayId)}
           </div>
           <div className="app-muted" style={{ marginTop: 4 }}>
-            Cierre de selección: {lockAt ? lockAt.toLocaleString('es-CO') : 'sin fecha'}
+            Cierre de selección: {lockAt ? formatMatchTimeCOL(lockAt) : 'sin fecha'}
           </div>
         </div>
       ) : (

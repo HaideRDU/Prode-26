@@ -8,6 +8,7 @@ import { useMatchList } from '../hooks/useMatchList'
 import { useTeamLabels } from '../hooks/useTeamLabels'
 import type { MatchDoc } from '../types/predictions'
 import { DEFAULT_RULESET, getGeneralPredictionsLockAt, toDate } from '../config/ruleset'
+import { formatMatchTimeCOL } from '../utils/formatMatchTime'
 
 type BannerVariant = 'private' | 'global'
 
@@ -93,13 +94,7 @@ function ScoreBoxes({ home, away }: { home?: number | null; away?: number | null
 }
 
 function fmtKickoff(scheduledAt: unknown): string | null {
-  const d = toDate(scheduledAt)
-  if (!d) return null
-  return d.toLocaleString('es-CO', {
-    timeZone: DEFAULT_RULESET.timezone,
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
+  return formatMatchTimeCOL(scheduledAt) || null
 }
 
 function lockMinutesPhrase(minutes: number): string {
@@ -345,7 +340,6 @@ export function RoomHomePlayerPickBanner({
   const isPrivate = variant === 'private'
   const { matches } = useMatchList()
   const { label: teamLabel } = useTeamLabels()
-
   const bundle = useMemo(() => pickKnockoutBannerMatches(matches, Date.now()), [matches])
   const dualSameDay = bundle.mode === 'dual'
   const koLockKickPhrase = lockMinutesPhrase(DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff)
@@ -421,7 +415,13 @@ export function RoomHomePlayerPickBanner({
         <>
           <div className="room-home-player-banner__matches-grid room-home-player-banner__matches-grid--dual">
             {bundle.items.map((m) => (
-              <GlobalMatchColumn key={m.id} match={m} teamLabel={teamLabel} mock={false} selectSuffix={m.id} />
+              <GlobalMatchColumn
+                key={m.id}
+                match={m}
+                teamLabel={teamLabel}
+                mock={false}
+                selectSuffix={m.id}
+              />
             ))}
           </div>
           <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">

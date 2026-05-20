@@ -1,7 +1,7 @@
 import './seed-load-env.ts'
 import { getApp, initializeApp, applicationDefault } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
-import { linkApiSportsFixtures } from '../functions/src/apiSports/linkFixtures.ts'
+import { linkApiSportsFixtures } from '../functions/lib/apiSports/linkFixtures.js'
 
 const projectId =
   process.env.FIREBASE_PROJECT_ID ||

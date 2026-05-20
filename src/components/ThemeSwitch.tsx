@@ -1,5 +1,6 @@
 import './ThemeSwitch.css'
 import type { AppTheme } from '../theme/appTheme'
+import { useTranslation } from '../i18n/LocaleContext'
 
 function SunIcon({ active }: { active: boolean }) {
   return (
@@ -34,6 +35,7 @@ export function ThemeSwitch({
   /** `auth`: tokens WC26; `default`: variables del shell (perfil, etc.) */
   variant?: 'default' | 'auth'
 }) {
+  const { t } = useTranslation()
   const isDark = value === 'dark'
   const rootClass = ['theme-switch', variant === 'auth' ? 'theme-switch--auth' : '', className]
     .filter(Boolean)
@@ -46,7 +48,7 @@ export function ThemeSwitch({
         className="theme-switch__btn"
         role="switch"
         aria-checked={isDark}
-        aria-label={isDark ? 'Tema oscuro activo. Cambiar a claro.' : 'Tema claro activo. Cambiar a oscuro.'}
+        aria-label={isDark ? t('theme.switchToLight') : t('theme.switchToDark')}
         onClick={() => onChange(isDark ? 'light' : 'dark')}
       >
         <span className="theme-switch__thumb" aria-hidden />

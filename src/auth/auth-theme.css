@@ -42,11 +42,16 @@
   transition: background-color 220ms ease, color 220ms ease;
 }
 
-.auth-wc26-theme-corner {
+.auth-wc26-prefs-corner {
   position: absolute;
   top: max(12px, env(safe-area-inset-top, 0px));
   right: max(16px, env(safe-area-inset-right, 0px));
   z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 /* Subtle pitch + geometric layers */

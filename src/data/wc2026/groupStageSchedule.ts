@@ -26,60 +26,63 @@ export interface GroupStageMatchRow {
 /**
  * Partidos de fase de grupos en orden por grupo (A→L) y dentro de cada grupo por fecha lógica.
  * Emparejamientos: posiciones 1–4 del sorteo FIFA; MD1 (1v2, 3v4), MD2 (1v3, 4v2), MD3 (1v4, 2v3).
+ *
+ * Los `scheduledAt` de MD1 están verificados contra la API de TheSportsDB (eventsseason league=4429 s=2026).
+ * MD2 y MD3 serán corregidos por el script `link:tsdb` en Firestore.
  */
 export const GROUP_STAGE_SCHEDULE: readonly GroupStageMatchRow[] = [
   // —— Group A ——
-  { matchId: 'wc26-A-01', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'RSA', scheduledAt: '2026-06-11T22:00:00.000Z' },
-  { matchId: 'wc26-A-02', groupId: 'A', teamHomeId: 'KOR', teamAwayId: 'CZE', scheduledAt: '2026-06-11T19:00:00.000Z' },
+  { matchId: 'wc26-A-01', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'RSA', scheduledAt: '2026-06-11T19:00:00.000Z' },
+  { matchId: 'wc26-A-02', groupId: 'A', teamHomeId: 'KOR', teamAwayId: 'CZE', scheduledAt: '2026-06-12T02:00:00.000Z' },
   { matchId: 'wc26-A-03', groupId: 'A', teamHomeId: 'CZE', teamAwayId: 'RSA', scheduledAt: '2026-06-18T21:00:00.000Z' },
   { matchId: 'wc26-A-04', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'KOR', scheduledAt: '2026-06-18T23:00:00.000Z' },
   { matchId: 'wc26-A-05', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'CZE', scheduledAt: '2026-06-24T22:00:00.000Z' },
   { matchId: 'wc26-A-06', groupId: 'A', teamHomeId: 'KOR', teamAwayId: 'RSA', scheduledAt: '2026-06-24T19:00:00.000Z' },
   // —— Group B ——
-  { matchId: 'wc26-B-01', groupId: 'B', teamHomeId: 'CAN', teamAwayId: 'BIH', scheduledAt: '2026-06-12T23:00:00.000Z' },
-  { matchId: 'wc26-B-02', groupId: 'B', teamHomeId: 'QAT', teamAwayId: 'SUI', scheduledAt: '2026-06-13T20:00:00.000Z' },
+  { matchId: 'wc26-B-01', groupId: 'B', teamHomeId: 'CAN', teamAwayId: 'BIH', scheduledAt: '2026-06-12T19:00:00.000Z' },
+  { matchId: 'wc26-B-02', groupId: 'B', teamHomeId: 'QAT', teamAwayId: 'SUI', scheduledAt: '2026-06-13T19:00:00.000Z' },
   { matchId: 'wc26-B-03', groupId: 'B', teamHomeId: 'CAN', teamAwayId: 'QAT', scheduledAt: '2026-06-18T22:00:00.000Z' },
   { matchId: 'wc26-B-04', groupId: 'B', teamHomeId: 'SUI', teamAwayId: 'BIH', scheduledAt: '2026-06-18T19:00:00.000Z' },
   { matchId: 'wc26-B-05', groupId: 'B', teamHomeId: 'CAN', teamAwayId: 'SUI', scheduledAt: '2026-06-24T22:00:00.000Z' },
   { matchId: 'wc26-B-06', groupId: 'B', teamHomeId: 'BIH', teamAwayId: 'QAT', scheduledAt: '2026-06-24T19:00:00.000Z' },
   // —— Group C ——
   { matchId: 'wc26-C-01', groupId: 'C', teamHomeId: 'BRA', teamAwayId: 'MAR', scheduledAt: '2026-06-13T22:00:00.000Z' },
-  { matchId: 'wc26-C-02', groupId: 'C', teamHomeId: 'HAI', teamAwayId: 'SCO', scheduledAt: '2026-06-13T19:00:00.000Z' },
+  { matchId: 'wc26-C-02', groupId: 'C', teamHomeId: 'HAI', teamAwayId: 'SCO', scheduledAt: '2026-06-14T01:00:00.000Z' },
   { matchId: 'wc26-C-03', groupId: 'C', teamHomeId: 'BRA', teamAwayId: 'HAI', scheduledAt: '2026-06-19T22:00:00.000Z' },
   { matchId: 'wc26-C-04', groupId: 'C', teamHomeId: 'SCO', teamAwayId: 'MAR', scheduledAt: '2026-06-19T19:00:00.000Z' },
   { matchId: 'wc26-C-05', groupId: 'C', teamHomeId: 'BRA', teamAwayId: 'SCO', scheduledAt: '2026-06-24T22:00:00.000Z' },
   { matchId: 'wc26-C-06', groupId: 'C', teamHomeId: 'MAR', teamAwayId: 'HAI', scheduledAt: '2026-06-24T19:00:00.000Z' },
   // —— Group D ——
-  { matchId: 'wc26-D-01', groupId: 'D', teamHomeId: 'USA', teamAwayId: 'PAR', scheduledAt: '2026-06-12T22:00:00.000Z' },
-  { matchId: 'wc26-D-02', groupId: 'D', teamHomeId: 'AUS', teamAwayId: 'TUR', scheduledAt: '2026-06-13T23:00:00.000Z' },
+  { matchId: 'wc26-D-01', groupId: 'D', teamHomeId: 'USA', teamAwayId: 'PAR', scheduledAt: '2026-06-13T01:00:00.000Z' },
+  { matchId: 'wc26-D-02', groupId: 'D', teamHomeId: 'AUS', teamAwayId: 'TUR', scheduledAt: '2026-06-14T04:00:00.000Z' },
   { matchId: 'wc26-D-03', groupId: 'D', teamHomeId: 'USA', teamAwayId: 'AUS', scheduledAt: '2026-06-19T22:00:00.000Z' },
   { matchId: 'wc26-D-04', groupId: 'D', teamHomeId: 'TUR', teamAwayId: 'PAR', scheduledAt: '2026-06-19T19:00:00.000Z' },
   { matchId: 'wc26-D-05', groupId: 'D', teamHomeId: 'USA', teamAwayId: 'TUR', scheduledAt: '2026-06-25T22:00:00.000Z' },
   { matchId: 'wc26-D-06', groupId: 'D', teamHomeId: 'PAR', teamAwayId: 'AUS', scheduledAt: '2026-06-25T19:00:00.000Z' },
   // —— Group E ——
-  { matchId: 'wc26-E-01', groupId: 'E', teamHomeId: 'GER', teamAwayId: 'CUW', scheduledAt: '2026-06-14T22:00:00.000Z' },
-  { matchId: 'wc26-E-02', groupId: 'E', teamHomeId: 'CIV', teamAwayId: 'ECU', scheduledAt: '2026-06-14T19:00:00.000Z' },
+  { matchId: 'wc26-E-01', groupId: 'E', teamHomeId: 'GER', teamAwayId: 'CUW', scheduledAt: '2026-06-14T17:00:00.000Z' },
+  { matchId: 'wc26-E-02', groupId: 'E', teamHomeId: 'CIV', teamAwayId: 'ECU', scheduledAt: '2026-06-14T23:00:00.000Z' },
   { matchId: 'wc26-E-03', groupId: 'E', teamHomeId: 'GER', teamAwayId: 'CIV', scheduledAt: '2026-06-20T22:00:00.000Z' },
   { matchId: 'wc26-E-04', groupId: 'E', teamHomeId: 'ECU', teamAwayId: 'CUW', scheduledAt: '2026-06-20T19:00:00.000Z' },
   { matchId: 'wc26-E-05', groupId: 'E', teamHomeId: 'GER', teamAwayId: 'ECU', scheduledAt: '2026-06-25T22:00:00.000Z' },
   { matchId: 'wc26-E-06', groupId: 'E', teamHomeId: 'CUW', teamAwayId: 'CIV', scheduledAt: '2026-06-25T19:00:00.000Z' },
   // —— Group F ——
-  { matchId: 'wc26-F-01', groupId: 'F', teamHomeId: 'NED', teamAwayId: 'JPN', scheduledAt: '2026-06-14T22:00:00.000Z' },
-  { matchId: 'wc26-F-02', groupId: 'F', teamHomeId: 'SWE', teamAwayId: 'TUN', scheduledAt: '2026-06-14T19:00:00.000Z' },
+  { matchId: 'wc26-F-01', groupId: 'F', teamHomeId: 'NED', teamAwayId: 'JPN', scheduledAt: '2026-06-14T20:00:00.000Z' },
+  { matchId: 'wc26-F-02', groupId: 'F', teamHomeId: 'SWE', teamAwayId: 'TUN', scheduledAt: '2026-06-15T02:00:00.000Z' },
   { matchId: 'wc26-F-03', groupId: 'F', teamHomeId: 'NED', teamAwayId: 'SWE', scheduledAt: '2026-06-20T22:00:00.000Z' },
   { matchId: 'wc26-F-04', groupId: 'F', teamHomeId: 'TUN', teamAwayId: 'JPN', scheduledAt: '2026-06-20T19:00:00.000Z' },
   { matchId: 'wc26-F-05', groupId: 'F', teamHomeId: 'NED', teamAwayId: 'TUN', scheduledAt: '2026-06-25T22:00:00.000Z' },
   { matchId: 'wc26-F-06', groupId: 'F', teamHomeId: 'JPN', teamAwayId: 'SWE', scheduledAt: '2026-06-25T19:00:00.000Z' },
   // —— Group G ——
-  { matchId: 'wc26-G-01', groupId: 'G', teamHomeId: 'BEL', teamAwayId: 'EGY', scheduledAt: '2026-06-15T22:00:00.000Z' },
-  { matchId: 'wc26-G-02', groupId: 'G', teamHomeId: 'IRN', teamAwayId: 'NZL', scheduledAt: '2026-06-15T19:00:00.000Z' },
+  { matchId: 'wc26-G-01', groupId: 'G', teamHomeId: 'BEL', teamAwayId: 'EGY', scheduledAt: '2026-06-15T19:00:00.000Z' },
+  { matchId: 'wc26-G-02', groupId: 'G', teamHomeId: 'IRN', teamAwayId: 'NZL', scheduledAt: '2026-06-15T22:00:00.000Z' },
   { matchId: 'wc26-G-03', groupId: 'G', teamHomeId: 'BEL', teamAwayId: 'IRN', scheduledAt: '2026-06-21T22:00:00.000Z' },
   { matchId: 'wc26-G-04', groupId: 'G', teamHomeId: 'NZL', teamAwayId: 'EGY', scheduledAt: '2026-06-21T19:00:00.000Z' },
   { matchId: 'wc26-G-05', groupId: 'G', teamHomeId: 'BEL', teamAwayId: 'NZL', scheduledAt: '2026-06-26T22:00:00.000Z' },
   { matchId: 'wc26-G-06', groupId: 'G', teamHomeId: 'EGY', teamAwayId: 'IRN', scheduledAt: '2026-06-26T19:00:00.000Z' },
   // —— Group H ——
-  { matchId: 'wc26-H-01', groupId: 'H', teamHomeId: 'ESP', teamAwayId: 'CPV', scheduledAt: '2026-06-15T22:00:00.000Z' },
-  { matchId: 'wc26-H-02', groupId: 'H', teamHomeId: 'KSA', teamAwayId: 'URU', scheduledAt: '2026-06-15T19:00:00.000Z' },
+  { matchId: 'wc26-H-01', groupId: 'H', teamHomeId: 'ESP', teamAwayId: 'CPV', scheduledAt: '2026-06-15T16:00:00.000Z' },
+  { matchId: 'wc26-H-02', groupId: 'H', teamHomeId: 'KSA', teamAwayId: 'URU', scheduledAt: '2026-06-15T22:00:00.000Z' },
   { matchId: 'wc26-H-03', groupId: 'H', teamHomeId: 'ESP', teamAwayId: 'KSA', scheduledAt: '2026-06-21T22:00:00.000Z' },
   { matchId: 'wc26-H-04', groupId: 'H', teamHomeId: 'URU', teamAwayId: 'CPV', scheduledAt: '2026-06-21T19:00:00.000Z' },
   { matchId: 'wc26-H-05', groupId: 'H', teamHomeId: 'ESP', teamAwayId: 'URU', scheduledAt: '2026-06-26T22:00:00.000Z' },

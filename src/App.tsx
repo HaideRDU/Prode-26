@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import {
   EmailAuthProvider,
@@ -17,14 +17,26 @@ import {
   type AuthError,
 } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from './firebase'
-import { getStoredUsername, saveUsername, syncUserProfile } from './userProfile'
+import {
+  AmericasTimezonePicker,
+} from './components/AmericasTimezonePicker'
+import {
+  DEFAULT_USER_TIME_ZONE,
+  getRegionForTimeZone,
+  guessTimeZoneFromBrowser,
+  type AmericasRegion,
+} from './data/americasTimezones'
+import { getStoredTimeZone, getStoredUsername, saveTimeZone, saveUsername, syncUserProfile } from './userProfile'
 import { MainLayout } from './layout/MainLayout'
 import './layout/MainLayout.css'
 import { DashboardPage } from './pages/DashboardPage'
+import { SalasPage } from './pages/SalasPage'
+import { GlobalRoomPage } from './pages/GlobalRoomPage'
 import { RoomsHubPage } from './pages/RoomsHubPage'
 import { RoomPredictionsPage } from './pages/RoomPredictionsPage'
 import { RoomStandingsPage } from './pages/RoomStandingsPage'
 import { ReglamentoPage } from './pages/ReglamentoPage'
+import { ReglamentoPublicPage } from './pages/ReglamentoPublicPage'
 import { LandingPage } from './landing/LandingPage'
 import type { AccountOutletContext } from './types/outletContext'
 import { AuthLayout } from './auth/AuthLayout'
@@ -33,7 +45,10 @@ import { LoginView } from './auth/LoginView'
 import './auth/auth-theme.css'
 import './theme/theme-dark.css'
 import './App.css'
+import { applyAppLocale, getStoredAppLocale, type AppLocale } from './i18n/appLocale'
+import { LocaleProvider } from './i18n/LocaleContext'
 import { applyAppTheme, getStoredAppTheme, type AppTheme } from './theme/appTheme'
+import type { UiControl } from './theme/uiControl'
 
 const AUTH_SAVED_EMAIL_KEY = 'authSavedEmail'
 
@@ -111,6 +126,11 @@ function App() {
   const [forgotSending, setForgotSending] = useState(false)
   const [username, setUsername] = useState('')
   const [needsUsername, setNeedsUsername] = useState(false)
+  const [needsTimeZone, setNeedsTimeZone] = useState(false)
+  const [timeZone, setTimeZone] = useState(DEFAULT_USER_TIME_ZONE)
+  const [americasRegion, setAmericasRegion] = useState<AmericasRegion>(() =>
+    getRegionForTimeZone(DEFAULT_USER_TIME_ZONE),
+  )
   const [pendingGoogleCredential, setPendingGoogleCredential] =
     useState<AuthCredential | null>(null)
   const [isLinkGoogleModalOpen, setIsLinkGoogleModalOpen] = useState(false)
@@ -122,20 +142,37 @@ function App() {
   const [appTheme, setAppThemeState] = useState<AppTheme>(() =>
     typeof window !== 'undefined' ? getStoredAppTheme() : 'light',
   )
+  const [appLocale, setAppLocaleState] = useState<AppLocale>(() =>
+    typeof window !== 'undefined' ? getStoredAppLocale() : 'es',
+  )
 
   const setAppTheme = useCallback((t: AppTheme) => {
     setAppThemeState(t)
     applyAppTheme(t)
   }, [])
 
-  const authThemeControl = useMemo(
-    () => ({ theme: appTheme, onThemeChange: setAppTheme }),
-    [appTheme, setAppTheme],
+  const setAppLocale = useCallback((l: AppLocale) => {
+    setAppLocaleState(l)
+    applyAppLocale(l)
+  }, [])
+
+  const uiControl = useMemo(
+    (): UiControl => ({
+      theme: appTheme,
+      onThemeChange: setAppTheme,
+      locale: appLocale,
+      onLocaleChange: setAppLocale,
+    }),
+    [appTheme, setAppTheme, appLocale, setAppLocale],
   )
 
   useLayoutEffect(() => {
     applyAppTheme(appTheme)
   }, [appTheme])
+
+  useLayoutEffect(() => {
+    applyAppLocale(appLocale)
+  }, [appLocale])
 
   const providerIds = useMemo(
     () => new Set(user?.providerData.map((provider) => provider.providerId) ?? []),
@@ -189,9 +226,16 @@ function App() {
           }
           try {
             await syncUserProfile(nextUser)
-            const storedUsername = await getStoredUsername(nextUser)
+            const [storedUsername, storedTimeZone] = await Promise.all([
+              getStoredUsername(nextUser),
+              getStoredTimeZone(nextUser),
+            ])
             setNeedsUsername(!storedUsername)
+            setNeedsTimeZone(!storedTimeZone)
             setUsername(storedUsername ?? '')
+            const tz = storedTimeZone ?? guessTimeZoneFromBrowser()
+            setTimeZone(tz)
+            setAmericasRegion(getRegionForTimeZone(tz))
             setProfileError(null)
           } catch (e) {
             setNeedsUsername(true)
@@ -534,7 +578,18 @@ function App() {
     }
   }
 
-  async function handleSaveUsername() {
+  const persistTimeZone = useCallback(
+    async (tz: string) => {
+      if (!user) return
+      await saveTimeZone(user, tz)
+      setTimeZone(tz)
+      setAmericasRegion(getRegionForTimeZone(tz))
+      setNeedsTimeZone(false)
+    },
+    [user],
+  )
+
+  async function handleSaveProfileSetup() {
     if (!user) return
     setAuthError(null)
     setInfo(null)
@@ -549,14 +604,22 @@ function App() {
       )
       return
     }
+    if (!timeZone) {
+      setAuthError('Elige una zona horaria.')
+      return
+    }
     try {
       await saveUsername(user, usernameValue)
+      await saveTimeZone(user, timeZone)
       setNeedsUsername(false)
-      setInfo('Nombre de usuario guardado correctamente.')
+      setNeedsTimeZone(false)
+      setInfo('Perfil guardado correctamente.')
     } catch (e) {
-      setAuthError(e instanceof Error ? e.message : 'No se pudo guardar el nombre de usuario.')
+      setAuthError(e instanceof Error ? e.message : 'No se pudo guardar el perfil.')
     }
   }
+
+  const needsProfileSetup = needsUsername || needsTimeZone
 
   const accountOutletContext = useMemo((): AccountOutletContext | null => {
     if (!user) return null
@@ -576,6 +639,11 @@ function App() {
       profileError,
       appTheme,
       setAppTheme,
+      timeZone,
+      americasRegion,
+      setAmericasRegion,
+      setTimeZone,
+      persistTimeZone,
     }
   }, [
     user,
@@ -589,11 +657,16 @@ function App() {
     profileError,
     appTheme,
     setAppTheme,
+    timeZone,
+    americasRegion,
+    persistTimeZone,
   ])
 
+  let appContent: ReactNode
+
   if (!isFirebaseConfigured) {
-    return (
-      <AuthLayout themeControl={authThemeControl}>
+    appContent = (
+      <AuthLayout uiControl={uiControl}>
         <BrandLogo />
         <h1>Configura Firebase</h1>
         <p className="auth-wc26-lead">
@@ -602,26 +675,23 @@ function App() {
         </p>
       </AuthLayout>
     )
-  }
-
-  if (loading) {
-    return (
-      <AuthLayout themeControl={authThemeControl}>
+  } else if (loading) {
+    appContent = (
+      <AuthLayout uiControl={uiControl}>
         <BrandLogo />
         <p className="auth-wc26-lead" style={{ marginBottom: 0 }}>
           Cargando sesión…
         </p>
       </AuthLayout>
     )
-  }
-
-  if (user && needsUsername) {
-    return (
-      <AuthLayout themeControl={authThemeControl}>
+  } else if (user && needsProfileSetup) {
+    appContent = (
+      <AuthLayout uiControl={uiControl}>
         <BrandLogo />
         <h1>Crea tu usuario</h1>
         <p className="auth-wc26-lead">
-          Antes de continuar, define tu nombre de usuario. Lo usarás más adelante en la app.
+          Antes de continuar, define tu nombre de usuario y tu zona horaria para ver los partidos en tu
+          horario local.
         </p>
         <div className="auth-wc26-fields">
           <div className="auth-wc26-field-wrap">
@@ -638,10 +708,26 @@ function App() {
               autoComplete="username"
             />
           </div>
+          <div className="auth-wc26-field-wrap">
+            <p className="auth-wc26-label" style={{ marginBottom: 4 }}>
+              Zona horaria
+            </p>
+            <p className="auth-wc26-hint" style={{ marginTop: 0, marginBottom: 8 }}>
+              Elige tu región y ciudad en América.
+            </p>
+            <AmericasTimezonePicker
+              idPrefix="auth-tz"
+              variant="auth"
+              region={americasRegion}
+              timeZone={timeZone}
+              onRegionChange={setAmericasRegion}
+              onTimeZoneChange={setTimeZone}
+            />
+          </div>
         </div>
         <div className="auth-wc26-actions" style={{ marginTop: 20 }}>
-          <button type="button" className="auth-wc26-btn-primary" onClick={handleSaveUsername}>
-            Guardar nombre de usuario
+          <button type="button" className="auth-wc26-btn-primary" onClick={() => void handleSaveProfileSetup()}>
+            Guardar y continuar
           </button>
           <button type="button" className="auth-wc26-link" onClick={handleSignOut}>
             Cerrar sesión
@@ -656,8 +742,7 @@ function App() {
         ) : null}
       </AuthLayout>
     )
-  }
-
+  } else {
   const loginModals = (
     <>
             {isVerifyEmailModalOpen ? (
@@ -890,17 +975,26 @@ function App() {
 
   const isAuthed = Boolean(user && accountOutletContext)
 
-  return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Routes>
-        <Route path="/" element={isAuthed ? <Navigate to="/inicio" replace /> : <LandingPage />} />
+  appContent = (
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <Routes>
+        <Route
+          path="/"
+          element={
+            isAuthed ? (
+              <Navigate to="/inicio" replace />
+            ) : (
+              <LandingPage uiControl={uiControl} />
+            )
+          }
+        />
         <Route
           path="/login"
           element={
             isAuthed ? (
               <Navigate to="/inicio" replace />
             ) : (
-              <AuthLayout themeControl={authThemeControl}>
+              <AuthLayout uiControl={uiControl}>
                 <LoginView
                   email={email}
                   setEmail={setEmail}
@@ -940,7 +1034,7 @@ function App() {
             )
           }
         />
-        <Route path="/reglamento" element={<ReglamentoPage />} />
+        {!isAuthed ? <Route path="/reglamento" element={<ReglamentoPublicPage />} /> : null}
         <Route
           element={
             isAuthed && user && accountOutletContext ? (
@@ -955,6 +1049,9 @@ function App() {
           }
         >
           <Route path="inicio" element={<DashboardPage user={user!} />} />
+          <Route path="salas" element={<SalasPage user={user!} />} />
+          <Route path="reglamento" element={<ReglamentoPage />} />
+          <Route path="sala-global" element={<GlobalRoomPage user={user!} />} />
           <Route path="rooms" element={<RoomsHubPage user={user!} />} />
           <Route path="rooms/new" element={<Navigate to="/rooms" replace />} />
           <Route path="join" element={<Navigate to="/rooms?tab=join" replace />} />
@@ -962,8 +1059,15 @@ function App() {
           <Route path="room/:roomId/standings" element={<RoomStandingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to={isAuthed ? '/inicio' : '/'} replace />} />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+  )
+  }
+
+  return (
+    <LocaleProvider locale={appLocale} setLocale={setAppLocale}>
+      {appContent}
+    </LocaleProvider>
   )
 }
 

@@ -1,0 +1,390 @@
+/* Dashboard Bolsa de premios y ranking (sala) */
+.standings-dashboard {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.standings-dashboard .standings-rank-card {
+  max-width: none;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.standings-dashboard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.standings-dashboard__header-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.standings-dashboard__title {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-h);
+  line-height: 1.2;
+}
+
+.standings-dashboard__lead {
+  margin: 0.35rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text);
+  max-width: 36rem;
+}
+
+.standings-dashboard__update-badge {
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #14532d;
+  background: #bef264;
+  max-width: 20rem;
+}
+
+.app-shell--wc26 .standings-dashboard__update-badge {
+  color: #ecfccb;
+  background: color-mix(in srgb, #84cc16 35%, #1e293b);
+  border: 1px solid color-mix(in srgb, #84cc16 45%, transparent);
+}
+
+.standings-dashboard__help-btn {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.standings-dashboard__help-btn:hover {
+  border-color: var(--wc26-accent, #facc15);
+}
+
+.standings-dashboard__cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.standings-dashboard__cards-row--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.standings-dashboard__cards-row > .standings-dashboard-card {
+  min-width: 0;
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .standings-dashboard__cards-row,
+  .standings-dashboard__cards-row--two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.standings-dashboard-card {
+  padding: 1.15rem 1.25rem 1.2rem;
+  border-radius: 1rem;
+  border: 1px solid var(--standings-border, var(--border));
+  background: var(--standings-surface, var(--bg));
+  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
+  box-sizing: border-box;
+}
+
+.standings-dashboard-card__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #84cc16;
+  line-height: 1.3;
+}
+
+h2.standings-dashboard-card__label {
+  font-size: 0.6875rem;
+}
+
+.app-shell--wc26 .standings-dashboard-card__label {
+  color: #a3e635;
+}
+
+.standings-dashboard-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.standings-dashboard-card__meta {
+  margin: 0.35rem 0 0.85rem;
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+/* Premios de la sala */
+.standings-prize-pool__room {
+  margin: 0 0 0.85rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--text);
+  opacity: 0.82;
+}
+
+.standings-prize-pool__list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.standings-prize-pool__row-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.standings-prize-pool__place {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.standings-prize-pool__value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-h);
+  text-align: right;
+}
+
+.standings-prize-pool__bar {
+  height: 6px;
+  border-radius: 999px;
+}
+
+.standings-prize-pool__bar--first {
+  background: linear-gradient(90deg, #84cc16, #bef264);
+  width: 100%;
+}
+
+.standings-prize-pool__bar--second {
+  background: linear-gradient(90deg, #eab308, #facc15);
+  width: 72%;
+}
+
+.standings-prize-pool__bar--third {
+  background: linear-gradient(90deg, #f97316, #fb923c);
+  width: 48%;
+}
+
+/* Participación */
+.standings-participation__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 0.85rem;
+  margin: 0.65rem 0 0;
+}
+
+.standings-participation__stat {
+  min-width: 0;
+}
+
+.standings-participation__stat dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.standings-participation__stat dt {
+  margin: 0.2rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.85;
+  line-height: 1.3;
+}
+
+.standings-participation__stat--lime dd {
+  color: #a3e635;
+}
+
+.standings-participation__stat--gold dd {
+  color: #facc15;
+}
+
+.standings-participation__stat--orange dd {
+  color: #fb923c;
+}
+
+.standings-participation__stat--white dd {
+  color: var(--text-h);
+}
+
+/* Mi estado */
+.standings-my-status__panel {
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, #22c55e 12%, var(--standings-surface, var(--bg)));
+  border: 1px solid color-mix(in srgb, #84cc16 25%, var(--border));
+}
+
+.app-shell--wc26 .standings-my-status__panel {
+  background: color-mix(in srgb, #166534 35%, #0f172a);
+  border-color: color-mix(in srgb, #84cc16 30%, #334155);
+}
+
+.standings-my-status__panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.standings-my-status__user {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.standings-my-status__rank {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 800;
+  color: var(--text-h);
+  line-height: 1.15;
+}
+
+.standings-my-status__summary {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.standings-my-status__empty {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.standings-move--lg {
+  min-width: 3.25rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+}
+
+/* Ranking section header */
+.standings-rank-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.standings-rank-section__titles {
+  min-width: 0;
+}
+
+.standings-rank-section__label {
+  margin: 0 0 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #84cc16;
+}
+
+.app-shell--wc26 .standings-rank-section__label {
+  color: #a3e635;
+}
+
+.standings-rank-section__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.standings-rank-section__live {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.standings-rank-pos-medal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  padding: 0 0.3rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.standings-rank-pos-medal--1 {
+  background: #facc15;
+  color: #0f172a;
+}
+
+.standings-rank-pos-medal--2 {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+.standings-rank-pos-medal--3 {
+  background: #d97706;
+  color: #fffbeb;
+}
+
+.app-shell--wc26 .standings-rank-pos-medal--2 {
+  background: #64748b;
+  color: #f8fafc;
+}
+
+.app-shell--wc26 .standings-rank-pos-medal--3 {
+  background: #b45309;
+  color: #fffbeb;
+}

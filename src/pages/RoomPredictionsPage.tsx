@@ -30,6 +30,7 @@ import { isBonusPayloadComplete } from '../domain/bonusAnswerComplete'
 import { ALL_QUESTION_METAS, type QuestionMeta } from '../data/bonusQuestionsMeta'
 import { getRoom } from '../services/roomsService'
 import { DEFAULT_RULESET, getGeneralPredictionsLockAt } from '../config/ruleset'
+import { formatMatchTimeCOL } from '../utils/formatMatchTime'
 import { GroupStageSection, type GroupDraftEntry } from '../predictions/GroupStageSection'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
 import { KnockoutSection } from '../predictions/KnockoutSection'
@@ -627,7 +628,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     }
     if (generalPredictionsLocked) {
       out.push(
-        `Las predicciones generales están cerradas desde ${generalLockAt.toLocaleString('es-CO')} (${DEFAULT_RULESET.timezone}).`,
+        `Las predicciones generales están cerradas desde ${formatMatchTimeCOL(generalLockAt)} (${DEFAULT_RULESET.timezone}).`,
       )
       return out
     }

@@ -1,7 +1,7 @@
 import './seed-load-env.ts'
 import { getApp, initializeApp, applicationDefault } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
-import { syncLiveMatches } from '../functions/src/apiSports/syncMatches.ts'
+import { syncLiveMatches } from '../functions/lib/apiSports/syncMatches.js'
 
 const projectId =
   process.env.FIREBASE_PROJECT_ID ||

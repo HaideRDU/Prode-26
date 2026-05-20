@@ -22,28 +22,80 @@ export const LANDING_RANKING = [
   { rank: 5, name: 'lucia_26', pts: 187, exact: 7, trend: '+3' },
 ]
 
-export const LANDING_BRACKET_ROUNDS = [
-  {
-    id: 'sf',
-    label: 'Semifinales',
-    matches: [
-      { home: 'BRA', away: 'ESP', score: '2-1' },
-      { home: 'FRA', away: 'ARG', score: '1-1' },
-    ],
-  },
-  {
-    id: 'final',
-    label: 'Final',
-    matches: [{ home: 'BRA', away: 'FRA', score: '—', champion: 'BRA' }],
-  },
+export type LandingBracketMatchData = {
+  home: string
+  away: string
+  score: string
+  /** Marcador de penales, p. ej. "4-3" (solo si el tiempo reglamentario empata). */
+  penalties?: string
+}
+
+export type LandingBracketMatchWithDate = LandingBracketMatchData & {
+  date: string
+}
+
+export const LANDING_BRACKET_QF_LEFT: LandingBracketMatchWithDate[] = [
+  { date: '05 JUL', home: 'NED', away: 'ARG', score: '0-2' },
+  { date: '05 JUL', home: 'USA', away: 'MEX', score: '0-0', penalties: '3-4' },
+  { date: '06 JUL', home: 'URU', away: 'GHA', score: '1-1', penalties: '4-2' },
+  { date: '06 JUL', home: 'COL', away: 'JPN', score: '2-1' },
 ]
 
-export const LANDING_STEPS = [
-  { title: 'Unite', desc: 'Crea o únete a una sala con código de invitación.', progress: 100 },
-  { title: 'Predice', desc: 'Marcadores, llaves y preguntas especiales antes del pitazo.', progress: 68 },
-  { title: 'Compite', desc: 'Suma puntos en vivo cuando cierran los partidos.', progress: 42 },
-  { title: 'Sube en el ranking', desc: 'Desempate por exactos, especiales y campeón.', progress: 24 },
+export const LANDING_BRACKET_QF_RIGHT: LandingBracketMatchWithDate[] = [
+  { date: '05 JUL', home: 'ENG', away: 'SUI', score: '2-1' },
+  { date: '05 JUL', home: 'MAR', away: 'POR', score: '1-0' },
+  { date: '06 JUL', home: 'CRO', away: 'BEL', score: '1-1', penalties: '3-4' },
+  { date: '06 JUL', home: 'ESP', away: 'GER', score: '1-1', penalties: '2-1' },
 ]
+
+export const LANDING_BRACKET_SEMIS: LandingBracketMatchData[] = [
+  { home: 'BRA', away: 'ESP', score: '2-1' },
+  { home: 'FRA', away: 'ARG', score: '1-1', penalties: '4-3' },
+]
+
+export const LANDING_BRACKET_THIRD_MATCH: LandingBracketMatchData = {
+  home: 'ESP',
+  away: 'ARG',
+  score: '—',
+}
+
+export const LANDING_BRACKET_FINAL_MATCH: LandingBracketMatchData = {
+  home: 'BRA',
+  away: 'FRA',
+  score: '2-1',
+}
+
+export const LANDING_BRACKET_FINAL_META = {
+  date: '19 Jul',
+  venue: 'MetLife Stadium',
+}
+
+export const LANDING_HOW_TO_PLAY = [
+  {
+    title: 'Regístrate o ingresa',
+    desc: 'Crea tu usuario y entra al panel de pronósticos.',
+  },
+  {
+    title: 'Revisa el fixture',
+    desc: 'Navega por fase: grupos, ronda de 32, octavos, cuartos, semis y final.',
+  },
+  {
+    title: 'Ingresa marcadores',
+    desc: 'Usa campos grandes, banderas y estados de guardado visibles.',
+  },
+  {
+    title: 'Guarda antes del cierre',
+    desc: 'Los pronósticos generales se bloquean antes del torneo; jugador/partido cierra 1 hora antes.',
+  },
+  {
+    title: 'Acumula puntos',
+    desc: 'Cada partido muestra desglose: marcador, ganador, avance y bonus.',
+  },
+  {
+    title: 'Consulta el ranking',
+    desc: 'Mira tu puesto, puntos extra y criterios de desempate.',
+  },
+] as const
 
 export const LANDING_FEATURES = [
   {

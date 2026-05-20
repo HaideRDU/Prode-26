@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { useStandings } from '../hooks/useStandings'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
@@ -9,9 +9,16 @@ import { getRoom } from '../services/roomsService'
 import { InviteCodeQuickStrip } from '../rooms/InviteCodeQuickStrip'
 import { PrivateRoomAdminModal } from '../rooms/PrivateRoomAdminModal'
 import { RoomInviteModal } from '../rooms/RoomInviteModal'
-import { RoomPrivatePodiumSection } from '../rooms/RoomPrivatePodiumSection'
 import { RoomHomePlayerPickBanner } from '../predictions/RoomHomePlayerPickBanner'
+import { useRoomStandingsMeta } from '../hooks/useRoomStandingsMeta'
+import { StandingsLeaderboard } from '../standings/StandingsLeaderboard'
+import { StandingsMyStatusCard } from '../standings/StandingsMyStatusCard'
+import { StandingsPageHeader } from '../standings/StandingsPageHeader'
+import { StandingsParticipationCard } from '../standings/StandingsParticipationCard'
+import { StandingsPrizePoolCard } from '../standings/StandingsPrizePoolCard'
+import { roomHasBonusQuestions } from '../utils/roomBonusQuestions'
 import '../predictions/pred-theme.css'
+import '../standings/standings-dashboard.css'
 
 const predictionPromptStorageKey = (id: string) => `wc26_room_prediction_prompt:${id}`
 
@@ -20,8 +27,7 @@ export function RoomStandingsPage() {
   const navigate = useNavigate()
   const { user } = useOutletContext<AccountOutletContext>()
   const { standings, error, loading, isGlobalRoom } = useStandings(roomId, user?.uid)
-  const tieBreakHelpId = useId()
-  const pointsHelpId = useId()
+  const meta = useRoomStandingsMeta(roomId, standings)
   const [showScoringHelpModal, setShowScoringHelpModal] = useState(false)
   const [room, setRoom] = useState<RoomDoc | null>(null)
   const [showAdmin, setShowAdmin] = useState(false)
@@ -88,6 +94,13 @@ export function RoomStandingsPage() {
   const canManageRoom = Boolean(
     user && room && room.type === 'private' && room.createdBy === user.uid && roomId !== 'global',
   )
+  const showSpecialsColumn = roomHasBonusQuestions(room, isGlobalRoom)
+  const myStandingRow = standings.find((row) => row.isCurrentUser)
+  const standingsSubtitle = isGlobalRoom
+    ? 'Sala global · Top 50'
+    : room?.name
+      ? `Sala «${room.name}»`
+      : 'Miembros de la sala privada'
 
   async function refreshRoomDoc() {
     if (!roomId) return
@@ -273,82 +286,35 @@ export function RoomStandingsPage() {
           </div>
         </div>
       ) : null}
-      <div className="page-title-with-help">
-        <h1 className="app-page-title">Clasificación</h1>
-        <span className="help-points-wrap" tabIndex={-1}>
-          <button
-            type="button"
-            className="help-points-trigger"
-            aria-label="Cómo suman los puntos"
-            aria-describedby={pointsHelpId}
-            title="Cómo suman los puntos"
-            onClick={() => setShowScoringHelpModal(true)}
-          >
-            ?
-          </button>
-          <span id={pointsHelpId} role="tooltip" className="help-points-tooltip">
-            <strong>¿Qué es?</strong> Resumen de cómo suman los puntos en esta sala.
-            <br />
-            Pasa por aquí para ver la ayuda rápida o haz clic para ver el detalle completo.
-            <br />
-            <strong>Desempate:</strong> si empatan en puntos, gana quien tenga más exactos → más especiales → campeón (Sí).
-          </span>
-        </span>
+      <div className="standings-dashboard">
+        <StandingsPageHeader
+          lastUpdateLabel={meta.lastUpdateLabel}
+          onHelpClick={() => setShowScoringHelpModal(true)}
+        />
+        <div
+          className={[
+            'standings-dashboard__cards-row',
+            isGlobalRoom ? 'standings-dashboard__cards-row--two' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          {!isGlobalRoom ? (
+            <StandingsPrizePoolCard prizes={room?.podiumPrizes} roomName={room?.name} />
+          ) : null}
+          <StandingsParticipationCard meta={meta} />
+          <StandingsMyStatusCard row={myStandingRow} />
+        </div>
+        {loading ? <p className="user-email">Cargando…</p> : null}
+        {error ? <p className="auth-error">{error}</p> : null}
+        {standings.length > 0 ? (
+          <StandingsLeaderboard
+            standings={standings}
+            showSpecialsColumn={showSpecialsColumn}
+            subtitle={standingsSubtitle}
+          />
+        ) : null}
       </div>
-      <p className="app-muted" style={{ marginTop: -4, marginBottom: 12 }}>
-        {isGlobalRoom ? 'Top 50 · Sala global' : 'Miembros de la sala privada'}
-      </p>
-      {!isGlobalRoom ? (
-        <RoomPrivatePodiumSection standings={standings} prizes={room?.podiumPrizes} />
-      ) : null}
-      {loading ? <p className="user-email">Cargando…</p> : null}
-      {error ? <p className="auth-error">{error}</p> : null}
-      <table className="standings-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Usuario</th>
-            <th>Puntos</th>
-            <th>
-              <span className="standings-tiebreak-help" tabIndex={0} aria-describedby={tieBreakHelpId}>
-                Desempate
-                <span id={tieBreakHelpId} role="tooltip" className="standings-tiebreak-help__tooltip">
-                  <strong>¿Qué es?</strong> Se usa cuando hay empate en puntos.
-                  <br />
-                  <strong>Formato:</strong> exactos/especiales/campeón.
-                  <br />
-                  <strong>Orden:</strong> más exactos → más especiales → campeón (Sí) → criterio final.
-                </span>
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {standings.map((row) => (
-            <tr
-              key={row.id}
-              className={[
-                row.isCurrentUser ? 'current-user-row' : '',
-                row.isOutsideTop50 ? 'current-user-row--outside' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <td>{row.rank}</td>
-              <td>
-                {row.displayName?.trim() || row.userId || row.id}
-                {row.isOutsideTop50 ? <span className="standings-own-rank-tag">Tu posición</span> : null}
-              </td>
-              <td>{row.points}</td>
-              <td>
-                {row.tieBreak
-                  ? `${row.tieBreak.exactScoreHits}/${row.tieBreak.specialQuestionHits}/${row.tieBreak.championHit ? 'Sí' : 'No'}`
-                  : '—'}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
       {standings.length === 0 && !loading ? (
         <p className="app-muted">
           {isGlobalRoom

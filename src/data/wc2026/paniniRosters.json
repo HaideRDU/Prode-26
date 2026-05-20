@@ -1,0 +1,4422 @@
+{
+  "source": "panini_fifa_wc_2026",
+  "version": "2026-04",
+  "teams": {
+    "MEX": [
+      {
+        "stickerCode": "MEX2",
+        "name": "Luis Malagón",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "MEX3",
+        "name": "Johan Vasquez",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "MEX4",
+        "name": "Jorge Sánchez",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "MEX5",
+        "name": "Cesar Montes",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "MEX6",
+        "name": "Jesus Gallardo",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "MEX7",
+        "name": "Israel Reyes",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "MEX8",
+        "name": "Diego Lainez",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "MEX9",
+        "name": "Carlos Rodriguez",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "MEX10",
+        "name": "Edson Alvarez",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "MEX11",
+        "name": "Orbelin Pineda",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "MEX12",
+        "name": "Marcel Ruiz",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "MEX14",
+        "name": "Érick Sánchez",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "MEX15",
+        "name": "Hirving Lozano",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "MEX16",
+        "name": "Santiago Giménez",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "MEX17",
+        "name": "Raúl Jiménez",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "MEX18",
+        "name": "Alexis Vega",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "MEX19",
+        "name": "Roberto Alvarado",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "MEX20",
+        "name": "Cesar Huerta",
+        "paniniSlot": 20
+      }
+    ],
+    "RSA": [
+      {
+        "stickerCode": "RSA2",
+        "name": "Ronwen Williams",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "RSA3",
+        "name": "Sipho Chaine",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "RSA4",
+        "name": "Aubrey Modiba",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "RSA5",
+        "name": "Samukele Kabini",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "RSA6",
+        "name": "Mbekezeli Mbokazi",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "RSA7",
+        "name": "Khulumani Ndamane",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "RSA8",
+        "name": "Siyabonga Ngezana",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "RSA9",
+        "name": "Khuliso Mudau",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "RSA10",
+        "name": "Nkosinathi Sibisi",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "RSA11",
+        "name": "Teboho Mokoena",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "RSA12",
+        "name": "Thalente Mbatha",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "RSA14",
+        "name": "Bathasi Aubaas",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "RSA15",
+        "name": "Yaya Sithole",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "RSA16",
+        "name": "Sipho Mbule",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "RSA17",
+        "name": "Lyle Foster",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "RSA18",
+        "name": "Iqraam Rayners",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "RSA19",
+        "name": "Mohau Nkota",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "RSA20",
+        "name": "Oswin Appollis",
+        "paniniSlot": 20
+      }
+    ],
+    "KOR": [
+      {
+        "stickerCode": "KOR2",
+        "name": "Hyeon-woo Jo",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "KOR3",
+        "name": "Seung-Gyu Kim",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "KOR4",
+        "name": "Min-jae Kim",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "KOR5",
+        "name": "Yu-min Cho",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "KOR6",
+        "name": "Young-woo Seol",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "KOR7",
+        "name": "Han-beom Lee",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "KOR8",
+        "name": "Tae-seok Lee",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "KOR9",
+        "name": "Myung-jae Lee",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "KOR10",
+        "name": "Jae-sung Lee",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "KOR11",
+        "name": "In-beom Hwang",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "KOR12",
+        "name": "Kang-in Lee",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "KOR14",
+        "name": "Seung-ho Paik",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "KOR15",
+        "name": "Jens Castrop",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "KOR16",
+        "name": "Dongg-yeong Lee",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "KOR17",
+        "name": "Gue-sung Cho",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "KOR18",
+        "name": "Heung-min Son",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "KOR19",
+        "name": "Hee-chan Hwang",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "KOR20",
+        "name": "Hyeon-Gyu Oh",
+        "paniniSlot": 20
+      }
+    ],
+    "CZE": [
+      {
+        "stickerCode": "CZE2",
+        "name": "Matej Kovar",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "CZE3",
+        "name": "Jindrich Stanek",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "CZE4",
+        "name": "Ladislav Krejci",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "CZE5",
+        "name": "Vladimir Coufal",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "CZE6",
+        "name": "Jaroslav Zeleny",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "CZE7",
+        "name": "Tomas Holes",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "CZE8",
+        "name": "David Zima",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "CZE9",
+        "name": "Michal Sadilek",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "CZE10",
+        "name": "Lukas Provod",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "CZE11",
+        "name": "Lukas Cerv",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "CZE12",
+        "name": "Tomas Soucek",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "CZE14",
+        "name": "Pavel Sulc",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "CZE15",
+        "name": "Matej Vydra",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "CZE16",
+        "name": "Vasil Kusej",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "CZE17",
+        "name": "Tomas Chory",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "CZE18",
+        "name": "Vaclav Cerny",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "CZE19",
+        "name": "Adam Hlozek",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "CZE20",
+        "name": "Patrik Schick",
+        "paniniSlot": 20
+      }
+    ],
+    "CAN": [
+      {
+        "stickerCode": "CAN2",
+        "name": "Dayne St.Clair",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "CAN3",
+        "name": "Alphonso Davies",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "CAN4",
+        "name": "Alistair Johnston",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "CAN5",
+        "name": "Samuel Adekugbe",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "CAN6",
+        "name": "Riche Larvea",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "CAN7",
+        "name": "Derek Cornelius",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "CAN8",
+        "name": "Moïse Bombito",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "CAN9",
+        "name": "Kamal Miller",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "CAN10",
+        "name": "Stephen Eustáquio",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "CAN11",
+        "name": "Ismaël Koné",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "CAN12",
+        "name": "Jonathan Osorio",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "CAN14",
+        "name": "Jacob Shaffelburg",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "CAN15",
+        "name": "Mathieu Choinière",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "CAN16",
+        "name": "Niko Sigur",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "CAN17",
+        "name": "Tajon Buchanan",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "CAN18",
+        "name": "Liam Millar",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "CAN19",
+        "name": "Cyle Larin",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "CAN20",
+        "name": "Jonathan David",
+        "paniniSlot": 20
+      }
+    ],
+    "BIH": [
+      {
+        "stickerCode": "BIH2",
+        "name": "Nikola Vasilj",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "BIH3",
+        "name": "Amer Dedic",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "BIH4",
+        "name": "Sead Kolasinac",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "BIH5",
+        "name": "Tarik Muharemovic",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "BIH6",
+        "name": "Nihad Mujakic",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "BIH7",
+        "name": "Nikola Katic",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "BIH8",
+        "name": "Amir Hadziahmetovic",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "BIH9",
+        "name": "Benjamin Tahirovic",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "BIH10",
+        "name": "Armin Gigovic",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "BIH11",
+        "name": "Ivan Sunjic",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "BIH12",
+        "name": "Ivan Basic",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "BIH14",
+        "name": "Dzenis Burnic",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "BIH15",
+        "name": "Esmir Bajraktarevic",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "BIH16",
+        "name": "Amar Memic",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "BIH17",
+        "name": "Ermedin Demirovic",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "BIH18",
+        "name": "Edin Dzeko",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "BIH19",
+        "name": "Samed Bazdar",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "BIH20",
+        "name": "Haris Tabakovic",
+        "paniniSlot": 20
+      }
+    ],
+    "QAT": [
+      {
+        "stickerCode": "QAT2",
+        "name": "Meshaal Barsham",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "QAT3",
+        "name": "Sultan Albrake",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "QAT4",
+        "name": "Lucas Mendes",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "QAT5",
+        "name": "Homam Ahmed",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "QAT6",
+        "name": "Boualem Khoukhi",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "QAT7",
+        "name": "Pedro Miguel",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "QAT8",
+        "name": "Tarek Salman",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "QAT9",
+        "name": "Mohamed Al-Mannai",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "QAT10",
+        "name": "Karim Boudiaf",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "QAT11",
+        "name": "Assim Madibo",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "QAT12",
+        "name": "Ahmed Fatehi",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "QAT14",
+        "name": "Mohammed Waad",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "QAT15",
+        "name": "Abdulaziz Hatem",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "QAT16",
+        "name": "Hassan Al-Haydos",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "QAT17",
+        "name": "Edmilson Junior",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "QAT18",
+        "name": "Akram Hassan Afif",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "QAT19",
+        "name": "Ahmed Al Ganehi",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "QAT20",
+        "name": "Almoez Ali",
+        "paniniSlot": 20
+      }
+    ],
+    "SUI": [
+      {
+        "stickerCode": "SUI2",
+        "name": "Gregor Kobel",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "SUI3",
+        "name": "Yvon Mvogo",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "SUI4",
+        "name": "Manuel Akanji",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "SUI5",
+        "name": "Ricardo Rodriguez",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "SUI6",
+        "name": "Nico Elvedi",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "SUI7",
+        "name": "Aurèle Amenda",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "SUI8",
+        "name": "Silvan Widmer",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "SUI9",
+        "name": "Granit Xhaka",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "SUI10",
+        "name": "Denis Zakaria",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "SUI11",
+        "name": "Remo Freuler",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "SUI12",
+        "name": "Fabian Rieder",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "SUI14",
+        "name": "Ardon Jashari",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "SUI15",
+        "name": "Johan Manzambi",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "SUI16",
+        "name": "Michel Aebischer",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "SUI17",
+        "name": "Breel Embolo",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "SUI18",
+        "name": "Ruben Vargas",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "SUI19",
+        "name": "Dan Ndoye",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "SUI20",
+        "name": "Zeki Amdouni",
+        "paniniSlot": 20
+      }
+    ],
+    "BRA": [
+      {
+        "stickerCode": "BRA2",
+        "name": "Alisson",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "BRA3",
+        "name": "Bento",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "BRA4",
+        "name": "Marquinhos",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "BRA5",
+        "name": "Éder Militão",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "BRA6",
+        "name": "Gabriel Magalhães",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "BRA7",
+        "name": "Danilo",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "BRA8",
+        "name": "Wesley",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "BRA9",
+        "name": "Lucas Paquetá",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "BRA10",
+        "name": "Casemiro",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "BRA11",
+        "name": "Bruno Guimarães",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "BRA12",
+        "name": "Luiz Henrique",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "BRA14",
+        "name": "Vinicius Júnior",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "BRA15",
+        "name": "Rodrygo",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "BRA16",
+        "name": "João Pedro",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "BRA17",
+        "name": "Matheus Cunha",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "BRA18",
+        "name": "Gabriel Martinelli",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "BRA19",
+        "name": "Raphinha",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "BRA20",
+        "name": "Estévão",
+        "paniniSlot": 20
+      }
+    ],
+    "MAR": [
+      {
+        "stickerCode": "MAR2",
+        "name": "Yassine Bounou",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "MAR3",
+        "name": "Munir El Kajoui",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "MAR4",
+        "name": "Achraf Hakimi",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "MAR5",
+        "name": "Noussair Mazraoui",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "MAR6",
+        "name": "Nayef Aguerd",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "MAR7",
+        "name": "Roman Saiss",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "MAR8",
+        "name": "Jawad El Yamio",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "MAR9",
+        "name": "Adam Masina",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "MAR10",
+        "name": "Sofyan Amrabat",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "MAR11",
+        "name": "Azzedine Ounahi",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "MAR12",
+        "name": "Eliesse Ben Seghir",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "MAR14",
+        "name": "Bilal El Khannouss",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "MAR15",
+        "name": "Ismael Saibari",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "MAR16",
+        "name": "Youssef En-Nesyri",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "MAR17",
+        "name": "Abde Ezzalzouli",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "MAR18",
+        "name": "Soufiane Rahimi",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "MAR19",
+        "name": "Brahim Diaz",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "MAR20",
+        "name": "Ayoub El Kaabi",
+        "paniniSlot": 20
+      }
+    ],
+    "HAI": [
+      {
+        "stickerCode": "HAI2",
+        "name": "Johny Placide",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "HAI3",
+        "name": "Carlens Arcus",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "HAI4",
+        "name": "Martin Expérience",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "HAI5",
+        "name": "Jean-Kevin Duverne",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "HAI6",
+        "name": "Ricardo Adé",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "HAI7",
+        "name": "Duke Lacroix",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "HAI8",
+        "name": "Garven Metusala",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "HAI9",
+        "name": "Hannes Delcroix",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "HAI10",
+        "name": "Leverton Pierre",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "HAI11",
+        "name": "Danley Jean Jacques",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "HAI12",
+        "name": "Jean-Ricner Bellegarde",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "HAI14",
+        "name": "Christopher Attys",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "HAI15",
+        "name": "Derrick Etienne Jr",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "HAI16",
+        "name": "Josue Casimir",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "HAI17",
+        "name": "Ruben Providence",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "HAI18",
+        "name": "Duckens Nazon",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "HAI19",
+        "name": "Louicius Deedson",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "HAI20",
+        "name": "Frantzdy Pierrot",
+        "paniniSlot": 20
+      }
+    ],
+    "SCO": [
+      {
+        "stickerCode": "SCO2",
+        "name": "Angus Gunn",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "SCO3",
+        "name": "Jack Hendry",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "SCO4",
+        "name": "Kieran Tierney",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "SCO5",
+        "name": "Aaron Hickey",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "SCO6",
+        "name": "Andrew Robertson",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "SCO7",
+        "name": "Scott McKenna",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "SCO8",
+        "name": "John Souttar",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "SCO9",
+        "name": "Anthony Ralston",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "SCO10",
+        "name": "Grant Hanley",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "SCO11",
+        "name": "Scott McTominay",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "SCO12",
+        "name": "Billy Gilmour",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "SCO14",
+        "name": "Lewis Ferguson",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "SCO15",
+        "name": "Ryan Christie",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "SCO16",
+        "name": "Kenny McLean",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "SCO17",
+        "name": "John McGinn",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "SCO18",
+        "name": "Lyndon Dykes",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "SCO19",
+        "name": "Che Adams",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "SCO20",
+        "name": "Ben Gannon-Doak",
+        "paniniSlot": 20
+      }
+    ],
+    "USA": [
+      {
+        "stickerCode": "USA2",
+        "name": "Math Freese",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "USA3",
+        "name": "Chris Richards",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "USA4",
+        "name": "Tim Ream",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "USA5",
+        "name": "Mark McKenzie",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "USA6",
+        "name": "Alex Freeman",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "USA7",
+        "name": "Antonee Robinson",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "USA8",
+        "name": "Tyler Adams",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "USA9",
+        "name": "Tanner Tessmann",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "USA10",
+        "name": "Weston McKenny",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "USA11",
+        "name": "Christian Roldan",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "USA12",
+        "name": "Timothy Weah",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "USA14",
+        "name": "Diego Luna",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "USA15",
+        "name": "Malik Tillman",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "USA16",
+        "name": "Christian Pulisic",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "USA17",
+        "name": "Brenden Aaronson",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "USA18",
+        "name": "Ricardo Pepi",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "USA19",
+        "name": "Haji Wright",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "USA20",
+        "name": "Folarin Balogun",
+        "paniniSlot": 20
+      }
+    ],
+    "PAR": [
+      {
+        "stickerCode": "PAR2",
+        "name": "Roberto Fernandez",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "PAR3",
+        "name": "Orlando Gill",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "PAR4",
+        "name": "Gustavo Gomez",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "PAR5",
+        "name": "Fabián Balbuena",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "PAR6",
+        "name": "Juan José Cáceres",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "PAR7",
+        "name": "Omar Alderete",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "PAR8",
+        "name": "Junior Alonso",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "PAR9",
+        "name": "Mathías Villasanti",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "PAR10",
+        "name": "Diego Gomez",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "PAR11",
+        "name": "Damián Bobadilla",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "PAR12",
+        "name": "Andres Cubas",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "PAR14",
+        "name": "Matias Galarza Fonda",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "PAR15",
+        "name": "Julio Enciso",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "PAR16",
+        "name": "Alejandro Romero Gamarra",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "PAR17",
+        "name": "Miguel Almirón",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "PAR18",
+        "name": "Ramon Sosa",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "PAR19",
+        "name": "Angel Romero",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "PAR20",
+        "name": "Antonio Sanabria",
+        "paniniSlot": 20
+      }
+    ],
+    "AUS": [
+      {
+        "stickerCode": "AUS2",
+        "name": "Mathew Ryan",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "AUS3",
+        "name": "Joe Gauci",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "AUS4",
+        "name": "Harry Souttar",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "AUS5",
+        "name": "Alessandro Circati",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "AUS6",
+        "name": "Jordan Bos",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "AUS7",
+        "name": "Aziz Behich",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "AUS8",
+        "name": "Cameron Burgess",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "AUS9",
+        "name": "Lewis Miller",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "AUS10",
+        "name": "Milos Degenek",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "AUS11",
+        "name": "Jackson Irvine",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "AUS12",
+        "name": "Riley McGree",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "AUS14",
+        "name": "Aiden O'Neill",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "AUS15",
+        "name": "Connor Metcalfe",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "AUS16",
+        "name": "Patrick Yazbek",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "AUS17",
+        "name": "Craig Goodwin",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "AUS18",
+        "name": "Kusini Vengi",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "AUS19",
+        "name": "Nestory Irankunda",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "AUS20",
+        "name": "Mohamed Touré",
+        "paniniSlot": 20
+      }
+    ],
+    "TUR": [
+      {
+        "stickerCode": "TUR2",
+        "name": "Ugurcan Cakir",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "TUR3",
+        "name": "Mert Muldur",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "TUR4",
+        "name": "Zeki Celik",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "TUR5",
+        "name": "Abdulkerim Bardakci",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "TUR6",
+        "name": "Caglar Soyuncu",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "TUR7",
+        "name": "Merih Demiral",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "TUR8",
+        "name": "Ferdi Kadioglu",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "TUR9",
+        "name": "Kaan Ayhan",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "TUR10",
+        "name": "Ismail Yuksek",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "TUR11",
+        "name": "Hakan Calhanoglu",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "TUR12",
+        "name": "Orkun Kokcu",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "TUR14",
+        "name": "Arda Guler",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "TUR15",
+        "name": "Irfan Can Kahveci",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "TUR16",
+        "name": "Yunus Akgun",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "TUR17",
+        "name": "Can Uzun",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "TUR18",
+        "name": "Baris Alper Yilmaz",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "TUR19",
+        "name": "Kerem Akturkoglu",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "TUR20",
+        "name": "Kenan Yildiz",
+        "paniniSlot": 20
+      }
+    ],
+    "GER": [
+      {
+        "stickerCode": "GER2",
+        "name": "Marc-André ter Stegen",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "GER3",
+        "name": "Jonathan Tah",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "GER4",
+        "name": "David Raum",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "GER5",
+        "name": "Nico Schlotterbeck",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "GER6",
+        "name": "Antonio Rüdiger",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "GER7",
+        "name": "Waldemar Anton",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "GER8",
+        "name": "Ridle Baku",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "GER9",
+        "name": "Maximilian Mittelstadt",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "GER10",
+        "name": "Joshua Kimmich",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "GER11",
+        "name": "Florian Wirtz",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "GER12",
+        "name": "Felix Nmecha",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "GER14",
+        "name": "Leon Goretzka",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "GER15",
+        "name": "Jamal Musiala",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "GER16",
+        "name": "Serge Gnabry",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "GER17",
+        "name": "Kai Havertz",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "GER18",
+        "name": "Leroy Sane",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "GER19",
+        "name": "Karim Adeyemi",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "GER20",
+        "name": "Nick Woltemade",
+        "paniniSlot": 20
+      }
+    ],
+    "CUW": [
+      {
+        "stickerCode": "CUW2",
+        "name": "Eloy Room",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "CUW3",
+        "name": "Armando Obispo",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "CUW4",
+        "name": "Sherel Floranus",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "CUW5",
+        "name": "Jurien Gaari",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "CUW6",
+        "name": "Joshua Brenet",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "CUW7",
+        "name": "Roshon Van Eijma",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "CUW8",
+        "name": "Shurandy Sambo",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "CUW9",
+        "name": "Livano Comenencia",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "CUW10",
+        "name": "Godfried Roemeratoe",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "CUW11",
+        "name": "Juninho Bacuna",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "CUW12",
+        "name": "Leandro Bacuna",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "CUW14",
+        "name": "Tahith Chong",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "CUW15",
+        "name": "Kenji Gorre",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "CUW16",
+        "name": "Jearl Margaritha",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "CUW17",
+        "name": "Jurgen Locadia",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "CUW18",
+        "name": "Jeremy Antonisse",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "CUW19",
+        "name": "Gervane Kastaneer",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "CUW20",
+        "name": "Sontje Hansen",
+        "paniniSlot": 20
+      }
+    ],
+    "CIV": [
+      {
+        "stickerCode": "CIV2",
+        "name": "Yahia Fofana",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "CIV3",
+        "name": "Ghislain Konan",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "CIV4",
+        "name": "Wilfried Singo",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "CIV5",
+        "name": "Odilon Kossounou",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "CIV6",
+        "name": "Evan Ndicka",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "CIV7",
+        "name": "Willy Boly",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "CIV8",
+        "name": "Emmanuel Agbadou",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "CIV9",
+        "name": "Ousmane Diomande",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "CIV10",
+        "name": "Franck Kessie",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "CIV11",
+        "name": "Seko Fofana",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "CIV12",
+        "name": "Ibrahim Sangare",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "CIV14",
+        "name": "Jean-Philippe Gbamin",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "CIV15",
+        "name": "Amad Diallo",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "CIV16",
+        "name": "Sébastien Haller",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "CIV17",
+        "name": "Simon Adingra",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "CIV18",
+        "name": "Yan Diomande",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "CIV19",
+        "name": "Evann Guessand",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "CIV20",
+        "name": "Oumar Diakite",
+        "paniniSlot": 20
+      }
+    ],
+    "ECU": [
+      {
+        "stickerCode": "ECU2",
+        "name": "Hernán Galíndez",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "ECU3",
+        "name": "Gonzalo Valle",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "ECU4",
+        "name": "Piero Hincapié",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "ECU5",
+        "name": "Pervis Estupiñán",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "ECU6",
+        "name": "Willian Pacho",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "ECU7",
+        "name": "Ángelo Preciado",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "ECU8",
+        "name": "Joel Ordóñez",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "ECU9",
+        "name": "Moises Caicedo",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "ECU10",
+        "name": "Alan Franco",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "ECU11",
+        "name": "Kendry Paez",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "ECU12",
+        "name": "Pedro Vite",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "ECU14",
+        "name": "John Veboah",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "ECU15",
+        "name": "Leonardo Campana",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "ECU16",
+        "name": "Gonzalo Plata",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "ECU17",
+        "name": "Nilson Angulo",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "ECU18",
+        "name": "Alan Minda",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "ECU19",
+        "name": "Kevin Rodriguez",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "ECU20",
+        "name": "Enner Valencia",
+        "paniniSlot": 20
+      }
+    ],
+    "NED": [
+      {
+        "stickerCode": "NED2",
+        "name": "Bart Verbruggen",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "NED3",
+        "name": "Virgil van Dijk",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "NED4",
+        "name": "Micky van de Ven",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "NED5",
+        "name": "Jurrien Timber",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "NED6",
+        "name": "Denzel Dumfries",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "NED7",
+        "name": "Nathan Aké",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "NED8",
+        "name": "Jeremie Frimpong",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "NED9",
+        "name": "Jan Paul van Hecke",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "NED10",
+        "name": "Tijjani Reijnders",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "NED11",
+        "name": "Ryan Gravenberch",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "NED12",
+        "name": "Teun Koopmeiners",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "NED14",
+        "name": "Frenkie de Jong",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "NED15",
+        "name": "Xavi Simons",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "NED16",
+        "name": "Justin Kluivert",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "NED17",
+        "name": "Memphis Depay",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "NED18",
+        "name": "Donyell Malen",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "NED19",
+        "name": "Wout Weghorst",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "NED20",
+        "name": "Cody Gakpo",
+        "paniniSlot": 20
+      }
+    ],
+    "JPN": [
+      {
+        "stickerCode": "JPN2",
+        "name": "Zion Suzuki",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "JPN3",
+        "name": "Henry Heroki Mochizuki",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "JPN4",
+        "name": "Ayumu Seko",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "JPN5",
+        "name": "Junnosuke Suzuki",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "JPN6",
+        "name": "Shogo Taniguchi",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "JPN7",
+        "name": "Tsuyoshi Watanabe",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "JPN8",
+        "name": "Kaishu Sano",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "JPN9",
+        "name": "Yuki Soma",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "JPN10",
+        "name": "Ao Tanaka",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "JPN11",
+        "name": "Daichi Kamada",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "JPN12",
+        "name": "Takefusa Kubo",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "JPN14",
+        "name": "Ritsu Doan",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "JPN15",
+        "name": "Keito Nakamura",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "JPN16",
+        "name": "Takumi Minamino",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "JPN17",
+        "name": "Shuto Machino",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "JPN18",
+        "name": "Junya Ito",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "JPN19",
+        "name": "Koki Ogawa",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "JPN20",
+        "name": "Ayase Ueda",
+        "paniniSlot": 20
+      }
+    ],
+    "SWE": [
+      {
+        "stickerCode": "SWE2",
+        "name": "Victor Johansson",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "SWE3",
+        "name": "Isak Hien",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "SWE4",
+        "name": "Gabriel Gudmundsson",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "SWE5",
+        "name": "Emil Holm",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "SWE6",
+        "name": "Victor Nilsson Lindelöf",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "SWE7",
+        "name": "Gustaf Lagerbielke",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "SWE8",
+        "name": "Lucas Bergvall",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "SWE9",
+        "name": "Hugo Larsson",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "SWE10",
+        "name": "Jesper Karlström",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "SWE11",
+        "name": "Yasin Ayari",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "SWE12",
+        "name": "Mattias Svanberg",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "SWE14",
+        "name": "Daniel Svensson",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "SWE15",
+        "name": "Ken Sema",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "SWE16",
+        "name": "Roony Bardghji",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "SWE17",
+        "name": "Dejan Kulusevski",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "SWE18",
+        "name": "Anthony Elanga",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "SWE19",
+        "name": "Alexander Isak",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "SWE20",
+        "name": "Viktor Gyökeres",
+        "paniniSlot": 20
+      }
+    ],
+    "TUN": [
+      {
+        "stickerCode": "TUN2",
+        "name": "Bechir Ben Said",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "TUN3",
+        "name": "Aymen Dahmen",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "TUN4",
+        "name": "Yan Valery",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "TUN5",
+        "name": "Montassar Talbi",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "TUN6",
+        "name": "Yassine Meriah",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "TUN7",
+        "name": "Ali Abdi",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "TUN8",
+        "name": "Dylan Bronn",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "TUN9",
+        "name": "Ellyes Skhiri",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "TUN10",
+        "name": "Aissa Laidouni",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "TUN11",
+        "name": "Ferjani Sassi",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "TUN12",
+        "name": "Mohamed Ali Ben Romdhane",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "TUN14",
+        "name": "Hannibal Mejbri",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "TUN15",
+        "name": "Elias Achouri",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "TUN16",
+        "name": "Elias Saad",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "TUN17",
+        "name": "Hazem Mastouri",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "TUN18",
+        "name": "Ismael Gharbi",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "TUN19",
+        "name": "Sayfallah Ltaief",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "TUN20",
+        "name": "Naim Sliti",
+        "paniniSlot": 20
+      }
+    ],
+    "BEL": [
+      {
+        "stickerCode": "BEL2",
+        "name": "Thibaut Courtois",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "BEL3",
+        "name": "Arthur Theate",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "BEL4",
+        "name": "Timothy Castagne",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "BEL5",
+        "name": "Zeno Debast",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "BEL6",
+        "name": "Brandon Mechele",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "BEL7",
+        "name": "Maxim De Cuyper",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "BEL8",
+        "name": "Thomas Meunier",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "BEL9",
+        "name": "Youri Tielemans",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "BEL10",
+        "name": "Amadou Onana",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "BEL11",
+        "name": "Nicolas Raskin",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "BEL12",
+        "name": "Alexis Saelemaekers",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "BEL14",
+        "name": "Hans Vanaken",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "BEL15",
+        "name": "Kevin De Bruyne",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "BEL16",
+        "name": "Jérémy Doku",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "BEL17",
+        "name": "Charles De Ketelaere",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "BEL18",
+        "name": "Leandro Trossard",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "BEL19",
+        "name": "Loïs Openda",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "BEL20",
+        "name": "Romelu Lukaku",
+        "paniniSlot": 20
+      }
+    ],
+    "EGY": [
+      {
+        "stickerCode": "EGY2",
+        "name": "Mohamed El Shenawy",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "EGY3",
+        "name": "Mohamed Hany",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "EGY4",
+        "name": "Mohamed Hamdy",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "EGY5",
+        "name": "Yasser Ibrahim",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "EGY6",
+        "name": "Khaled Sobhi",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "EGY7",
+        "name": "Ramy Rabia",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "EGY8",
+        "name": "Hossam Abdelmaguid",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "EGY9",
+        "name": "Ahmed Fatouh",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "EGY10",
+        "name": "Marwan Attia",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "EGY11",
+        "name": "Zizo",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "EGY12",
+        "name": "Hamdy Fathy",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "EGY14",
+        "name": "Mohamed Lasheen",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "EGY15",
+        "name": "Emam Ashour",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "EGY16",
+        "name": "Osama Faisal",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "EGY17",
+        "name": "Mohamed Salah",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "EGY18",
+        "name": "Mostafa Mohamed",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "EGY19",
+        "name": "Trezeguet",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "EGY20",
+        "name": "Omar Marmoush",
+        "paniniSlot": 20
+      }
+    ],
+    "IRN": [
+      {
+        "stickerCode": "IRN2",
+        "name": "Alireza Beiranvand",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "IRN3",
+        "name": "Morteza Pouraliganji",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "IRN4",
+        "name": "Ehsan Hajsafi",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "IRN5",
+        "name": "Milad Mohammadi",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "IRN6",
+        "name": "Shojae Khalilzadeh",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "IRN7",
+        "name": "Ramin Rezaeian",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "IRN8",
+        "name": "Hossein Kanaani",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "IRN9",
+        "name": "Sadegh Moharrami",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "IRN10",
+        "name": "Saleh Hardani",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "IRN11",
+        "name": "Saeed Ezatolahi",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "IRN12",
+        "name": "Saman Ghoddos",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "IRN14",
+        "name": "Omid Noorafkan",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "IRN15",
+        "name": "Roozbeh Cheshmi",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "IRN16",
+        "name": "Mohammad Mohebi",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "IRN17",
+        "name": "Sardar Azmoun",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "IRN18",
+        "name": "Mehdi Taremi",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "IRN19",
+        "name": "Alireza Jahanbakhsh",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "IRN20",
+        "name": "Ali Gholizadeh",
+        "paniniSlot": 20
+      }
+    ],
+    "NZL": [
+      {
+        "stickerCode": "NZL2",
+        "name": "Max Crocombe Payne",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "NZL3",
+        "name": "Alex Paulsen",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "NZL4",
+        "name": "Michael Boxall",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "NZL5",
+        "name": "Liberato Cacace",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "NZL6",
+        "name": "Tim Payne",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "NZL7",
+        "name": "Tyler Bindon",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "NZL8",
+        "name": "Francis de Vries",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "NZL9",
+        "name": "Finn Surman",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "NZL10",
+        "name": "Joe Bell",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "NZL11",
+        "name": "Sarpreet Singh",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "NZL12",
+        "name": "Ryan Thomas",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "NZL14",
+        "name": "Matthew Garbett",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "NZL15",
+        "name": "Marko Stamenić",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "NZL16",
+        "name": "Ben Old",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "NZL17",
+        "name": "Chris Wood",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "NZL18",
+        "name": "Elijah Just",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "NZL19",
+        "name": "Callum McCowatt",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "NZL20",
+        "name": "Kosta Barbarouses",
+        "paniniSlot": 20
+      }
+    ],
+    "ESP": [
+      {
+        "stickerCode": "ESP2",
+        "name": "Unai Simon",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "ESP3",
+        "name": "Robin Le Normand",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "ESP4",
+        "name": "Aymeric Laporte",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "ESP5",
+        "name": "Dean Huijsen",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "ESP6",
+        "name": "Pedro Porro",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "ESP7",
+        "name": "Dani Carvajal",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "ESP8",
+        "name": "Marc Cucurella",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "ESP9",
+        "name": "Martín Zubimendi",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "ESP10",
+        "name": "Rodri",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "ESP11",
+        "name": "Pedri",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "ESP12",
+        "name": "Fabian Ruiz",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "ESP14",
+        "name": "Mikel Merino",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "ESP15",
+        "name": "Lamine Yamal",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "ESP16",
+        "name": "Dani Olmo",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "ESP17",
+        "name": "Nico Williams",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "ESP18",
+        "name": "Ferran Torres",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "ESP19",
+        "name": "Álvaro Morata",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "ESP20",
+        "name": "Mikel Oyarzabal",
+        "paniniSlot": 20
+      }
+    ],
+    "CPV": [
+      {
+        "stickerCode": "CPV2",
+        "name": "Vozinha",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "CPV3",
+        "name": "Logan Costa",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "CPV4",
+        "name": "Pico",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "CPV5",
+        "name": "Diney",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "CPV6",
+        "name": "Steven Moreira",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "CPV7",
+        "name": "Wagner Pina",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "CPV8",
+        "name": "Joao Paulo",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "CPV9",
+        "name": "Yannick Semedo",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "CPV10",
+        "name": "Kevin Pina",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "CPV11",
+        "name": "Patrick Andrade",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "CPV12",
+        "name": "Jamiro Monteiro",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "CPV14",
+        "name": "Deroy Duarte",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "CPV15",
+        "name": "Garry Rodrigues",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "CPV16",
+        "name": "Jovane Cabral",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "CPV17",
+        "name": "Ryan Mendes",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "CPV18",
+        "name": "Dailon Livramento",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "CPV19",
+        "name": "Willy Semedo",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "CPV20",
+        "name": "Bebe",
+        "paniniSlot": 20
+      }
+    ],
+    "KSA": [
+      {
+        "stickerCode": "KSA2",
+        "name": "Nawaf Alaqidi",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "KSA3",
+        "name": "Abdulrahman Al-Sanbi",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "KSA4",
+        "name": "Saud Abdulhamid",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "KSA5",
+        "name": "Nawaf Bouwashl",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "KSA6",
+        "name": "Jihad Thakri",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "KSA7",
+        "name": "Moteb Al-Harbi",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "KSA8",
+        "name": "Hassan Altambakti",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "KSA9",
+        "name": "Musab Aljuwayr",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "KSA10",
+        "name": "Ziyad Aljohani",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "KSA11",
+        "name": "Abdullah Alkhaibari",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "KSA12",
+        "name": "Nasser Aldawsari",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "KSA14",
+        "name": "Saleh Abu Alshamat",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "KSA15",
+        "name": "Marwan Alsahafi",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "KSA16",
+        "name": "Salem Aldawsari",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "KSA17",
+        "name": "Abdulrahman Al-Aboud",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "KSA18",
+        "name": "Feras Akbrikan",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "KSA19",
+        "name": "Saleh Alshehri",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "KSA20",
+        "name": "Abdullah Al-Hamdan",
+        "paniniSlot": 20
+      }
+    ],
+    "URU": [
+      {
+        "stickerCode": "URU2",
+        "name": "Sergio Rochet",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "URU3",
+        "name": "Santiago Mele",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "URU4",
+        "name": "Ronald Araujo",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "URU5",
+        "name": "José María Giménez",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "URU6",
+        "name": "Sebastian Caceres",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "URU7",
+        "name": "Mathias Olivera",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "URU8",
+        "name": "Guillermo Varela",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "URU9",
+        "name": "Nahitan Nandez",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "URU10",
+        "name": "Federico Valverde",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "URU11",
+        "name": "Giorgian De Arrascaeta",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "URU12",
+        "name": "Rodrigo Bentancur",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "URU14",
+        "name": "Manuel Ugarte",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "URU15",
+        "name": "Nicolás de la Cruz",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "URU16",
+        "name": "Maxi Araujo",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "URU17",
+        "name": "Darwin Núñez",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "URU18",
+        "name": "Federico Viñas",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "URU19",
+        "name": "Rodrigo Aguirre",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "URU20",
+        "name": "Facundo Pellistri",
+        "paniniSlot": 20
+      }
+    ],
+    "FRA": [
+      {
+        "stickerCode": "FRA2",
+        "name": "Mike Maignan",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "FRA3",
+        "name": "Theo Hernandez",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "FRA4",
+        "name": "William Saliba",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "FRA5",
+        "name": "Jules Kounde",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "FRA6",
+        "name": "Ibrahima Konate",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "FRA7",
+        "name": "Dayot Upamecano",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "FRA8",
+        "name": "Lucas Digne",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "FRA9",
+        "name": "Aurélien Tchouaméni",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "FRA10",
+        "name": "Eduardo Camavinga",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "FRA11",
+        "name": "Manu Kone",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "FRA12",
+        "name": "Adrien Rabiot",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "FRA14",
+        "name": "Michael Olise",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "FRA15",
+        "name": "Ousmane Dembele",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "FRA16",
+        "name": "Bradley Barcola",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "FRA17",
+        "name": "Désiré Doué",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "FRA18",
+        "name": "Kingsley Coman",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "FRA19",
+        "name": "Hugo Ekitike",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "FRA20",
+        "name": "Kylian Mbappe",
+        "paniniSlot": 20
+      }
+    ],
+    "SEN": [
+      {
+        "stickerCode": "SEN2",
+        "name": "Edouard Mendy",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "SEN3",
+        "name": "Yehvann Diouf",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "SEN4",
+        "name": "Moussa Niakhaté",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "SEN5",
+        "name": "Abdoulaye Seck",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "SEN6",
+        "name": "Ismail Jakobs",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "SEN7",
+        "name": "El Hadji Malick Diouf",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "SEN8",
+        "name": "Kalidou Koulibaly",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "SEN9",
+        "name": "Idrissa Gana Gueye",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "SEN10",
+        "name": "Pape Matar Sarr",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "SEN11",
+        "name": "Pape Gueye",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "SEN12",
+        "name": "Habib Diarra",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "SEN14",
+        "name": "Lamine Camara",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "SEN15",
+        "name": "Sadio Mane",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "SEN16",
+        "name": "Ismaïla Sarr",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "SEN17",
+        "name": "Boulaye Dia",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "SEN18",
+        "name": "Iliman Ndiaye",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "SEN19",
+        "name": "Nicolas Jackson",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "SEN20",
+        "name": "Krepin Diatta",
+        "paniniSlot": 20
+      }
+    ],
+    "IRQ": [
+      {
+        "stickerCode": "IRQ2",
+        "name": "Jalal Hassan",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "IRQ3",
+        "name": "Rebin Sulaka",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "IRQ4",
+        "name": "Hussein Ali",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "IRQ5",
+        "name": "Akam Hashem",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "IRQ6",
+        "name": "Merchas Doski",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "IRQ7",
+        "name": "Zaid Tahseen",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "IRQ8",
+        "name": "Manaf Younis",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "IRQ9",
+        "name": "Zidane Iqbal",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "IRQ10",
+        "name": "Amir Al-Ammari",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "IRQ11",
+        "name": "Ibrahim Bavesh",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "IRQ12",
+        "name": "Ali Jasim",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "IRQ14",
+        "name": "Youssef Amyn",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "IRQ15",
+        "name": "Aimar Sher",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "IRQ16",
+        "name": "Marko Farji",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "IRQ17",
+        "name": "Osama Rashid",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "IRQ18",
+        "name": "Ali Al-Hamadi",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "IRQ19",
+        "name": "Aymen Hussein",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "IRQ20",
+        "name": "Mohanad Ali",
+        "paniniSlot": 20
+      }
+    ],
+    "NOR": [
+      {
+        "stickerCode": "NOR2",
+        "name": "Orjan Nyland",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "NOR3",
+        "name": "Julian Ryerson",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "NOR4",
+        "name": "Leo Ostigård",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "NOR5",
+        "name": "Kristoffer Vassbakk Ajer",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "NOR6",
+        "name": "Marcus Holmgren Pedersen",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "NOR7",
+        "name": "David Møller Wolfe",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "NOR8",
+        "name": "Torbjørn Heggem",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "NOR9",
+        "name": "Morten Thorsby",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "NOR10",
+        "name": "Martin Ødegaard",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "NOR11",
+        "name": "Sander Berge",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "NOR12",
+        "name": "Andreas Schjelderup",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "NOR14",
+        "name": "Patrick Berg",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "NOR15",
+        "name": "Erling Haaland",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "NOR16",
+        "name": "Alexander Sørloth",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "NOR17",
+        "name": "Aron Dønnum",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "NOR18",
+        "name": "Jorgen Strand Larsen",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "NOR19",
+        "name": "Antonio Nusa",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "NOR20",
+        "name": "Oscar Bobb",
+        "paniniSlot": 20
+      }
+    ],
+    "ARG": [
+      {
+        "stickerCode": "ARG2",
+        "name": "Emiliano Martinez",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "ARG3",
+        "name": "Nahuel Molina",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "ARG4",
+        "name": "Cristian Romero",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "ARG5",
+        "name": "Nicolas Otamendi",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "ARG6",
+        "name": "Nicolas Tagliafico",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "ARG7",
+        "name": "Leonardo Balerdi",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "ARG8",
+        "name": "Enzo Fernandez",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "ARG9",
+        "name": "Alexis Mac Allister",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "ARG10",
+        "name": "Rodrigo De Paul",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "ARG11",
+        "name": "Exequiel Palacios",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "ARG12",
+        "name": "Leandro Paredes",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "ARG14",
+        "name": "Nico Paz",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "ARG15",
+        "name": "Franco Mastantuono",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "ARG16",
+        "name": "Nico Gonzalez",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "ARG17",
+        "name": "Lionel Messi",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "ARG18",
+        "name": "Lautaro Martinez",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "ARG19",
+        "name": "Julian Alvarez",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "ARG20",
+        "name": "Giuliano Simeone",
+        "paniniSlot": 20
+      }
+    ],
+    "ALG": [
+      {
+        "stickerCode": "ALG2",
+        "name": "Alexis Guendouz",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "ALG3",
+        "name": "Ramy Bensebaini",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "ALG4",
+        "name": "Youcef Atal",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "ALG5",
+        "name": "Rayan Aït-Nouri",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "ALG6",
+        "name": "Mohamed Amine Tougai",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "ALG7",
+        "name": "Aïssa Mandi",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "ALG8",
+        "name": "Ismael Bennacer",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "ALG9",
+        "name": "Houssem Aquar",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "ALG10",
+        "name": "Hicham Boudaoui",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "ALG11",
+        "name": "Ramiz Zerrouki",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "ALG12",
+        "name": "Nabil Bentalab",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "ALG14",
+        "name": "Farés Chaibi",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "ALG15",
+        "name": "Riyad Mahrez",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "ALG16",
+        "name": "Said Benrahma",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "ALG17",
+        "name": "Anis Hadj Moussa",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "ALG18",
+        "name": "Amine Gouiri",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "ALG19",
+        "name": "Baghdad Bounedjah",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "ALG20",
+        "name": "Mohammed Amoura",
+        "paniniSlot": 20
+      }
+    ],
+    "AUT": [
+      {
+        "stickerCode": "AUT2",
+        "name": "Alexander Schlager",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "AUT3",
+        "name": "Patrick Pentz",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "AUT4",
+        "name": "David Alaba",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "AUT5",
+        "name": "Kevin Danso",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "AUT6",
+        "name": "Philipp Lienhart",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "AUT7",
+        "name": "Stefan Posch",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "AUT8",
+        "name": "Phillipp Mwene",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "AUT9",
+        "name": "Alexander Prass",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "AUT10",
+        "name": "Xaver Schlager",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "AUT11",
+        "name": "Marcel Sabitzer",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "AUT12",
+        "name": "Konrad Laimer",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "AUT14",
+        "name": "Florian Grillitsch",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "AUT15",
+        "name": "Nicolas Seiwald",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "AUT16",
+        "name": "Romano Schmid",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "AUT17",
+        "name": "Patrick Wimmer",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "AUT18",
+        "name": "Christoph Baumgartner",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "AUT19",
+        "name": "Michael Gregoritsch",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "AUT20",
+        "name": "Marko Arnautović",
+        "paniniSlot": 20
+      }
+    ],
+    "JOR": [
+      {
+        "stickerCode": "JOR2",
+        "name": "Yazeed Abulaila",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "JOR3",
+        "name": "Ihsan Haddad",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "JOR4",
+        "name": "Mohammad Abu Hashish",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "JOR5",
+        "name": "Yazan Al-Arab",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "JOR6",
+        "name": "Abdallah Nasib",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "JOR7",
+        "name": "Saleem Obaid",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "JOR8",
+        "name": "Mohammad Abualnadi",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "JOR9",
+        "name": "Ibrahim Saadeh",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "JOR10",
+        "name": "Nizar Al-Rashdan",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "JOR11",
+        "name": "Noor Al-Rawabdeh",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "JOR12",
+        "name": "Mohannad Abu Taha",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "JOR14",
+        "name": "Amer Jamous",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "JOR15",
+        "name": "Musa Al-Taamari",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "JOR16",
+        "name": "Yazan Al-Naimat",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "JOR17",
+        "name": "Mahmoud Al-Mardi",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "JOR18",
+        "name": "Ali Olwan",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "JOR19",
+        "name": "Mohammad Abu Zrayq",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "JOR20",
+        "name": "Ibrahim Sabra",
+        "paniniSlot": 20
+      }
+    ],
+    "POR": [
+      {
+        "stickerCode": "POR2",
+        "name": "Diogo Costa",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "POR3",
+        "name": "Jose Sa",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "POR4",
+        "name": "Ruben Dias",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "POR5",
+        "name": "João Cancelo",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "POR6",
+        "name": "Diogo Dalot",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "POR7",
+        "name": "Nuno Mendes",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "POR8",
+        "name": "Gonçalo Inácio",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "POR9",
+        "name": "Bernardo Silva",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "POR10",
+        "name": "Bruno Fernandes",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "POR11",
+        "name": "Ruben Neves",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "POR12",
+        "name": "Vitinha",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "POR14",
+        "name": "João Neves",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "POR15",
+        "name": "Cristiano Ronaldo",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "POR16",
+        "name": "Francisco Trincao",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "POR17",
+        "name": "João Felix",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "POR18",
+        "name": "Gonçalo Ramos",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "POR19",
+        "name": "Pedro Neto",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "POR20",
+        "name": "Rafael Leão",
+        "paniniSlot": 20
+      }
+    ],
+    "COD": [
+      {
+        "stickerCode": "COD2",
+        "name": "Lionel Mpasi",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "COD3",
+        "name": "Aaron Wan-Bissaka",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "COD4",
+        "name": "Axel Tuanzebe",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "COD5",
+        "name": "Arthur Masuaku",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "COD6",
+        "name": "Chancel Mbemba",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "COD7",
+        "name": "Joris Kayembe",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "COD8",
+        "name": "Charles Pickel",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "COD9",
+        "name": "Ngal'ayel Mukau",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "COD10",
+        "name": "Edo Kayembe",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "COD11",
+        "name": "Samuel Moutoussamy",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "COD12",
+        "name": "Noah Sadiki",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "COD14",
+        "name": "Théo Bongonda",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "COD15",
+        "name": "Meschak Elia",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "COD16",
+        "name": "Yoane Wissa",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "COD17",
+        "name": "Brian Cipenga",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "COD18",
+        "name": "Fiston Mayele",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "COD19",
+        "name": "Cédric Bakambu",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "COD20",
+        "name": "Nathanaël Mbuku",
+        "paniniSlot": 20
+      }
+    ],
+    "UZB": [
+      {
+        "stickerCode": "UZB2",
+        "name": "Utkir Yusupov",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "UZB3",
+        "name": "Farrukh Savfiev",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "UZB4",
+        "name": "Sherzod Nasrullaev",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "UZB5",
+        "name": "Umar Eshmurodov",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "UZB6",
+        "name": "Husniddin Aliqulov",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "UZB7",
+        "name": "Rustamjon Ashurmatov",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "UZB8",
+        "name": "Khojiakbar Alijonov",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "UZB9",
+        "name": "Abdukodir Khusanov",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "UZB10",
+        "name": "Odiljon Hamrobekov",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "UZB11",
+        "name": "Otabek Shukurov",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "UZB12",
+        "name": "Jamshid Iskanderov",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "UZB14",
+        "name": "Azizbek Turgunboev",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "UZB15",
+        "name": "Khojimat Erkinov",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "UZB16",
+        "name": "Eldor Shomurodov",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "UZB17",
+        "name": "Oston Urunov",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "UZB18",
+        "name": "Jaloliddin Masharipov",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "UZB19",
+        "name": "Igor Sergeev",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "UZB20",
+        "name": "Abbosbek Fayzullaev",
+        "paniniSlot": 20
+      }
+    ],
+    "COL": [
+      {
+        "stickerCode": "COL2",
+        "name": "Camilo Vargas",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "COL3",
+        "name": "David Ospina",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "COL4",
+        "name": "Dávinson Sánchez",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "COL5",
+        "name": "Yerry Mina",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "COL6",
+        "name": "Daniel Munoz",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "COL7",
+        "name": "Johan Mojica",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "COL8",
+        "name": "Jhon Lucumí",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "COL9",
+        "name": "Santiago Arias",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "COL10",
+        "name": "Jefferson Lerma",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "COL11",
+        "name": "Kevin Castaño",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "COL12",
+        "name": "Richard Rios",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "COL14",
+        "name": "James Rodriguez",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "COL15",
+        "name": "Juan Fernando Quintero",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "COL16",
+        "name": "Jorge Carrascal",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "COL17",
+        "name": "Jon Arias",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "COL18",
+        "name": "Jhon Cordova",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "COL19",
+        "name": "Luis Suarez",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "COL20",
+        "name": "Luis Diaz",
+        "paniniSlot": 20
+      }
+    ],
+    "ENG": [
+      {
+        "stickerCode": "ENG2",
+        "name": "Jordan Pickford",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "ENG3",
+        "name": "John Stones",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "ENG4",
+        "name": "Marc Guéhi",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "ENG5",
+        "name": "Ezri Konsa",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "ENG6",
+        "name": "Trent Alexander-Arnold",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "ENG7",
+        "name": "Reece James",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "ENG8",
+        "name": "Dan Burn",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "ENG9",
+        "name": "Jordan Henderson",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "ENG10",
+        "name": "Declan Rice",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "ENG11",
+        "name": "Jude Bellingham",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "ENG12",
+        "name": "Cole Palmer",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "ENG14",
+        "name": "Morgan Rogers",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "ENG15",
+        "name": "Anthony Gordon",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "ENG16",
+        "name": "Phil Foden",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "ENG17",
+        "name": "Bukayo Saka",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "ENG18",
+        "name": "Harry Kane",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "ENG19",
+        "name": "Marcus Rashford",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "ENG20",
+        "name": "Ollie Watkins",
+        "paniniSlot": 20
+      }
+    ],
+    "CRO": [
+      {
+        "stickerCode": "CRO2",
+        "name": "Dominik Livaković",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "CRO3",
+        "name": "Duje Caleta-Car",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "CRO4",
+        "name": "Josko Gvardiol",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "CRO5",
+        "name": "Josip Stanišić",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "CRO6",
+        "name": "Luka Vušković",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "CRO7",
+        "name": "Josip Sutalo",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "CRO8",
+        "name": "Kristijan Jakic",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "CRO9",
+        "name": "Luka Modrić",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "CRO10",
+        "name": "Mateo Kovacic",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "CRO11",
+        "name": "Martin Baturina",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "CRO12",
+        "name": "Lovro Majer",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "CRO14",
+        "name": "Mario Pasalic",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "CRO15",
+        "name": "Petar Sucic",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "CRO16",
+        "name": "Ivan Perišić",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "CRO17",
+        "name": "Marco Pasalic",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "CRO18",
+        "name": "Ante Budimir",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "CRO19",
+        "name": "Andrej Kramarić",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "CRO20",
+        "name": "Franjo Ivanovic",
+        "paniniSlot": 20
+      }
+    ],
+    "GHA": [
+      {
+        "stickerCode": "GHA2",
+        "name": "Lawrence Ati Zigi",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "GHA3",
+        "name": "Tariq Lamptey",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "GHA4",
+        "name": "Mohammed Salisu",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "GHA5",
+        "name": "Alidu Seidu",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "GHA6",
+        "name": "Alexander Djiku",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "GHA7",
+        "name": "Gideon Mensah",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "GHA8",
+        "name": "Caleb Yirenkyi",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "GHA9",
+        "name": "Abdul Issahaku Fatawu",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "GHA10",
+        "name": "Thomas Partey",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "GHA11",
+        "name": "Salis Abdul Samed",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "GHA12",
+        "name": "Kamaldeen Sulemana",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "GHA14",
+        "name": "Mohammed Kudus",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "GHA15",
+        "name": "Inaki Williams",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "GHA16",
+        "name": "Jordan Ayew",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "GHA17",
+        "name": "Andrew Ayew",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "GHA18",
+        "name": "Joseph Paintsil",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "GHA19",
+        "name": "Osman Bukari",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "GHA20",
+        "name": "Antoine Semenyo",
+        "paniniSlot": 20
+      }
+    ],
+    "PAN": [
+      {
+        "stickerCode": "PAN2",
+        "name": "Orlando Mosquera",
+        "paniniSlot": 2
+      },
+      {
+        "stickerCode": "PAN3",
+        "name": "Luis Mejia",
+        "paniniSlot": 3
+      },
+      {
+        "stickerCode": "PAN4",
+        "name": "Fidel Escobar",
+        "paniniSlot": 4
+      },
+      {
+        "stickerCode": "PAN5",
+        "name": "Andres Andrade",
+        "paniniSlot": 5
+      },
+      {
+        "stickerCode": "PAN6",
+        "name": "Michael Amir Murillo",
+        "paniniSlot": 6
+      },
+      {
+        "stickerCode": "PAN7",
+        "name": "Eric Davis",
+        "paniniSlot": 7
+      },
+      {
+        "stickerCode": "PAN8",
+        "name": "Jose Cordoba",
+        "paniniSlot": 8
+      },
+      {
+        "stickerCode": "PAN9",
+        "name": "Cesar Blackman",
+        "paniniSlot": 9
+      },
+      {
+        "stickerCode": "PAN10",
+        "name": "Cristian Martinez",
+        "paniniSlot": 10
+      },
+      {
+        "stickerCode": "PAN11",
+        "name": "Aníbal Godoy",
+        "paniniSlot": 11
+      },
+      {
+        "stickerCode": "PAN12",
+        "name": "Adalberto Carrasquilla",
+        "paniniSlot": 12
+      },
+      {
+        "stickerCode": "PAN14",
+        "name": "Édgar Bárcenas",
+        "paniniSlot": 14
+      },
+      {
+        "stickerCode": "PAN15",
+        "name": "Carlos Harvey",
+        "paniniSlot": 15
+      },
+      {
+        "stickerCode": "PAN16",
+        "name": "Ismael Díaz",
+        "paniniSlot": 16
+      },
+      {
+        "stickerCode": "PAN17",
+        "name": "Jose Fajardo",
+        "paniniSlot": 17
+      },
+      {
+        "stickerCode": "PAN18",
+        "name": "Cecilio Waterman",
+        "paniniSlot": 18
+      },
+      {
+        "stickerCode": "PAN19",
+        "name": "Jose Luiz Rodriguez",
+        "paniniSlot": 19
+      },
+      {
+        "stickerCode": "PAN20",
+        "name": "Alberto Quintero",
+        "paniniSlot": 20
+      }
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+.lang-switch {
+  --lang-switch-w: 104px;
+  --lang-switch-h: 36px;
+  --lang-switch-pad: 3px;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.lang-switch__btn {
+  position: relative;
+  width: var(--lang-switch-w);
+  height: var(--lang-switch-h);
+  padding: var(--lang-switch-pad);
+  border-radius: 999px;
+  border: 1px solid var(--lang-switch-border, var(--border, #e2e8f0));
+  background: var(--lang-switch-track-bg, var(--code-bg, #f1f5f9));
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.lang-switch__btn:hover {
+  border-color: var(--lang-switch-border-hover, var(--accent-border, #94a3b8));
+}
+
+.lang-switch__btn:focus-visible {
+  outline: 2px solid var(--lang-switch-focus, var(--accent, #3b82f6));
+  outline-offset: 2px;
+}
+
+.lang-switch__track-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  pointer-events: none;
+}
+
+.lang-switch__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--lang-switch-label-muted, var(--text, #64748b));
+  transition: color 0.15s ease;
+}
+
+.lang-switch__label--active {
+  color: var(--lang-switch-label-active, var(--accent, #2563eb));
+}
+
+.lang-switch__thumb {
+  position: absolute;
+  top: var(--lang-switch-pad);
+  left: var(--lang-switch-pad);
+  width: calc((var(--lang-switch-w) - 2 * var(--lang-switch-pad)) / 2 - 2px);
+  height: calc(var(--lang-switch-h) - 2 * var(--lang-switch-pad));
+  border-radius: 999px;
+  background: var(--lang-switch-thumb-bg, #fff);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+.lang-switch[data-locale='en'] .lang-switch__thumb {
+  transform: translateX(calc((var(--lang-switch-w) - 2 * var(--lang-switch-pad)) / 2));
+}
+
+.lang-switch--auth .lang-switch__btn {
+  --lang-switch-border: var(--wc26-border);
+  --lang-switch-border-hover: var(--wc26-accent);
+  --lang-switch-track-bg: var(--wc26-surface-field);
+  --lang-switch-focus: var(--wc26-accent);
+  --lang-switch-thumb-bg: var(--wc26-surface);
+  --lang-switch-label-muted: var(--wc26-muted);
+  --lang-switch-label-active: var(--wc26-accent);
+}
+
+html[data-theme='dark'] .lang-switch--auth .lang-switch__btn {
+  --lang-switch-thumb-bg: var(--wc26-surface-elevated, var(--wc26-surface));
+}

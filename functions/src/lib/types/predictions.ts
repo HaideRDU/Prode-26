@@ -9,6 +9,27 @@ export interface TeamDoc {
   teamId: string
   groupId: string
   nameEs: string
+  /** idTeam en TheSportsDB; lo rellena seed:tsdb-rosters */
+  theSportsDbTeamId?: string
+  /** id numérico en API-Football; lo rellena seed:apisports-rosters */
+  apiSportsTeamId?: number
+  rosterSyncedAt?: unknown
+  rosterPlayerCount?: number
+  rosterSource?: 'apisports' | 'thesportsdb' | 'mixed' | 'panini'
+}
+
+/** Jugador en teams/{teamId}/players/{playerId} */
+export interface TeamPlayerDoc {
+  theSportsDbPlayerId?: string
+  apiSportsPlayerId?: number
+  paniniStickerCode?: string
+  paniniSlot?: number
+  name: string
+  position?: string
+  number?: string
+  thumbUrl?: string
+  photoUrl?: string
+  syncedAt?: unknown
 }
 
 export interface MatchDoc {
@@ -24,6 +45,9 @@ export interface MatchDoc {
   finishedAt?: unknown
   wentToPenalties?: boolean | null
   penaltiesWinnerHome?: boolean | null
+  /** ID de evento en TheSportsDB (league 4429); lo rellena el sync. */
+  theSportsDbEventId?: string
+  /** @deprecated Reemplazado por theSportsDbEventId */
   apiSportsFixtureId?: number
 }
 

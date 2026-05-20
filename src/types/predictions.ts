@@ -11,6 +11,28 @@ export interface TeamDoc {
   teamId: string
   groupId: string
   nameEs: string
+  /** idTeam en TheSportsDB; lo rellena seed:tsdb-rosters */
+  theSportsDbTeamId?: string
+  /** id numérico en API-Football; lo rellena seed:apisports-rosters */
+  apiSportsTeamId?: number
+  rosterSyncedAt?: unknown
+  rosterPlayerCount?: number
+  rosterSource?: 'apisports' | 'thesportsdb' | 'mixed' | 'panini'
+}
+
+/** Jugador en teams/{teamId}/players/{playerId} */
+export interface TeamPlayerDoc {
+  theSportsDbPlayerId?: string
+  apiSportsPlayerId?: number
+  /** Código sticker Panini (ej. MEX15); doc id en seed Panini */
+  paniniStickerCode?: string
+  paniniSlot?: number
+  name: string
+  position?: string
+  number?: string
+  thumbUrl?: string
+  photoUrl?: string
+  syncedAt?: unknown
 }
 
 /** Partido en Firestore: matches/{matchId} */
@@ -34,7 +56,9 @@ export interface MatchDoc {
    * Se mantiene opcional hasta definir fuente oficial de plantillas/eventos.
    */
   scorers?: { playerKey: string; goals: number; includesPenalties?: boolean }[]
-  /** ID de fixture en API-Sports (api-football v3); lo rellena el sync en backend. */
+  /** ID de evento en TheSportsDB (league 4429); lo rellena el sync en backend. */
+  theSportsDbEventId?: string
+  /** @deprecated Reemplazado por theSportsDbEventId */
   apiSportsFixtureId?: number
 }
 
@@ -132,6 +156,8 @@ export interface StandingUserDoc {
   displayName?: string
   points: number
   rank: number
+  /** Posiciones ganadas desde el último recálculo (positivo = subió). */
+  rankDelta?: number
   breakdown?: PointsBreakdown
   tieBreak?: TieBreakStats
   updatedAt?: unknown

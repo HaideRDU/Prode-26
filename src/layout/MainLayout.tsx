@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import type { User } from 'firebase/auth'
 import type { AccountOutletContext } from '../types/outletContext'
-import { GLOBAL_ROOM_ID } from '../constants/rooms'
+import { useTranslation } from '../i18n/LocaleContext'
 import { ProfilePanel } from './ProfilePanel'
 import './MainLayout.css'
 import './app-shell-wc26.css'
@@ -52,6 +52,8 @@ export function MainLayout({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [navMenuOpen, profileOpen])
 
+  const { t } = useTranslation()
+
   const navClass = ({ isActive }: { isActive: boolean }) =>
     `app-sidebar-link ${isActive ? 'active' : ''}`
 
@@ -68,7 +70,7 @@ export function MainLayout({
                 setProfileOpen(false)
                 setNavMenuOpen((o) => !o)
               }}
-              aria-label="Abrir o cerrar menú de navegación"
+              aria-label={t('nav.openMenu')}
               aria-expanded={navMenuOpen}
               aria-haspopup="menu"
               aria-controls={navMenuId}
@@ -81,23 +83,23 @@ export function MainLayout({
                 id={navMenuId}
                 className="app-nav-dropdown"
                 role="menu"
-                aria-label="Navegación"
+                aria-label={t('nav.menuLabel')}
               >
                 <nav className="app-nav-dropdown-nav">
                   <NavLink to="/inicio" end className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
                     <span className="app-sidebar-icon" aria-hidden>
                       ⌂
                     </span>
-                    <span className="app-sidebar-label">Inicio</span>
+                    <span className="app-sidebar-label">{t('nav.home')}</span>
                   </NavLink>
-                  <NavLink to="/rooms" className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
+                  <NavLink to="/salas" className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
                     <span className="app-sidebar-icon" aria-hidden>
-                      +
+                      ⊞
                     </span>
-                    <span className="app-sidebar-label">Crear o unirse</span>
+                    <span className="app-sidebar-label">{t('nav.rooms')}</span>
                   </NavLink>
                   <NavLink
-                    to={`/room/${GLOBAL_ROOM_ID}/predictions`}
+                    to="/room/global/standings"
                     className={navClass}
                     role="menuitem"
                     onClick={() => setNavMenuOpen(false)}
@@ -105,10 +107,17 @@ export function MainLayout({
                     <span className="app-sidebar-icon" aria-hidden>
                       ◎
                     </span>
-                    <span className="app-sidebar-label">Sala global</span>
+                    <span className="app-sidebar-label">{t('nav.globalRoom')}</span>
+                  </NavLink>
+                  <NavLink to="/rooms" className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
+                    <span className="app-sidebar-icon" aria-hidden>
+                      +
+                    </span>
+                    <span className="app-sidebar-label">{t('nav.createOrJoin')}</span>
                   </NavLink>
                   <NavLink
                     to="/reglamento"
+                    end
                     className={navClass}
                     role="menuitem"
                     onClick={() => setNavMenuOpen(false)}
@@ -116,13 +125,13 @@ export function MainLayout({
                     <span className="app-sidebar-icon" aria-hidden>
                       §
                     </span>
-                    <span className="app-sidebar-label">Reglamento</span>
+                    <span className="app-sidebar-label">{t('nav.rules')}</span>
                   </NavLink>
                 </nav>
               </div>
             ) : null}
           </div>
-          <h1 className="app-topbar-title">Predicciones</h1>
+          <h1 className="app-topbar-title">{t('topbar.title')}</h1>
           <div className="app-topbar-spacer" />
           <div className="app-topbar-profile-wrap">
             <button
@@ -159,7 +168,7 @@ export function MainLayout({
                 id={profileMenuId}
                 className="app-profile-popover"
                 role="dialog"
-                aria-label="Perfil de usuario"
+                aria-label={t('nav.profileDialog')}
               >
                 <ProfilePanel ctx={accountOutletContext} onClose={() => setProfileOpen(false)} />
               </div>

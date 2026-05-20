@@ -1,5 +1,9 @@
-import type { AccountOutletContext } from '../types/outletContext'
+import { AmericasTimezonePicker } from '../components/AmericasTimezonePicker'
+import '../components/americas-timezone-picker.css'
+import { LanguageSwitch } from '../components/LanguageSwitch'
 import { ThemeSwitch } from '../components/ThemeSwitch'
+import { useTranslation } from '../i18n/LocaleContext'
+import type { AccountOutletContext } from '../types/outletContext'
 
 /** Contenido del panel lateral de perfil (antes página Cuenta). */
 export function ProfilePanel({
@@ -9,6 +13,7 @@ export function ProfilePanel({
   ctx: AccountOutletContext
   onClose: () => void
 }) {
+  const { t, locale, setLocale } = useTranslation()
   const {
     user,
     publicDisplayName,
@@ -25,15 +30,34 @@ export function ProfilePanel({
     profileError,
     appTheme,
     setAppTheme,
+    timeZone,
+    americasRegion,
+    setAmericasRegion,
+    setTimeZone,
+    persistTimeZone,
   } = ctx
 
   const googleName = user.displayName?.trim()
 
+  async function handleTimeZoneChange(next: string) {
+    setTimeZone(next)
+    try {
+      await persistTimeZone(next)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return (
     <div className="profile-panel">
       <div className="profile-panel-header">
-        <h2 className="profile-panel-title">Perfil</h2>
-        <button type="button" className="profile-panel-close" onClick={onClose} aria-label="Cerrar">
+        <h2 className="profile-panel-title">{t('profile.title')}</h2>
+        <button
+          type="button"
+          className="profile-panel-close"
+          onClick={onClose}
+          aria-label={t('profile.close')}
+        >
           ×
         </button>
       </div>
@@ -56,29 +80,44 @@ export function ProfilePanel({
           <p className="user-name profile-panel-username">{publicDisplayName}</p>
           {hasGoogleProvider && googleName ? (
             <p className="user-email">
-              <span className="app-muted">Nombre en Google: </span>
+              <span className="app-muted">{t('profile.googleName')} </span>
               {googleName}
             </p>
           ) : null}
           {user.email ? (
             <p className="user-email">
-              <span className="app-muted">Correo: </span>
+              <span className="app-muted">{t('profile.email')} </span>
               {user.email}
             </p>
           ) : null}
         </div>
 
-        <div className="profile-theme-block" style={{ marginBottom: 24 }}>
-          <p className="app-muted" style={{ marginBottom: 8, fontSize: '0.85rem' }}>
-            Tema de la aplicación
-          </p>
-          <ThemeSwitch value={appTheme} onChange={setAppTheme} className="profile-theme-switch" />
+        <div className="profile-prefs-row profile-prefs-row--with-tz" style={{ marginBottom: 24 }}>
+          <div className="profile-pref-block">
+            <p className="app-muted profile-pref-label">{t('profile.appTheme')}</p>
+            <ThemeSwitch value={appTheme} onChange={setAppTheme} className="profile-theme-switch" />
+          </div>
+          <div className="profile-pref-block">
+            <p className="app-muted profile-pref-label">{t('profile.language')}</p>
+            <LanguageSwitch value={locale} onChange={setLocale} className="profile-lang-switch" />
+          </div>
+          <div className="profile-pref-block profile-pref-block--timezone">
+            <p className="app-muted profile-pref-label">{t('profile.timeZone')}</p>
+            <AmericasTimezonePicker
+              idPrefix="profile-tz"
+              variant="profile"
+              region={americasRegion}
+              timeZone={timeZone}
+              onRegionChange={setAmericasRegion}
+              onTimeZoneChange={(tz) => void handleTimeZoneChange(tz)}
+            />
+          </div>
         </div>
 
         {hasGoogleProvider && !hasPasswordProvider ? (
           <>
             <p className="auth-lead small" style={{ textAlign: 'left' }}>
-              Opcional: vincula una contraseña para entrar también con correo.
+              {t('profile.linkPasswordLead')}
             </p>
             <div className="form-fields" style={{ maxWidth: '100%' }}>
               <input
@@ -91,7 +130,7 @@ export function ProfilePanel({
               <input
                 type="password"
                 className="field-input"
-                placeholder="Nueva contraseña"
+                placeholder={t('profile.newPassword')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
@@ -103,21 +142,25 @@ export function ProfilePanel({
               style={{ marginTop: 8 }}
               onClick={() => void handleLinkPasswordToGoogleAccount()}
             >
-              Vincular contraseña
+              {t('profile.linkPassword')}
             </button>
           </>
         ) : null}
 
         {authError ? <p className="auth-error">{authError}</p> : null}
         {info ? <p className="auth-info">{info}</p> : null}
-        {profileError ? <p className="auth-warn">Firestore: {profileError}</p> : null}
+        {profileError ? (
+          <p className="auth-warn">
+            {t('profile.firestore')} {profileError}
+          </p>
+        ) : null}
 
         <button
           type="button"
           className="btn-header-signout profile-panel-signout"
           onClick={() => void handleSignOut()}
         >
-          Cerrar sesión
+          {t('profile.signOut')}
         </button>
       </div>
     </div>

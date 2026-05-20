@@ -20,36 +20,51 @@
   --standings-head-bg: #f1f5f9;
   --standings-border: #cbd5e1;
   position: relative;
-  background: var(--wc26-bg);
-  background-image: linear-gradient(to top, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
-  background-size: cover;
-  background-position: center bottom;
-  background-repeat: no-repeat;
+  background: #0f172a;
   transition:
     background-color 220ms ease,
-    background-image 220ms ease,
     color 220ms ease,
     border-color 220ms ease,
     box-shadow 220ms ease;
 }
 
+/* Sin ilustración de estadio: atmósfera neutra difuminada (gradientes) */
 .app-shell--wc26::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 1;
-  background-image: url("/imagen%20fondo%20dia.png");
-  background-size: cover;
-  background-position: center bottom;
-  background-repeat: no-repeat;
+  background:
+    radial-gradient(ellipse 90% 55% at 15% 0%, rgba(71, 85, 105, 0.28), transparent 58%),
+    radial-gradient(ellipse 75% 50% at 90% 25%, rgba(51, 65, 85, 0.22), transparent 55%),
+    radial-gradient(ellipse 80% 45% at 50% 100%, rgba(15, 23, 42, 0.5), transparent 60%);
   transition: opacity 240ms ease;
 }
 
 .app-shell--wc26 > * {
   position: relative;
   z-index: 1;
+}
+
+.app-shell--wc26 .app-main-column {
+  position: relative;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 100% 70% at 50% -5%, rgba(51, 65, 85, 0.38), transparent 62%),
+    radial-gradient(ellipse 85% 55% at 0% 60%, rgba(30, 41, 59, 0.32), transparent 58%),
+    radial-gradient(ellipse 80% 50% at 100% 70%, rgba(23, 37, 84, 0.22), transparent 55%),
+    linear-gradient(165deg, #111827 0%, #0f172a 48%, #0a0f1a 100%);
+}
+
+/* Topbar y overlays por encima del contenido principal (evita tapar popovers/modales del header) */
+.app-shell--wc26 .app-main {
+  position: relative;
+  z-index: 0;
+}
+
+.app-shell--wc26 .modal-overlay {
+  z-index: 1200;
 }
 
 html[data-theme='dark'] .app-shell--wc26 {
@@ -61,20 +76,39 @@ html[data-theme='dark'] .app-shell--wc26 {
   --standings-row-bg: #0f172a;
   --standings-head-bg: #1e293b;
   --standings-border: #334155;
-  background-image: linear-gradient(to top, rgba(2, 6, 23, 0.62), rgba(2, 6, 23, 0.2));
+  background: #0a0f1a;
 }
 
 html[data-theme='dark'] .app-shell--wc26::before {
-  background-image: url("/imagen%20fondo%20noche.png");
-  opacity: 0.96;
+  background:
+    radial-gradient(ellipse 95% 60% at 20% 5%, rgba(100, 116, 139, 0.2), transparent 58%),
+    radial-gradient(ellipse 70% 45% at 85% 30%, rgba(51, 65, 85, 0.18), transparent 55%),
+    radial-gradient(ellipse 90% 50% at 50% 100%, rgba(2, 6, 23, 0.55), transparent 62%);
 }
 
-@media (max-width: 768px) {
-  .app-shell--wc26,
-  .app-shell--wc26::before {
-    background-position: center bottom;
-    background-size: cover;
-  }
+html[data-theme='dark'] .app-shell--wc26 .app-main-column {
+  background:
+    radial-gradient(ellipse 110% 75% at 50% 0%, rgba(71, 85, 105, 0.35), transparent 65%),
+    radial-gradient(ellipse 90% 60% at 10% 55%, rgba(30, 41, 59, 0.28), transparent 60%),
+    radial-gradient(ellipse 85% 55% at 95% 65%, rgba(30, 58, 138, 0.15), transparent 58%),
+    linear-gradient(168deg, #0c1222 0%, #0f172a 45%, #070b14 100%);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 {
+  background: #e8edf4;
+}
+
+html:not([data-theme='dark']) .app-shell--wc26::before {
+  background:
+    radial-gradient(ellipse 90% 55% at 20% 0%, rgba(148, 163, 184, 0.35), transparent 58%),
+    radial-gradient(ellipse 75% 50% at 80% 80%, rgba(203, 213, 225, 0.45), transparent 55%);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .app-main-column {
+  background:
+    radial-gradient(ellipse 100% 65% at 50% 0%, rgba(241, 245, 249, 0.9), transparent 65%),
+    radial-gradient(ellipse 80% 50% at 100% 50%, rgba(226, 232, 240, 0.7), transparent 55%),
+    linear-gradient(165deg, #f1f5f9 0%, #e8edf4 50%, #f8fafc 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {

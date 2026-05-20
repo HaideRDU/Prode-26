@@ -24,8 +24,12 @@ API-Sports (partidos en vivo)
 =============================
 - Requiere plan Blaze (Functions con red saliente + Cloud Scheduler).
 - Liga Mundial 2026: league=1, season=2026 (API-Football v3 / API-Sports).
-- Secreto (nunca en el repo):
-    firebase functions:secrets:set APISPORTS_KEY
+- Secreto (nunca en el repo). Opción A — script (lee APISPORTS_KEY de .env):
+    npm run setup:apisports-firebase
+  Opción B — manual:
+    npx firebase login
+    npx firebase functions:secrets:set APISPORTS_KEY
+    npm run deploy:functions
 - Tras seed de partidos, enlazar IDs de fixture:
     npm run link:api-sports
   (con APISPORTS_KEY y GOOGLE_APPLICATION_CREDENTIALS en .env)

@@ -18,7 +18,7 @@ export function LandingHero() {
           <div className="landing-hero__ctas">
             <ParticiparLink className="landing-btn landing-btn--gold landing-btn--lg" />
             <LandingAnchorLink
-              href="#como-funciona"
+              href="#como-jugar"
               className="landing-btn landing-btn--outline landing-btn--lg"
             >
               Ver cómo funciona

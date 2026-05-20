@@ -1,0 +1,42 @@
+.americas-tz-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.americas-tz-picker--profile {
+  gap: 0.65rem;
+}
+
+.americas-tz-picker__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.americas-tz-picker__label {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.americas-tz-picker--auth .americas-tz-picker__label {
+  font-size: 0.875rem;
+}
+
+.americas-tz-picker__select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.profile-pref-block--timezone {
+  flex: 1 1 100%;
+  min-width: min(100%, 280px);
+}
+
+.profile-prefs-row--with-tz {
+  align-items: flex-start;
+}

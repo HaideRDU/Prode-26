@@ -41,7 +41,27 @@ export interface ApiSportsTeamItem {
     id: number
     name: string
     code: string | null
+    country?: string | null
+    national?: boolean
   }
+}
+
+export interface ApiSportsSquadPlayer {
+  id: number
+  name: string
+  age?: number | null
+  number?: number | null
+  position?: string | null
+  photo?: string | null
+}
+
+export interface ApiSportsSquadItem {
+  team: {
+    id: number
+    name: string
+    logo?: string | null
+  }
+  players: ApiSportsSquadPlayer[]
 }
 
 export interface ApiSportsPaging {

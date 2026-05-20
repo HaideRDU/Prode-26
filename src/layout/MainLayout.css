@@ -82,11 +82,24 @@
   gap: 12px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 30;
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+}
+
+.app-shell--wc26 .app-topbar {
+  background: rgba(15, 23, 42, 0.55);
+  border-bottom-color: rgba(148, 163, 184, 0.12);
+  box-shadow: none;
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .app-topbar {
+  background: rgba(248, 250, 252, 0.75);
+  border-bottom-color: rgba(148, 163, 184, 0.25);
 }
 
 .app-topbar-menu-btn {
@@ -596,6 +609,36 @@
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
+.reglamento-public-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 100% 70% at 50% -5%, rgba(51, 65, 85, 0.38), transparent 62%),
+    linear-gradient(165deg, #111827 0%, #0f172a 48%, #0a0f1a 100%);
+  color: var(--text);
+}
+
+.reglamento-public-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.reglamento-public-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+}
+
+.reglamento-public-back {
+  text-decoration: none;
+}
+
 .pred-page-card {
   max-width: 920px;
   margin: 0 auto;
@@ -682,7 +725,27 @@
   color: var(--accent);
 }
 
-.profile-theme-switch.theme-switch {
+.profile-prefs-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 28px;
+  align-items: flex-end;
+}
+
+.profile-pref-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.profile-pref-label {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.profile-theme-switch.theme-switch,
+.profile-lang-switch.lang-switch {
   max-width: 280px;
 }
 
@@ -813,5 +876,69 @@
   background: var(--accent);
   color: #fff;
   border-color: transparent;
+}
+
+/* Página Salas: título + CTA */
+.app-page-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.app-page-header-row .app-page-title {
+  margin: 0;
+}
+
+.app-salas-create-link {
+  flex-shrink: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Sala global: bloque ancho dedicado */
+.app-global-room-panel {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.app-global-room-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: min(960px, 100%);
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: 14px;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--accent) 12%, var(--bg)) 0%,
+    var(--bg) 55%
+  );
+  box-sizing: border-box;
+  box-shadow: var(--shadow);
+}
+
+.app-global-room-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  color: var(--text-h);
+}
+
+.app-global-room-card-top,
+.app-global-room-card-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.app-global-room-open-btn {
+  align-self: flex-start;
+  max-width: 280px;
 }
 
