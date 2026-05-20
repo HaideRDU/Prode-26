@@ -93,19 +93,22 @@
   max-width: 420px;
   background: var(--auth-surface);
   border: 1px solid var(--auth-border);
-  border-radius: var(--auth-radius);
-  box-shadow: var(--auth-shadow);
-  padding: clamp(28px, 5vw, 40px);
-  transition:
-    box-shadow 0.25s ease,
-    transform 0.2s ease,
-    background-color 220ms ease,
-    color 220ms ease,
-    border-color 220ms ease;
+  border-radius: 10px;
+  box-shadow: none;
+  padding: clamp(14px, 3.8vw, 20px);
+  transition: box-shadow 0.2s ease;
+}
+
+.auth-wc26-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(250, 204, 21, 0.28),
+    0 16px 38px rgba(250, 204, 21, 0.22);
 }
 
 .auth-wc26-card:focus-within {
-  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.1);
+  box-shadow:
+    0 0 0 1px rgba(250, 204, 21, 0.34),
+    0 16px 38px rgba(250, 204, 21, 0.28);
 }
 
 .auth-wc26-logo {

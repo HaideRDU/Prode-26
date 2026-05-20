@@ -18,7 +18,9 @@
     "cleanup:rooms-predictions": "tsx scripts/cleanup-firestore.ts",
     "deploy:firestore-rules": "firebase deploy --only firestore:rules",
     "deploy:firestore-indexes": "firebase deploy --only firestore:indexes",
-    "verify:firebase-project": "tsx scripts/verify-firebase-project.ts"
+    "verify:firebase-project": "tsx scripts/verify-firebase-project.ts",
+    "link:api-sports": "tsx scripts/link-api-sports-fixtures.ts",
+    "sync:api-sports-live": "tsx scripts/sync-api-sports-live.ts"
   },
   "dependencies": {
     "firebase": "^12.12.0",

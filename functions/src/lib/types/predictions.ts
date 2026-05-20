@@ -24,6 +24,7 @@ export interface MatchDoc {
   finishedAt?: unknown
   wentToPenalties?: boolean | null
   penaltiesWinnerHome?: boolean | null
+  apiSportsFixtureId?: number
 }
 
 export interface MatchPredictionPayload {

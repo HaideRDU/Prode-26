@@ -19,3 +19,20 @@ Nota Spark:
 
 - Para probar sin Functions: puedes ejecutar temporalmente reglas de desarrollo (no recomendado en producción)
   o desplegar solo las functions y usar datos reales en Firestore.
+
+API-Sports (partidos en vivo)
+=============================
+- Requiere plan Blaze (Functions con red saliente + Cloud Scheduler).
+- Liga Mundial 2026: league=1, season=2026 (API-Football v3 / API-Sports).
+- Secreto (nunca en el repo):
+    firebase functions:secrets:set APISPORTS_KEY
+- Tras seed de partidos, enlazar IDs de fixture:
+    npm run link:api-sports
+  (con APISPORTS_KEY y GOOGLE_APPLICATION_CREDENTIALS en .env)
+- Prueba manual de sync en ventana horaria:
+    npm run sync:api-sports-live
+- Functions desplegadas:
+    syncMatchesFromApiSports  → cada 5 min, solo entre 2026-06-10 y 2026-07-21 UTC
+    linkMatchesApiSports      → callable autenticado para re-enlazar
+- Ventana de polling: desde 15 min antes del partido hasta 3.5 h después (status live siempre).
+- Al actualizar matches/, onMatchWrite recalcula standings automáticamente.

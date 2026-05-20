@@ -34,6 +34,8 @@ export interface MatchDoc {
    * Se mantiene opcional hasta definir fuente oficial de plantillas/eventos.
    */
   scorers?: { playerKey: string; goals: number; includesPenalties?: boolean }[]
+  /** ID de fixture en API-Sports (api-football v3); lo rellena el sync en backend. */
+  apiSportsFixtureId?: number
 }
 
 /** Predicción de marcador para un partido */

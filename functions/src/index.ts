@@ -6,10 +6,16 @@
  */
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
+import { defineSecret } from 'firebase-functions/params'
 import { onDocumentWritten } from 'firebase-functions/v2/firestore'
 import { HttpsError, onCall } from 'firebase-functions/v2/https'
+import { onSchedule } from 'firebase-functions/v2/scheduler'
 import * as logger from 'firebase-functions/logger'
+import { linkApiSportsFixtures } from './apiSports/linkFixtures'
+import { syncLiveMatches } from './apiSports/syncMatches'
 import { getAllRoomIds, getRoomIdsForMatch, recalculateStandingsForRoom } from './recalculateRoom'
+
+const apiSportsKey = defineSecret('APISPORTS_KEY')
 
 initializeApp()
 const db = getFirestore()
@@ -120,6 +126,49 @@ export const managePrivateRoomMember = onCall(async (request) => {
   await recalculateStandingsForRoom(db, roomId)
   return { ok: true }
 })
+
+/**
+ * Cada 5 min (solo ventana del Mundial): actualiza partidos en horario de juego vía API-Sports.
+ * Requiere plan Blaze y secreto APISPORTS_KEY.
+ */
+export const syncMatchesFromApiSports = onSchedule(
+  {
+    schedule: 'every 5 minutes',
+    timeZone: 'UTC',
+    secrets: [apiSportsKey],
+  },
+  async () => {
+    const key = apiSportsKey.value()?.trim()
+    if (!key) {
+      logger.warn('syncMatchesFromApiSports: APISPORTS_KEY vacía')
+      return
+    }
+    try {
+      const result = await syncLiveMatches(db, key)
+      logger.info('syncMatchesFromApiSports', result)
+    } catch (err) {
+      logger.error('syncMatchesFromApiSports failed', err)
+      throw err
+    }
+  },
+)
+
+/** Enlaza fixtures API-Sports con documentos matches/ (una vez o tras seed). Solo líder técnico vía consola/callable autenticado. */
+export const linkMatchesApiSports = onCall(
+  { secrets: [apiSportsKey] },
+  async (request) => {
+    if (!request.auth?.uid) throw new HttpsError('unauthenticated', 'Debes iniciar sesión.')
+    const key = apiSportsKey.value()?.trim()
+    if (!key) throw new HttpsError('failed-precondition', 'APISPORTS_KEY no configurada en Functions.')
+    try {
+      const result = await linkApiSportsFixtures(db, key)
+      return result
+    } catch (err) {
+      logger.error('linkMatchesApiSports failed', err)
+      throw new HttpsError('internal', err instanceof Error ? err.message : 'Error al enlazar fixtures.')
+    }
+  },
+)
 
 export const deletePrivateRoom = onCall(async (request) => {
   const authUid = request.auth?.uid

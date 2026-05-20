@@ -11,6 +11,7 @@ const KEYS = [
   'GOOGLE_CLOUD_PROJECT',
   'GCLOUD_PROJECT',
   'GOOGLE_APPLICATION_CREDENTIALS',
+  'APISPORTS_KEY',
 ] as const
 
 function parseDotEnv(raw: string): Record<string, string> {
