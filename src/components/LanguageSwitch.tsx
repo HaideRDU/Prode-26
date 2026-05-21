@@ -1,5 +1,5 @@
 import './LanguageSwitch.css'
-import type { AppLocale } from '../i18n/appLocale'
+import { I18N_UI_ENABLED, type AppLocale } from '../i18n/appLocale'
 import { useTranslation } from '../i18n/LocaleContext'
 
 function LangLabel({ code, active }: { code: string; active: boolean }) {
@@ -22,6 +22,8 @@ export function LanguageSwitch({
   variant?: 'default' | 'auth'
 }) {
   const { t } = useTranslation()
+  if (!I18N_UI_ENABLED) return null
+
   const isEn = value === 'en'
   const rootClass = ['lang-switch', variant === 'auth' ? 'lang-switch--auth' : '', className]
     .filter(Boolean)

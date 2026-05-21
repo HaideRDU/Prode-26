@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react'
-import { applyAppLocale, type AppLocale } from './appLocale'
+import { applyAppLocale, I18N_UI_ENABLED, type AppLocale } from './appLocale'
 import { t, type MessageKey } from './messages'
 
 type LocaleContextValue = {
@@ -21,6 +21,7 @@ export function LocaleProvider({
 }) {
   const setLocaleAndApply = useCallback(
     (next: AppLocale) => {
+      if (!I18N_UI_ENABLED) return
       setLocale(next)
       applyAppLocale(next)
     },

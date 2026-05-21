@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_RULESET } from '../config/ruleset'
+import { normalizeAmericasTimeZone } from '../data/americasTimezones'
+import { countdownPartsInTimeZone } from '../utils/tournamentCountdownLocal'
+import { formatDateTimeInZone, formatTimeZoneShort } from '../utils/formatMatchTime'
 
 export interface TournamentCountdownParts {
   days: number
@@ -11,26 +14,23 @@ export interface TournamentCountdownParts {
 
 const TOURNAMENT_START_MS = new Date(DEFAULT_RULESET.tournamentStartsAtIso).getTime()
 
-function partsFromMs(nowMs: number): TournamentCountdownParts {
-  if (nowMs >= TOURNAMENT_START_MS) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0, started: true }
-  }
-  const totalSec = Math.floor((TOURNAMENT_START_MS - nowMs) / 1000)
-  return {
-    days: Math.floor(totalSec / 86400),
-    hours: Math.floor((totalSec % 86400) / 3600),
-    minutes: Math.floor((totalSec % 3600) / 60),
-    seconds: totalSec % 60,
-    started: false,
-  }
+function partsForNow(nowMs: number, timeZone: string): TournamentCountdownParts {
+  return countdownPartsInTimeZone(nowMs, TOURNAMENT_START_MS, timeZone)
 }
 
-export function useTournamentCountdown(): TournamentCountdownParts {
-  const [parts, setParts] = useState<TournamentCountdownParts>(() => partsFromMs(Date.now()))
+export function useTournamentCountdown(timeZone: string): TournamentCountdownParts {
+  const tz = normalizeAmericasTimeZone(timeZone)
+  const tzRef = useRef(tz)
+  tzRef.current = tz
+
+  const [parts, setParts] = useState<TournamentCountdownParts>(() => partsForNow(Date.now(), tz))
 
   useEffect(() => {
-    const tick = () => setParts(partsFromMs(Date.now()))
-    tick()
+    setParts(partsForNow(Date.now(), tz))
+  }, [tz])
+
+  useEffect(() => {
+    const tick = () => setParts(partsForNow(Date.now(), tzRef.current))
     const id = window.setInterval(tick, 1000)
     return () => window.clearInterval(id)
   }, [])
@@ -38,14 +38,11 @@ export function useTournamentCountdown(): TournamentCountdownParts {
   return parts
 }
 
-export function tournamentKickoffLabel(): string {
-  return new Date(DEFAULT_RULESET.tournamentStartsAtIso).toLocaleString('es-CO', {
-    timeZone: DEFAULT_RULESET.timezone,
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+/** Pitido inicial formateado en la zona horaria del perfil del usuario. */
+export function tournamentKickoffLabel(timeZone: string): string {
+  const tz = normalizeAmericasTimeZone(timeZone)
+  const at = new Date(TOURNAMENT_START_MS)
+  const when = formatDateTimeInZone(TOURNAMENT_START_MS, tz)
+  const tzShort = formatTimeZoneShort(tz, at)
+  return `Inicio oficial: ${when} (${tzShort})`
 }

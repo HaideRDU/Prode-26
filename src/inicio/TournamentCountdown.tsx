@@ -1,25 +1,28 @@
+import { useOutletContext } from 'react-router-dom'
 import { tournamentKickoffLabel, useTournamentCountdown } from '../hooks/useTournamentCountdown'
+import type { AccountOutletContext } from '../types/outletContext'
 
 function pad2(n: number): string {
   return String(n).padStart(2, '0')
 }
 
 export function TournamentCountdown() {
-  const { days, hours, minutes, seconds, started } = useTournamentCountdown()
-  const kickoff = tournamentKickoffLabel()
+  const { timeZone } = useOutletContext<AccountOutletContext>()
+  const { days, hours, minutes, seconds, started } = useTournamentCountdown(timeZone)
+  const kickoff = tournamentKickoffLabel(timeZone)
 
   if (started) {
     return (
       <div className="inicio-home__countdown inicio-home__countdown--started" aria-live="polite">
         <p className="inicio-home__countdown-started">El torneo ya está en marcha</p>
-        <p className="inicio-home__countdown-meta">Inicio oficial: {kickoff}</p>
+        <p className="inicio-home__countdown-meta">{kickoff}</p>
       </div>
     )
   }
 
   return (
     <div className="inicio-home__countdown" aria-live="polite" aria-label="Cuenta regresiva al inicio del torneo">
-      <p className="inicio-home__countdown-label">Falta para el pitido inicial</p>
+      <p className="inicio-home__countdown-label">Falta para el pitido inicial (tu zona horaria)</p>
       <div className="inicio-home__countdown-grid">
         <div className="inicio-home__countdown-unit">
           <strong>{days}</strong>

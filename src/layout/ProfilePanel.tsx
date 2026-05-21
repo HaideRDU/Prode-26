@@ -1,6 +1,7 @@
 import { AmericasTimezonePicker } from '../components/AmericasTimezonePicker'
 import '../components/americas-timezone-picker.css'
 import { LanguageSwitch } from '../components/LanguageSwitch'
+import { I18N_UI_ENABLED } from '../i18n/appLocale'
 import { ThemeSwitch } from '../components/ThemeSwitch'
 import { useTranslation } from '../i18n/LocaleContext'
 import type { AccountOutletContext } from '../types/outletContext'
@@ -97,10 +98,12 @@ export function ProfilePanel({
             <p className="app-muted profile-pref-label">{t('profile.appTheme')}</p>
             <ThemeSwitch value={appTheme} onChange={setAppTheme} className="profile-theme-switch" />
           </div>
-          <div className="profile-pref-block">
-            <p className="app-muted profile-pref-label">{t('profile.language')}</p>
-            <LanguageSwitch value={locale} onChange={setLocale} className="profile-lang-switch" />
-          </div>
+          {I18N_UI_ENABLED ? (
+            <div className="profile-pref-block">
+              <p className="app-muted profile-pref-label">{t('profile.language')}</p>
+              <LanguageSwitch value={locale} onChange={setLocale} className="profile-lang-switch" />
+            </div>
+          ) : null}
           <div className="profile-pref-block profile-pref-block--timezone">
             <p className="app-muted profile-pref-label">{t('profile.timeZone')}</p>
             <AmericasTimezonePicker
