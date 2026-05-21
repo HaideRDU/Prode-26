@@ -10,7 +10,12 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore'
 import { db } from '../firebase'
-import type { MatchPredictionPayload, PredictionDoc, TournamentPredictionPayload } from '../types/predictions'
+import type {
+  MatchPredictionPayload,
+  PlayerPerMatchPayload,
+  PredictionDoc,
+  TournamentPredictionPayload,
+} from '../types/predictions'
 
 const PREDICTIONS = 'predictions'
 
@@ -160,4 +165,26 @@ export async function saveTournamentPredictionsBatch(
     batch.set(ref, data, { merge: true })
   }
   await batch.commit()
+}
+
+/** Persiste jugador por partido (scope player_per_match) para puntaje e historial por sala/usuario. */
+export async function savePlayerPerMatchPrediction(
+  roomId: string,
+  userId: string,
+  matchId: string,
+  playerKey: string,
+): Promise<void> {
+  if (!db) throw new Error('Firestore no inicializado')
+  const id = predictionDocId(roomId, userId, `p_${matchId}`)
+  const ref = doc(db, PREDICTIONS, id)
+  const payload: PlayerPerMatchPayload = { kind: 'player_match_pick', playerKey }
+  const data: PredictionDoc = {
+    userId,
+    roomId,
+    scope: 'player_per_match',
+    matchId,
+    payload,
+    updatedAt: serverTimestamp(),
+  }
+  await setDoc(ref, data, { merge: true })
 }

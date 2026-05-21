@@ -4,6 +4,8 @@ import type { User } from 'firebase/auth'
 import type { AccountOutletContext } from '../types/outletContext'
 import { useTranslation } from '../i18n/LocaleContext'
 import { ProfilePanel } from './ProfilePanel'
+import { NavIconAdd, NavIconGlobal, NavIconHome, NavIconRooms, NavIconRules } from './NavMenuIcons'
+import { useTopbarTitle } from './useTopbarTitle'
 import './MainLayout.css'
 import './app-shell-wc26.css'
 
@@ -53,9 +55,10 @@ export function MainLayout({
   }, [navMenuOpen, profileOpen])
 
   const { t } = useTranslation()
+  const topbarTitle = useTopbarTitle()
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `app-sidebar-link ${isActive ? 'active' : ''}`
+    `app-nav-dropdown-link${isActive ? ' app-nav-dropdown-link--active' : ''}`
 
   return (
     <div className="app-shell app-shell--wc26">
@@ -87,16 +90,16 @@ export function MainLayout({
               >
                 <nav className="app-nav-dropdown-nav">
                   <NavLink to="/inicio" end className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
-                    <span className="app-sidebar-icon" aria-hidden>
-                      ⌂
+                    <span className="app-nav-dropdown-link__icon" aria-hidden>
+                      <NavIconHome />
                     </span>
-                    <span className="app-sidebar-label">{t('nav.home')}</span>
+                    <span className="app-nav-dropdown-link__label">{t('nav.home')}</span>
                   </NavLink>
                   <NavLink to="/salas" className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
-                    <span className="app-sidebar-icon" aria-hidden>
-                      ⊞
+                    <span className="app-nav-dropdown-link__icon" aria-hidden>
+                      <NavIconRooms />
                     </span>
-                    <span className="app-sidebar-label">{t('nav.rooms')}</span>
+                    <span className="app-nav-dropdown-link__label">{t('nav.rooms')}</span>
                   </NavLink>
                   <NavLink
                     to="/room/global/standings"
@@ -104,16 +107,16 @@ export function MainLayout({
                     role="menuitem"
                     onClick={() => setNavMenuOpen(false)}
                   >
-                    <span className="app-sidebar-icon" aria-hidden>
-                      ◎
+                    <span className="app-nav-dropdown-link__icon" aria-hidden>
+                      <NavIconGlobal />
                     </span>
-                    <span className="app-sidebar-label">{t('nav.globalRoom')}</span>
+                    <span className="app-nav-dropdown-link__label">{t('nav.globalRoom')}</span>
                   </NavLink>
                   <NavLink to="/rooms" className={navClass} role="menuitem" onClick={() => setNavMenuOpen(false)}>
-                    <span className="app-sidebar-icon" aria-hidden>
-                      +
+                    <span className="app-nav-dropdown-link__icon" aria-hidden>
+                      <NavIconAdd />
                     </span>
-                    <span className="app-sidebar-label">{t('nav.createOrJoin')}</span>
+                    <span className="app-nav-dropdown-link__label">{t('nav.createOrJoin')}</span>
                   </NavLink>
                   <NavLink
                     to="/reglamento"
@@ -122,16 +125,16 @@ export function MainLayout({
                     role="menuitem"
                     onClick={() => setNavMenuOpen(false)}
                   >
-                    <span className="app-sidebar-icon" aria-hidden>
-                      §
+                    <span className="app-nav-dropdown-link__icon" aria-hidden>
+                      <NavIconRules />
                     </span>
-                    <span className="app-sidebar-label">{t('nav.rules')}</span>
+                    <span className="app-nav-dropdown-link__label">{t('nav.rules')}</span>
                   </NavLink>
                 </nav>
               </div>
             ) : null}
           </div>
-          <h1 className="app-topbar-title">{t('topbar.title')}</h1>
+          <h1 className="app-topbar-title">{topbarTitle}</h1>
           <div className="app-topbar-spacer" />
           <div className="app-topbar-profile-wrap">
             <button

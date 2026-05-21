@@ -29,8 +29,8 @@ export interface GroupStageMatchRow {
  */
 export const GROUP_STAGE_SCHEDULE: readonly GroupStageMatchRow[] = [
   // —— Group A ——
-  { matchId: 'wc26-A-01', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'RSA', scheduledAt: '2026-06-11T22:00:00.000Z' },
-  { matchId: 'wc26-A-02', groupId: 'A', teamHomeId: 'KOR', teamAwayId: 'CZE', scheduledAt: '2026-06-11T19:00:00.000Z' },
+  { matchId: 'wc26-A-01', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'RSA', scheduledAt: '2026-06-11T19:00:00.000Z' },
+  { matchId: 'wc26-A-02', groupId: 'A', teamHomeId: 'KOR', teamAwayId: 'CZE', scheduledAt: '2026-06-12T02:00:00.000Z' },
   { matchId: 'wc26-A-03', groupId: 'A', teamHomeId: 'CZE', teamAwayId: 'RSA', scheduledAt: '2026-06-18T21:00:00.000Z' },
   { matchId: 'wc26-A-04', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'KOR', scheduledAt: '2026-06-18T23:00:00.000Z' },
   { matchId: 'wc26-A-05', groupId: 'A', teamHomeId: 'MEX', teamAwayId: 'CZE', scheduledAt: '2026-06-24T22:00:00.000Z' },

@@ -14,6 +14,7 @@ export function applyDisplayRanks(rows: StandingRow[]): StandingRow[] {
         tournamentPoints: number
         advancementPoints: number
         specialsPoints: number
+        playerPickPoints: number
       }
       tieBreak: {
         exactScoreHits: number
@@ -31,6 +32,7 @@ export function applyDisplayRanks(rows: StandingRow[]): StandingRow[] {
         tournamentPoints: row.breakdown?.tournamentPoints ?? 0,
         advancementPoints: row.breakdown?.advancementPoints ?? 0,
         specialsPoints: row.breakdown?.specialsPoints ?? 0,
+        playerPickPoints: row.breakdown?.playerPickPoints ?? 0,
       },
       tieBreak: {
         exactScoreHits: row.tieBreak?.exactScoreHits ?? 0,

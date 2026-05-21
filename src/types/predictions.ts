@@ -17,7 +17,7 @@ export interface TeamDoc {
   apiSportsTeamId?: number
   rosterSyncedAt?: unknown
   rosterPlayerCount?: number
-  rosterSource?: 'apisports' | 'thesportsdb' | 'mixed' | 'panini'
+  rosterSource?: 'apisports' | 'thesportsdb' | 'mixed' | 'panini' | 'manual'
 }
 
 /** Jugador en teams/{teamId}/players/{playerId} */
@@ -168,6 +168,7 @@ export interface PointsBreakdown {
   tournamentPoints: number
   advancementPoints?: number
   specialsPoints?: number
+  playerPickPoints?: number
 }
 
 export interface TieBreakStats {

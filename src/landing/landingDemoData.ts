@@ -15,11 +15,11 @@ export const LANDING_FIXTURE_MATCHES = GROUP_STAGE_SCHEDULE.slice(0, 8).map((m, 
 }))
 
 export const LANDING_RANKING = [
-  { rank: 1, name: 'carlos_mx', pts: 248, exact: 12, trend: '+18' },
-  { rank: 2, name: 'ana_prode', pts: 231, exact: 10, trend: '+12' },
-  { rank: 3, name: 'tú (demo)', pts: 214, exact: 9, trend: '+24', highlight: true },
-  { rank: 4, name: 'diego_ko', pts: 198, exact: 8, trend: '+6' },
-  { rank: 5, name: 'lucia_26', pts: 187, exact: 7, trend: '+3' },
+  { rank: 1, name: 'carlos_mx', pts: 248, exact: 12, trend: '+18', rankDelta: 1 },
+  { rank: 2, name: 'ana_prode', pts: 231, exact: 10, trend: '+12', rankDelta: -1 },
+  { rank: 3, name: 'tú (demo)', pts: 214, exact: 9, trend: '+24', rankDelta: 3, highlight: true },
+  { rank: 4, name: 'diego_ko', pts: 198, exact: 8, trend: '+6', rankDelta: 0 },
+  { rank: 5, name: 'lucia_26', pts: 187, exact: 7, trend: '+3', rankDelta: -2 },
 ]
 
 export type LandingBracketMatchData = {

@@ -19,6 +19,7 @@ import {
 } from './landingDemoData'
 import { DEFAULT_RULESET } from '../config/ruleset'
 import { LandingBracketBoard } from './components/LandingBracketBoard'
+import { LandingRankMovement } from './components/LandingRankMovement'
 import { TeamFlagName } from '../predictions/TeamFlagName'
 
 const POINT_TABS = [
@@ -221,7 +222,7 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
             <h2 className="landing-display landing-display--sm">Ranking en vivo</h2>
             <p className="landing-muted">Demo de sala — los puntos se actualizan solos al cerrar partidos.</p>
           </div>
-          <div className="landing-card" style={{ padding: '1.5rem 2rem' }}>
+          <div className="landing-card landing-card--ranking">
             <LandingProgressBar value={72} />
             <p className="landing-muted" style={{ fontSize: '0.8125rem', margin: '0.5rem 0 1.25rem' }}>
               Temporada sala «Mundial 2026» · 72% del torneo disputado
@@ -229,29 +230,45 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
             <table className="landing-rank-table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Jugador</th>
-                  <th>Pts</th>
-                  <th>Exactos</th>
-                  <th>Trend</th>
+                  <th className="landing-rank-table__center landing-rank-table__col-rank" scope="col">
+                    #
+                  </th>
+                  <th className="landing-rank-table__player" scope="col">
+                    Jugador
+                  </th>
+                  <th className="landing-rank-table__center" scope="col">
+                    Pts
+                  </th>
+                  <th className="landing-rank-table__center" scope="col">
+                    Exactos
+                  </th>
+                  <th className="landing-rank-table__center" scope="col">
+                    Trend
+                  </th>
+                  <th className="landing-rank-table__center landing-rank-table__col-mov" scope="col">
+                    Mov.
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {LANDING_RANKING.map((row) => (
                   <tr key={row.rank} className={row.highlight ? 'highlight' : undefined}>
-                    <td>
+                    <td className="landing-rank-table__center landing-rank-table__col-rank">
                       <span
                         className={`landing-rank-pos${row.rank <= 3 ? ` landing-rank-pos--${row.rank}` : ''}`}
                       >
                         {row.rank}
                       </span>
                     </td>
-                    <td>{row.name}</td>
-                    <td>
+                    <td className="landing-rank-table__player">{row.name}</td>
+                    <td className="landing-rank-table__center">
                       <strong>{row.pts}</strong>
                     </td>
-                    <td>{row.exact}</td>
-                    <td style={{ color: 'var(--landing-emerald)' }}>{row.trend}</td>
+                    <td className="landing-rank-table__center">{row.exact}</td>
+                    <td className="landing-rank-table__center landing-rank-table__trend">{row.trend}</td>
+                    <td className="landing-rank-table__center landing-rank-table__col-mov">
+                      <LandingRankMovement delta={row.rankDelta} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -1,3 +1,4 @@
+import { toDate } from '../config/ruleset'
 import type { MatchDoc } from '../types/predictions'
 
 const ROUND_TITLE: Record<string, string> = {
@@ -11,12 +12,7 @@ const ROUND_TITLE: Record<string, string> = {
 
 function matchSortTime(m: MatchDoc): number {
   const raw = m.finishedAt ?? m.scheduledAt
-  if (raw && typeof raw === 'object' && 'toMillis' in raw) {
-    return (raw as { toMillis: () => number }).toMillis()
-  }
-  if (typeof raw === 'string') return new Date(raw).getTime()
-  if (typeof raw === 'number') return raw
-  return 0
+  return toDate(raw)?.getTime() ?? 0
 }
 
 function extractMatchNumber(matchId: string): string {

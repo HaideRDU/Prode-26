@@ -12,6 +12,7 @@ import {
   ROOM_NAME_MAX_CHARS,
   ROOM_PRIZE_MAX_CHARS,
 } from '../constants/roomFieldLimits'
+import '../standings/standings-dashboard.css'
 
 const LIMITS: RoomMaxMembers[] = [20, 30, 40, 50, 100]
 
@@ -123,12 +124,18 @@ export function RoomsHubPage({ user }: { user: User }) {
 
   return (
     <div className="app-rooms-hub">
-      <h1 className="app-page-title">Salas</h1>
-      <p className="auth-lead app-rooms-hub-lead">
-        Creá una sala nueva o unite con el código de invitación.
-      </p>
+      <section
+        className="standings-dashboard-card app-rooms-hub-card"
+        aria-labelledby="rooms-hub-card-label"
+      >
+        <p id="rooms-hub-card-label" className="standings-dashboard-card__label">
+          Salas
+        </p>
+        <p className="standings-dashboard-card__meta app-rooms-hub-lead">
+          Creá una sala nueva o unite con el código de invitación.
+        </p>
 
-      <div className="app-rooms-hub-tabs" role="tablist" aria-label="Crear o unirse a sala">
+        <div className="app-rooms-hub-tabs" role="tablist" aria-label="Crear o unirse a sala">
         <button
           type="button"
           role="tab"
@@ -340,6 +347,7 @@ export function RoomsHubPage({ user }: { user: User }) {
           </form>
         </div>
       )}
+      </section>
     </div>
   )
 }

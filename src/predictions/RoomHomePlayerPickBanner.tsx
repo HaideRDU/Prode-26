@@ -1,101 +1,22 @@
 /**
- * Próximos partidos KO + jugador por partido: datos reales cuando existan;
- * dos columnas si hay dos partidos knockout el mismo día (zona del torneo).
+ * Jugador por partido: partidos en juego + predicción en ventana (24 h antes → 1 h antes del pitazo).
  */
 
 import { useId, useMemo, type ReactNode } from 'react'
 import { useMatchList } from '../hooks/useMatchList'
+import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
 import { useTeamLabels } from '../hooks/useTeamLabels'
-import type { MatchDoc } from '../types/predictions'
-import { DEFAULT_RULESET, getGeneralPredictionsLockAt, toDate } from '../config/ruleset'
-import { formatMatchTimeCOL } from '../utils/formatMatchTime'
+import {
+  DEFAULT_RULESET,
+  getGeneralPredictionsLockAt,
+  getPlayerPerMatchOpensAt,
+} from '../config/ruleset'
+import { useMatchTimeFormatters } from '../hooks/useUserTimeZone'
+import { formatTimeZoneShort } from '../utils/formatMatchTime'
+import { classifyPlayerPickMatches } from '../utils/playerPerMatchWindows'
+import { PlayerPickFixtureCard } from './PlayerPickFixtureCard'
 
 type BannerVariant = 'private' | 'global'
-
-function calendarDayKey(d: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(d)
-}
-
-/** Primer día con KO próximo; si ese día tiene ≥2 partidos, devuelve los dos primeros (dual). */
-function pickKnockoutBannerMatches(
-  matches: (MatchDoc & { id: string })[],
-  nowMs: number,
-): { mode: 'mock'; items: [] } | { mode: 'single' | 'dual'; items: (MatchDoc & { id: string })[] } {
-  const tz = DEFAULT_RULESET.timezone
-  type Row = { m: MatchDoc & { id: string }; t: number }
-  const upcoming: Row[] = []
-  for (const m of matches) {
-    if (m.phase !== 'knockout') continue
-    const td = toDate(m.scheduledAt)?.getTime()
-    if (td === undefined || !Number.isFinite(td)) continue
-    if (td < nowMs) continue
-    upcoming.push({ m, t: td })
-  }
-  upcoming.sort((a, b) => a.t - b.t)
-  if (upcoming.length === 0) return { mode: 'mock', items: [] }
-
-  const firstDay = calendarDayKey(new Date(upcoming[0].t), tz)
-  const sameDay = upcoming.filter((r) => calendarDayKey(new Date(r.t), tz) === firstDay)
-  const picked = sameDay.slice(0, 2).map((r) => r.m)
-  if (picked.length >= 2) return { mode: 'dual', items: picked }
-  return { mode: 'single', items: picked }
-}
-
-function FlagIconPlaceholder() {
-  return (
-    <svg
-      className="room-home-player-banner__flag-svg"
-      width="28"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M5 3v17"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M5 4h11l-1.5 3L17 10H5V4z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function ScoreBoxes({ home, away }: { home?: number | null; away?: number | null }) {
-  const h =
-    home !== null && home !== undefined && typeof home === 'number' && !Number.isNaN(home)
-      ? String(home)
-      : '—'
-  const a =
-    away !== null && away !== undefined && typeof away === 'number' && !Number.isNaN(away)
-      ? String(away)
-      : '—'
-  return (
-    <div className="room-home-player-banner__score-row" aria-label="Marcador del partido">
-      <span className="room-home-player-banner__score-box">{h}</span>
-      <span className="room-home-player-banner__score-sep" aria-hidden>
-        :
-      </span>
-      <span className="room-home-player-banner__score-box">{a}</span>
-    </div>
-  )
-}
-
-function fmtKickoff(scheduledAt: unknown): string | null {
-  return formatMatchTimeCOL(scheduledAt) || null
-}
 
 function lockMinutesPhrase(minutes: number): string {
   if (minutes === 60) return 'una hora antes del pitazo'
@@ -103,17 +24,13 @@ function lockMinutesPhrase(minutes: number): string {
   return `${minutes} minutos antes del pitazo`
 }
 
-function NextMatchesHelp({
-  variant,
-  dualSameDay,
-}: {
-  variant: BannerVariant
-  dualSameDay: boolean
-}) {
+function NextMatchesHelp({ variant }: { variant: BannerVariant }) {
   const tooltipId = useId()
   const isPrivate = variant === 'private'
-  const koMin = DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff
-  const lockKickPhrase = lockMinutesPhrase(koMin)
+  const openH = DEFAULT_RULESET.lockWindows.playerPerMatchOpensHoursBeforeKickoff
+  const lockMin = DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff
+  const lockKickPhrase = lockMinutesPhrase(lockMin)
+  const pts = DEFAULT_RULESET.points.playerPerMatch.goalsPerGoal
 
   const { lockLabel, lockIso, kickoffLabel } = useMemo(() => {
     const tz = DEFAULT_RULESET.timezone
@@ -131,200 +48,35 @@ function NextMatchesHelp({
     }
   }, [])
 
-  const featurePending = !DEFAULT_RULESET.features.playerPerMatchEnabled
-
   return (
     <div className="room-home-player-banner__help-wrap">
       <button
         type="button"
         className="room-home-player-banner__help-btn room-home-player-banner__help-btn--text"
-        aria-label="¿Qué es? Información sobre próximos partidos y jugador por partido"
+        aria-label="¿Qué es? Información sobre jugador por partido"
         aria-describedby={tooltipId}
       >
         ¿Qué es?
       </button>
       <div id={tooltipId} role="tooltip" className="room-home-player-banner__tooltip">
         <p className="room-home-player-banner__tooltip-lead">
-          <strong>¿Qué es?</strong> Es el espacio donde ves el enfrentamiento de eliminatorias en foco (equipos,
-          banderas y marcador) y donde vas a elegir el <strong>jugador por partido</strong> para sumar puntos extra,
-          cuando la función esté conectada a datos oficiales.
+          <strong>Jugador por partido:</strong> desde <strong>{openH} horas antes</strong> del pitazo podés elegir un
+          jugador de cualquiera de los dos equipos. Sumás <strong>{pts} pts por cada gol</strong> en 90&apos; + prórroga
+          (no penales). El cambio se guarda al seleccionar y se bloquea <strong>{lockKickPhrase}</strong>.
         </p>
-        {dualSameDay ? (
-          <p className="room-home-player-banner__tooltip-p">
-            Si hay <strong>dos partidos el mismo día</strong> (calendario de la zona horaria del torneo), la vista se
-            reparte en <strong>dos columnas</strong>: un encuentro a la izquierda y otro a la derecha, cada uno con su
-            propio jugador.
-          </p>
-        ) : null}
         {isPrivate ? (
           <p className="room-home-player-banner__tooltip-p">
-            En salas privadas este bloque se muestra arriba de tu sala para ubicarte rápido en el próximo cruce KO.
+            En salas privadas ves los partidos en juego y los que están en ventana de predicción.
           </p>
         ) : (
           <p className="room-home-player-banner__tooltip-p">
-            En la sala global aplicás la misma lógica de vista y de jugador por partido.
+            En la sala global aplica la misma ventana y puntuación por goles del jugador elegido.
           </p>
         )}
-        <p className="room-home-player-banner__tooltip-p">
-          <strong>Reglas y puntajes:</strong> valen <strong>2 puntos por gol</strong> del jugador elegido en tiempo
-          reglamentario <strong>(90 minutos más prórroga)</strong>. No cuentan goles en tanda de penales.
-        </p>
-        <p className="room-home-player-banner__tooltip-p">
-          <strong>Cuándo se habilita y cierra (automático):</strong> el sistema será automático según la hora oficial
-          del partido: el <strong>día del encuentro</strong> podrás editar el jugador elegido para ese encuentro, y{' '}
-          <strong>{lockKickPhrase}</strong> la edición <strong>quedará bloqueada</strong> para que no puedas seguir
-          cambiando la elección. Los tiempos se calculan con la zona <strong>{DEFAULT_RULESET.timezone}</strong> y los
-          valores del reglamento activo.
-        </p>
-        {featurePending ? (
-          <p className="room-home-player-banner__tooltip-p">
-            Hoy la opción sigue en preparación hasta tener plantillas y datos confiables; cuando esté activa en la app,
-            respetará el mismo comportamiento automático anterior.
-          </p>
-        ) : null}
         <p className="room-home-player-banner__tooltip-p room-home-player-banner__tooltip-p--muted">
-          <strong>Predicciones generales (resto del formulario):</strong> podés editar hasta el{' '}
-          <time dateTime={lockIso}>{lockLabel}</time>, es decir <strong>dos semanas antes del inicio del torneo</strong>{' '}
-          ({kickoffLabel}), salvo que ya hayas finalizado tu predicción según las reglas de la sala.
+          <strong>Predicciones generales:</strong> edición hasta el{' '}
+          <time dateTime={lockIso}>{lockLabel}</time> ({kickoffLabel}).
         </p>
-      </div>
-    </div>
-  )
-}
-
-function PrivateMatchColumn({
-  variantLabel,
-  match,
-  teamLabel,
-  mock,
-  selectSuffix,
-}: {
-  variantLabel: string
-  match?: MatchDoc & { id: string }
-  teamLabel: (id: string) => string
-  mock: boolean
-  selectSuffix: string
-}) {
-  const homeName = mock ? 'Ej.: Equipo local' : teamLabel(match!.teamHomeId)
-  const awayName = mock ? 'Ej.: Equipo visitante' : teamLabel(match!.teamAwayId)
-  const homeGoals = mock ? null : match!.goalsHome
-  const awayGoals = mock ? null : match!.goalsAway
-  const kick = match ? fmtKickoff(match.scheduledAt) : null
-
-  return (
-    <div className="room-home-player-banner__column-card">
-      <p className="room-home-player-banner__column-tag">{variantLabel}</p>
-      {kick ? <p className="room-home-player-banner__column-kickoff">{kick}</p> : null}
-      <div className="room-home-player-banner__match room-home-player-banner__match--in-column">
-        <div className="room-home-player-banner__tile room-home-player-banner__tile--team room-home-player-banner__tile--left">
-          <div className="room-home-player-banner__team-row">
-            <span className="room-home-player-banner__flag" title="Bandera (cuando haya datos en BD)">
-              <FlagIconPlaceholder />
-            </span>
-            <div className="room-home-player-banner__team-text">
-              <span className="room-home-player-banner__tile-label">Local</span>
-              <span className="room-home-player-banner__team-name">{homeName}</span>
-            </div>
-          </div>
-        </div>
-        <div className="room-home-player-banner__vs-column">
-          <div className="room-home-player-banner__vs" aria-hidden>
-            VS
-          </div>
-          <ScoreBoxes home={homeGoals} away={awayGoals} />
-        </div>
-        <div className="room-home-player-banner__tile room-home-player-banner__tile--team room-home-player-banner__tile--right">
-          <div className="room-home-player-banner__team-row">
-            <div className="room-home-player-banner__team-text room-home-player-banner__team-text--end">
-              <span className="room-home-player-banner__tile-label">Visitante</span>
-              <span className="room-home-player-banner__team-name">{awayName}</span>
-            </div>
-            <span className="room-home-player-banner__flag" title="Bandera (cuando haya datos en BD)">
-              <FlagIconPlaceholder />
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="room-home-player-banner__player-block room-home-player-banner__player-block--compact">
-        <label className="room-home-player-banner__player-label" htmlFor={`room-home-player-select-${selectSuffix}`}>
-          Jugador este partido
-        </label>
-        <select
-          id={`room-home-player-select-${selectSuffix}`}
-          className="room-home-player-banner__select"
-          disabled
-          defaultValue=""
-        >
-          <option value="">Escoger jugador…</option>
-        </select>
-      </div>
-    </div>
-  )
-}
-
-function GlobalMatchColumn({
-  match,
-  teamLabel,
-  mock,
-  selectSuffix,
-}: {
-  match?: MatchDoc & { id: string }
-  teamLabel: (id: string) => string
-  mock: boolean
-  selectSuffix: string
-}) {
-  const homeName = mock ? 'Ej.: Colombia' : teamLabel(match!.teamHomeId)
-  const awayName = mock ? 'Ej.: Brasil' : teamLabel(match!.teamAwayId)
-  const homeGoals = mock ? null : match!.goalsHome
-  const awayGoals = mock ? null : match!.goalsAway
-  const kick = match ? fmtKickoff(match.scheduledAt) : null
-
-  return (
-    <div className="room-home-player-banner__column-card">
-      <p className="room-home-player-banner__column-tag">Partido KO</p>
-      {kick ? <p className="room-home-player-banner__column-kickoff">{kick}</p> : null}
-      <div className="room-home-player-banner__match room-home-player-banner__match--in-column">
-        <div className="room-home-player-banner__tile room-home-player-banner__tile--team room-home-player-banner__tile--left">
-          <div className="room-home-player-banner__team-row">
-            <span className="room-home-player-banner__flag" title="Bandera (cuando haya datos en BD)">
-              <FlagIconPlaceholder />
-            </span>
-            <div className="room-home-player-banner__team-text">
-              <span className="room-home-player-banner__tile-label">Local</span>
-              <span className="room-home-player-banner__team-name">{homeName}</span>
-            </div>
-          </div>
-        </div>
-        <div className="room-home-player-banner__vs-column">
-          <div className="room-home-player-banner__vs" aria-hidden>
-            VS
-          </div>
-          <ScoreBoxes home={homeGoals} away={awayGoals} />
-        </div>
-        <div className="room-home-player-banner__tile room-home-player-banner__tile--team room-home-player-banner__tile--right">
-          <div className="room-home-player-banner__team-row">
-            <div className="room-home-player-banner__team-text room-home-player-banner__team-text--end">
-              <span className="room-home-player-banner__tile-label">Visitante</span>
-              <span className="room-home-player-banner__team-name">{awayName}</span>
-            </div>
-            <span className="room-home-player-banner__flag" title="Bandera (cuando haya datos en BD)">
-              <FlagIconPlaceholder />
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="room-home-player-banner__player-block room-home-player-banner__player-block--compact">
-        <label className="room-home-player-banner__player-label" htmlFor={`room-home-player-global-${selectSuffix}`}>
-          Jugador este partido
-        </label>
-        <select
-          id={`room-home-player-global-${selectSuffix}`}
-          className="room-home-player-banner__select"
-          disabled
-          defaultValue=""
-        >
-          <option value="">Escoger jugador…</option>
-        </select>
       </div>
     </div>
   )
@@ -332,37 +84,59 @@ function GlobalMatchColumn({
 
 export function RoomHomePlayerPickBanner({
   variant,
+  roomId,
+  userId,
   titleTrailing,
 }: {
   variant: BannerVariant
+  roomId: string | undefined
+  userId: string | undefined
   titleTrailing?: ReactNode
 }) {
   const isPrivate = variant === 'private'
   const { matches } = useMatchList()
   const { label: teamLabel } = useTeamLabels()
-  const bundle = useMemo(() => pickKnockoutBannerMatches(matches, Date.now()), [matches])
-  const dualSameDay = bundle.mode === 'dual'
-  const koLockKickPhrase = lockMinutesPhrase(DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff)
+  const { picksByMatchId } = usePlayerPerMatchPicks(roomId, userId)
+  const { timeZone, formatMatchTime } = useMatchTimeFormatters()
 
-  const description = useMemo(() => {
-    if (dualSameDay) {
-      return isPrivate
-        ? 'Hay dos eliminatorias programadas el mismo día: cada columna es un partido y más abajo su jugador por elegir cuando la opción esté activa.'
-        : 'Dos encuentros KO el mismo día: dos columnas paralelas (uno en cada lado) con jugador por partido cuando corresponda.'
-    }
-    return isPrivate
-      ? 'Aquí verás el próximo encuentro en foco y podrás elegir el jugador por partido en eliminatorias cuando la opción esté activa y haya datos oficiales. Banderas y marcador sirven de guía hasta enlazar equipos y resultados en vivo.'
-      : 'Este bloque resume el próximo partido KO de la sala global; mismo uso para jugador por partido cuando esté disponible, con banderas y marcador como guía hasta tener datos en vivo.'
-  }, [dualSameDay, isPrivate])
+  const nowMs = Date.now()
+  const classified = useMemo(
+    () => classifyPlayerPickMatches(matches, nowMs),
+    [matches, nowMs],
+  )
 
-  const mock = bundle.mode === 'mock'
+  const lockPhrase = lockMinutesPhrase(DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff)
+  const lockMin = DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff
+  const openH = DEFAULT_RULESET.lockWindows.playerPerMatchOpensHoursBeforeKickoff
+  const ptsPerGoal = DEFAULT_RULESET.points.playerPerMatch.goalsPerGoal
+  const canSave = Boolean(roomId && userId)
+  const hasLive = classified.live.length > 0
+  const predictCards = [...classified.prediction, ...classified.preview]
+  const hasPredictBlock = predictCards.length > 0
+
+  const previewMatch = classified.preview[0]
+  const previewOpensAt = previewMatch
+    ? getPlayerPerMatchOpensAt(previewMatch.scheduledAt)
+    : null
+
+  const description =
+    classified.prediction.length > 0 || classified.live.length > 0
+      ? `Elegí el jugador que anotará en cada partido (ventana desde ${openH} h antes del pitazo; cierre ${lockPhrase}). Se guarda al seleccionar.`
+      : previewMatch
+        ? `Próximo partido: ${formatMatchTime(previewMatch.scheduledAt)}. Podrás elegir jugador${
+            previewOpensAt
+              ? ` a partir del ${formatMatchTime(previewOpensAt)} (${openH} h antes del pitazo)`
+              : ` (${openH} h antes del pitazo)`
+          }.`
+        : classified.nextOpensAt
+          ? `La próxima ventana de jugador por partido abre el ${formatMatchTime(classified.nextOpensAt)}.`
+          : 'Cuando se acerquen partidos del calendario, aparecerán aquí para elegir jugador goleador.'
 
   return (
     <section
       className={[
         'room-home-player-banner',
         isPrivate ? 'room-home-player-banner--private' : 'room-home-player-banner--global',
-        dualSameDay ? 'room-home-player-banner--dual' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -371,7 +145,7 @@ export function RoomHomePlayerPickBanner({
       <div className="room-home-player-banner__title-row">
         <div className="room-home-player-banner__title-cluster">
           <h2 className="room-home-player-banner__title">Próximos partidos</h2>
-          <NextMatchesHelp variant={variant} dualSameDay={dualSameDay} />
+          <NextMatchesHelp variant={variant} />
         </div>
         {titleTrailing ? (
           <div className="room-home-player-banner__title-actions">{titleTrailing}</div>
@@ -379,73 +153,71 @@ export function RoomHomePlayerPickBanner({
       </div>
       <p className="room-home-player-banner__description">{description}</p>
 
-      {isPrivate ? (
-        <>
-          {bundle.mode === 'dual' ? (
-            <div className="room-home-player-banner__matches-grid room-home-player-banner__matches-grid--dual">
-              {bundle.items.map((m, i) => (
-                <PrivateMatchColumn
-                  key={m.id}
-                  variantLabel={i === 0 ? 'Partido 1' : 'Partido 2'}
-                  match={m}
-                  teamLabel={teamLabel}
-                  mock={false}
-                  selectSuffix={m.id}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="room-home-player-banner__matches-grid">
-              <PrivateMatchColumn
-                variantLabel={bundle.mode === 'single' ? 'Siguiente KO' : 'Ejemplo'}
-                match={bundle.mode === 'single' ? bundle.items[0] : undefined}
-                teamLabel={teamLabel}
-                mock={mock}
-                selectSuffix={bundle.mode === 'single' ? bundle.items[0].id : 'demo'}
-              />
-            </div>
-          )}
-          <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">
-            Se habilitará cuando existan plantillas oficiales y la función en la app esté activa. La ventana de edición
-            será automática: el día del partido podrás elegir el jugador y{' '}
-            <strong>{koLockKickPhrase}</strong> el cambio quedará bloqueado (según reglamento y zona horaria).
-          </p>
-        </>
-      ) : bundle.mode === 'dual' ? (
-        <>
-          <div className="room-home-player-banner__matches-grid room-home-player-banner__matches-grid--dual">
-            {bundle.items.map((m) => (
-              <GlobalMatchColumn
+      {!canSave ? (
+        <p className="room-home-player-banner__player-hint">Iniciá sesión para guardar tu jugador por partido.</p>
+      ) : null}
+
+      {hasLive ? (
+        <div className="room-home-player-banner__block room-home-player-banner__block--live">
+          <h3 className="room-home-player-banner__block-title">Partidos disputándose</h3>
+          <div className="player-pick-fixture-grid player-pick-fixture-grid--live">
+            {classified.live.map((m) => (
+              <PlayerPickFixtureCard
                 key={m.id}
                 match={m}
                 teamLabel={teamLabel}
-                mock={false}
-                selectSuffix={m.id}
+                mode="live"
+                savedPlayerKey={picksByMatchId[m.id]}
+                roomId={roomId!}
+                userId={userId!}
+                timeZone={timeZone}
               />
             ))}
           </div>
-          <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">
-            Se habilitará cuando existan plantillas oficiales y la función en la app esté activa. La ventana de edición
-            será automática: el día del partido podrás elegir el jugador y{' '}
-            <strong>{koLockKickPhrase}</strong> el cambio quedará bloqueado (según reglamento y zona horaria).
+        </div>
+      ) : null}
+
+      {hasPredictBlock ? (
+        <div className="room-home-player-banner__block room-home-player-banner__block--predict">
+          <h3 className="room-home-player-banner__hero-title">Predicción partido a disputar</h3>
+          <p className="room-home-player-banner__hero-lead">
+            Escogé un jugador por partido: sumás <strong>{ptsPerGoal} pts</strong> por cada gol en 90&apos; + prórroga
+            (no penales). La predicción se bloquea{' '}
+            <strong>{lockMin === 60 ? '1 hora' : `${lockMin} min`}</strong> antes del pitazo; podés elegir desde{' '}
+            <strong>{openH} h antes</strong>.
           </p>
-        </>
-      ) : (
-        <>
-          <div className="room-home-player-banner__matches-grid">
-            <GlobalMatchColumn
-              match={bundle.mode === 'single' ? bundle.items[0] : undefined}
-              teamLabel={teamLabel}
-              mock={mock}
-              selectSuffix={bundle.mode === 'single' ? bundle.items[0].id : 'demo-global'}
-            />
+          <div className="player-pick-fixture-grid player-pick-fixture-grid--predict">
+            {predictCards.map((m) => (
+              <PlayerPickFixtureCard
+                key={m.id}
+                match={m}
+                teamLabel={teamLabel}
+                mode="pick"
+                savedPlayerKey={picksByMatchId[m.id]}
+                roomId={roomId!}
+                userId={userId!}
+                timeZone={timeZone}
+              />
+            ))}
           </div>
-          <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">
-            Se habilitará cuando existan plantillas oficiales y la función en la app esté activa. La ventana de edición
-            será automática: el día del partido podrás elegir el jugador y{' '}
-            <strong>{koLockKickPhrase}</strong> el cambio quedará bloqueado (según reglamento y zona horaria).
-          </p>
-        </>
+        </div>
+      ) : null}
+
+      {classified.live.length > 0 || classified.prediction.length > 0 ? (
+        <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">
+          Cierre automático de edición: <strong>{lockPhrase}</strong> (horario en tu zona:{' '}
+          {formatTimeZoneShort(timeZone)}).
+        </p>
+      ) : classified.preview.length > 0 ? (
+        <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">
+          La selección se habilita <strong>{openH} horas antes</strong> del pitazo (estado Bloqueado hasta entonces).
+        </p>
+      ) : (
+        <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">
+          {classified.nextOpensAt
+            ? `Podrás elegir jugador a partir del ${formatMatchTime(classified.nextOpensAt)} (${openH} h antes de cada partido).`
+            : 'No hay partidos en ventana ni en juego en este momento.'}
+        </p>
       )}
     </section>
   )

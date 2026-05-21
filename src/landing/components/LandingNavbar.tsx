@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { LanguageSwitch } from '../../components/LanguageSwitch'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { useTranslation } from '../../i18n/LocaleContext'
@@ -36,9 +35,6 @@ export function LandingNavbar({ uiControl }: { uiControl?: UiControl }) {
           ))}
         </nav>
         <div className="landing-nav__actions">
-          <Link to="/login" className="landing-btn landing-btn--ghost landing-mobile-nav">
-            {t('landing.nav.login')}
-          </Link>
           {uiControl ? (
             <>
               <ThemeSwitch

@@ -26,6 +26,8 @@ const KO_ROUND_LABEL_ES: Record<KnockoutRoundId, string> = {
 
 export function ReglamentoPage() {
   const koPickMin = DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff
+  const openH = DEFAULT_RULESET.lockWindows.playerPerMatchOpensHoursBeforeKickoff
+  const ptsGoal = DEFAULT_RULESET.points.playerPerMatch.goalsPerGoal
 
   return (
     <div>
@@ -40,12 +42,27 @@ export function ReglamentoPage() {
             antes del inicio del torneo.
           </li>
           <li>
-            Dinámica KO por partido: cierre <strong>{koPickMin === 60 ? '1 hora' : `${koPickMin} minutos`}</strong>{' '}
-            antes del inicio de cada encuentro.
+            Jugador por partido: la ventana abre <strong>{openH} horas</strong> antes del pitazo de cada encuentro
+            (grupos y eliminatorias) y cierra{' '}
+            <strong>{koPickMin === 60 ? '1 hora' : `${koPickMin} minutos`}</strong> antes del inicio. La elección se
+            guarda al seleccionar en la clasificación de tu sala.
           </li>
         </ul>
 
         <h2>Sistema de puntajes</h2>
+
+        <h3>Jugador por partido</h3>
+        <ul>
+          <li>
+            Por cada gol del jugador elegido en el encuentro (90&apos; + prórroga, sin penales):{' '}
+            <strong>{ptsGoal}</strong> puntos.
+          </li>
+          <li>
+            Ventana de elección: desde <strong>{openH} horas</strong> antes del pitazo hasta{' '}
+            <strong>{koPickMin === 60 ? '1 hora' : `${koPickMin} minutos`}</strong> antes del inicio (grupos y
+            eliminatorias).
+          </li>
+        </ul>
 
         <h3>Fase de grupos (por partido)</h3>
         <ul>

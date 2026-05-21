@@ -92,6 +92,7 @@ export async function recalculateStandingsForRoom(db: Firestore, roomId: string)
             tournamentPoints: 0,
             advancementPoints: 0,
             specialsPoints: 0,
+            playerPickPoints: 0,
           },
           tieBreak: {
             exactScoreHits: 0,

@@ -15,7 +15,7 @@ export interface TeamDoc {
   apiSportsTeamId?: number
   rosterSyncedAt?: unknown
   rosterPlayerCount?: number
-  rosterSource?: 'apisports' | 'thesportsdb' | 'mixed' | 'panini'
+  rosterSource?: 'apisports' | 'thesportsdb' | 'mixed' | 'panini' | 'manual'
 }
 
 /** Jugador en teams/{teamId}/players/{playerId} */
@@ -45,6 +45,7 @@ export interface MatchDoc {
   finishedAt?: unknown
   wentToPenalties?: boolean | null
   penaltiesWinnerHome?: boolean | null
+  scorers?: { playerKey: string; goals: number; includesPenalties?: boolean }[]
   /** ID de evento en TheSportsDB (league 4429); lo rellena el sync. */
   theSportsDbEventId?: string
   /** @deprecated Reemplazado por theSportsDbEventId */
@@ -58,7 +59,12 @@ export interface MatchPredictionPayload {
   penaltiesWinnerHome?: boolean
 }
 
-export type PredictionScope = 'match' | 'tournament'
+export type PredictionScope = 'match' | 'tournament' | 'player_per_match'
+
+export interface PlayerPerMatchPayload {
+  kind: 'player_match_pick'
+  playerKey: string
+}
 
 export interface PredictionDoc {
   id?: string
@@ -67,7 +73,7 @@ export interface PredictionDoc {
   scope: PredictionScope
   matchId?: string
   questionId?: string
-  payload: TournamentPredictionPayload | MatchPredictionPayload
+  payload: TournamentPredictionPayload | MatchPredictionPayload | PlayerPerMatchPayload
   updatedAt?: unknown
 }
 

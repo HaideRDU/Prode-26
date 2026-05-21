@@ -320,17 +320,43 @@ export interface TournamentScoreInput {
   prediction: TournamentPredictionPayload | null
 }
 
+export interface PlayerPerMatchScoreInput {
+  matchId: string
+  match: Pick<MatchDoc, 'status' | 'scorers'>
+  playerKey: string | null
+}
+
 export interface TotalScoreSummary {
   total: number
   matchPoints: number
   tournamentPoints: number
   advancementPoints: number
   specialsPoints: number
+  playerPickPoints: number
   tieBreak: {
     exactScoreHits: number
     specialQuestionHits: number
     championHit: boolean
   }
+}
+
+/** Puntos por goles del jugador elegido (90' + prórroga; sin penales). */
+export function scorePlayerPerMatchPick(
+  match: Pick<MatchDoc, 'status' | 'scorers'>,
+  playerKey: string | null | undefined,
+): number {
+  if (!playerKey || match.status !== 'finished') return 0
+  const scorers = match.scorers
+  if (!scorers?.length) return 0
+  const ptsPerGoal = DEFAULT_RULESET.points.playerPerMatch.goalsPerGoal
+  let total = 0
+  for (const s of scorers) {
+    if (s.includesPenalties) continue
+    if (s.playerKey !== playerKey) continue
+    if (typeof s.goals !== 'number' || s.goals <= 0) continue
+    total += s.goals * ptsPerGoal
+  }
+  return total
 }
 
 function isAdvancementQuestion(questionId: string): boolean {
@@ -350,10 +376,11 @@ function isSpecialQuestion(questionId: string): boolean {
   )
 }
 
-/** Suma puntos de partidos + preguntas de torneo */
+/** Suma puntos de partidos + preguntas de torneo + jugador por partido */
 export function totalPointsFromParts(
   matchParts: MatchScoreInput[],
   tournamentParts: TournamentScoreInput[],
+  playerPickParts: PlayerPerMatchScoreInput[] = [],
 ): TotalScoreSummary {
   let matchPoints = 0
   let exactScoreHits = 0
@@ -379,12 +406,17 @@ export function totalPointsFromParts(
       championHit = true
     }
   }
+  let playerPickPoints = 0
+  for (const p of playerPickParts) {
+    playerPickPoints += scorePlayerPerMatchPick(p.match, p.playerKey)
+  }
   return {
-    total: matchPoints + tournamentPoints,
+    total: matchPoints + tournamentPoints + playerPickPoints,
     matchPoints,
     tournamentPoints,
     advancementPoints,
     specialsPoints,
+    playerPickPoints,
     tieBreak: {
       exactScoreHits,
       specialQuestionHits,

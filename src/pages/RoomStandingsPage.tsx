@@ -185,6 +185,8 @@ export function RoomStandingsPage() {
       ) : null}
       <RoomHomePlayerPickBanner
         variant={isGlobalRoom ? 'global' : 'private'}
+        roomId={roomId}
+        userId={user?.uid}
         titleTrailing={
           canManageRoom && room ? (
             <div className="room-standings-admin-toolbar room-standings-admin-toolbar--banner-inline">

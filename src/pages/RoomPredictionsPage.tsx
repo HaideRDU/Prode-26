@@ -17,6 +17,7 @@ import {
 } from '../services/predictionStateService'
 import type { MatchDoc, MatchPredictionPayload, TournamentPredictionPayload } from '../types/predictions'
 import { GROUP_STAGE_SCHEDULE } from '../data/wc2026/groupStageSchedule'
+import { scheduleOrder, tournamentCatalogSortKey } from '../domain/matchCatalogOrder'
 import { orderedGroupIds } from '../domain/groupStandings'
 import {
   getChampionAndRunnerUpFromPredictions,
@@ -30,16 +31,16 @@ import { isBonusPayloadComplete } from '../domain/bonusAnswerComplete'
 import { ALL_QUESTION_METAS, type QuestionMeta } from '../data/bonusQuestionsMeta'
 import { getRoom } from '../services/roomsService'
 import { DEFAULT_RULESET, getGeneralPredictionsLockAt } from '../config/ruleset'
-import { formatMatchTimeCOL } from '../utils/formatMatchTime'
+import { useMatchTimeFormatters } from '../hooks/useUserTimeZone'
+import { formatTimeZoneShort } from '../utils/formatMatchTime'
 import { GroupStageSection, type GroupDraftEntry } from '../predictions/GroupStageSection'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
 import { KnockoutSection } from '../predictions/KnockoutSection'
 import { BonusQuestionBank, type MatchPickOption } from '../predictions/BonusQuestionBank'
 import { PodiumExtrasSection } from '../predictions/PodiumExtrasSection'
-import { PlayerPerMatchStrip, getNextKnockoutMatch } from '../predictions/PlayerPerMatchStrip'
+import { PlayerPerMatchStrip } from '../predictions/PlayerPerMatchStrip'
 import '../predictions/pred-theme.css'
 
-const scheduleOrder = new Map(GROUP_STAGE_SCHEDULE.map((r, i) => [r.matchId, i]))
 
 const KO_ROUND_GROUP_LABEL: Record<string, string> = {
   r32: 'Dieciseisavos de final',
@@ -56,19 +57,7 @@ function matchPickGroupLabel(m: MatchDoc & { id: string }): string {
   return KO_ROUND_GROUP_LABEL[r] ?? 'Eliminatorias'
 }
 
-function matchPickSortKey(m: MatchDoc & { id: string }): number {
-  if (m.phase === 'group') {
-    const g = m.groupId ?? 'Z'
-    const gIdx = orderedGroupIds().indexOf(g)
-    const ord = scheduleOrder.get(m.id) ?? 999
-    return (gIdx >= 0 ? gIdx : 99) * 1000 + ord
-  }
-  if (m.id.startsWith('wc26-ko-')) {
-    const n = Number(m.id.slice('wc26-ko-'.length))
-    return 100_000 + (Number.isFinite(n) ? n : 999)
-  }
-  return 200_000
-}
+const matchPickSortKey = tournamentCatalogSortKey
 
 function isDraftComplete(entry: GroupDraftEntry | undefined): boolean {
   if (!entry) return false
@@ -108,6 +97,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const { matches, loading: loadingM, error: errM } = useMatchList()
   const { predictions, loading: loadingP, error: errP } = usePredictions(roomId, user.uid)
   const { label: teamLabel, loading: loadingT, error: errT } = useTeamLabels()
+  const { formatMatchTime, timeZone: userTimeZone } = useMatchTimeFormatters()
   const [koDraftOverrides, setKoDraftOverrides] = useState<Map<string, MatchPredictionPayload>>(
     () => new Map(),
   )
@@ -554,7 +544,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     rows.sort((x, y) => x.sortKey - y.sortKey)
     return rows.map(({ sortKey: _sk, ...rest }) => rest)
   }, [matches, draftGroup, predByMatchId, mergedKoPredByMatchId, teamLabel, groupPredForBracket])
-  const nextKnockoutMatch = useMemo(() => getNextKnockoutMatch(matches), [matches])
 
   const { canSaveKoBatch, koResolvableCount } = useMemo(() => {
     const ctx = buildKoPredictionsContext(groupPredForBracket, mergedKoPredByMatchId)
@@ -628,7 +617,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     }
     if (generalPredictionsLocked) {
       out.push(
-        `Las predicciones generales están cerradas desde ${formatMatchTimeCOL(generalLockAt)} (${DEFAULT_RULESET.timezone}).`,
+        `Las predicciones generales están cerradas desde ${formatMatchTime(generalLockAt)} (tu zona: ${formatTimeZoneShort(userTimeZone)}).`,
       )
       return out
     }
@@ -648,6 +637,8 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     predictionFinalized,
     generalPredictionsLocked,
     generalLockAt,
+    formatMatchTime,
+    userTimeZone,
     canSaveBatch,
     koResolvableCount,
     canSaveKoBatch,
@@ -878,7 +869,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         )}{' '}
         Cuando todo esté completo, el botón de abajo <strong>guardará todo</strong>.
       </p>
-      <PlayerPerMatchStrip nextMatch={nextKnockoutMatch} teamLabel={teamLabel} />
+      <PlayerPerMatchStrip matches={matches} teamLabel={teamLabel} />
       {!finalizedResolved ? (
         <p className="user-email">Cargando estado de predicción…</p>
       ) : null}

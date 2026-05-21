@@ -4,12 +4,18 @@
 import type {
   MatchDoc,
   MatchPredictionPayload,
+  PlayerPerMatchPayload,
   PredictionDoc,
   TournamentPredictionPayload,
   TournamentResultDoc,
 } from '../types/predictions'
 import { getPredictedKoLineupForMatch } from '../domain/koPredictedLineup'
-import { totalPointsFromParts, type MatchScoreInput, type TournamentScoreInput } from './scoring'
+import {
+  totalPointsFromParts,
+  type MatchScoreInput,
+  type PlayerPerMatchScoreInput,
+  type TournamentScoreInput,
+} from './scoring'
 
 function isMatchPayload(p: unknown): p is MatchPredictionPayload {
   return (
@@ -25,29 +31,38 @@ function isTournamentPayload(p: unknown): p is TournamentPredictionPayload {
   return typeof p === 'object' && p !== null && 'kind' in p
 }
 
+function isPlayerPerMatchPayload(p: unknown): p is PlayerPerMatchPayload {
+  return (
+    typeof p === 'object' &&
+    p !== null &&
+    (p as PlayerPerMatchPayload).kind === 'player_match_pick' &&
+    typeof (p as PlayerPerMatchPayload).playerKey === 'string'
+  )
+}
+
+type ScoreRow = {
+  points: number
+  breakdown: {
+    matchPoints: number
+    tournamentPoints: number
+    advancementPoints: number
+    specialsPoints: number
+    playerPickPoints: number
+  }
+  tieBreak: {
+    exactScoreHits: number
+    specialQuestionHits: number
+    championHit: boolean
+  }
+}
+
 /** Calcula puntos totales por userId para una sala */
 export function computeScoresForRoom(
   predictions: PredictionDoc[],
   matchesById: Map<string, MatchDoc>,
   tournamentResultsByQuestionId: Map<string, TournamentResultDoc>,
   enabledQuestionIds?: ReadonlySet<string> | null,
-): Map<
-  string,
-  {
-    points: number
-    breakdown: {
-      matchPoints: number
-      tournamentPoints: number
-      advancementPoints: number
-      specialsPoints: number
-    }
-    tieBreak: {
-      exactScoreHits: number
-      specialQuestionHits: number
-      championHit: boolean
-    }
-  }
-> {
+): Map<string, ScoreRow> {
   const predsByUser = new Map<string, PredictionDoc[]>()
   for (const pr of predictions) {
     if (!predsByUser.has(pr.userId)) predsByUser.set(pr.userId, [])
@@ -56,12 +71,16 @@ export function computeScoresForRoom(
 
   const byUser = new Map<
     string,
-    { matchParts: MatchScoreInput[]; tournamentParts: TournamentScoreInput[] }
+    {
+      matchParts: MatchScoreInput[]
+      tournamentParts: TournamentScoreInput[]
+      playerPickParts: PlayerPerMatchScoreInput[]
+    }
   >()
 
   for (const pr of predictions) {
     if (!byUser.has(pr.userId)) {
-      byUser.set(pr.userId, { matchParts: [], tournamentParts: [] })
+      byUser.set(pr.userId, { matchParts: [], tournamentParts: [], playerPickParts: [] })
     }
     const bucket = byUser.get(pr.userId)!
     if (pr.scope === 'match' && pr.matchId) {
@@ -82,6 +101,14 @@ export function computeScoresForRoom(
         officialAnswer: official,
         prediction: pr.payload,
       })
+    } else if (pr.scope === 'player_per_match' && pr.matchId) {
+      const m = matchesById.get(pr.matchId)
+      if (!m || !isPlayerPerMatchPayload(pr.payload)) continue
+      bucket.playerPickParts.push({
+        matchId: pr.matchId,
+        match: m,
+        playerKey: pr.payload.playerKey,
+      })
     }
   }
 
@@ -94,23 +121,7 @@ export function computeScoresForRoom(
     })
   }
 
-  const out = new Map<
-    string,
-    {
-      points: number
-      breakdown: {
-        matchPoints: number
-        tournamentPoints: number
-        advancementPoints: number
-        specialsPoints: number
-      }
-      tieBreak: {
-        exactScoreHits: number
-        specialQuestionHits: number
-        championHit: boolean
-      }
-    }
-  >()
+  const out = new Map<string, ScoreRow>()
   for (const [uid, parts] of byUser) {
     const {
       total,
@@ -118,14 +129,22 @@ export function computeScoresForRoom(
       tournamentPoints,
       advancementPoints,
       specialsPoints,
+      playerPickPoints,
       tieBreak,
     } = totalPointsFromParts(
       parts.matchParts,
       parts.tournamentParts,
+      parts.playerPickParts,
     )
     out.set(uid, {
       points: total,
-      breakdown: { matchPoints, tournamentPoints, advancementPoints, specialsPoints },
+      breakdown: {
+        matchPoints,
+        tournamentPoints,
+        advancementPoints,
+        specialsPoints,
+        playerPickPoints,
+      },
       tieBreak,
     })
   }
@@ -133,40 +152,13 @@ export function computeScoresForRoom(
 }
 
 /** Asigna rank 1..N por puntos descendente; empates = mismo rank (estilo competición) */
-export function assignRanks(
-  scores: Map<
-    string,
-    {
-      points: number
-      breakdown: {
-        matchPoints: number
-        tournamentPoints: number
-        advancementPoints: number
-        specialsPoints: number
-      }
-      tieBreak: {
-        exactScoreHits: number
-        specialQuestionHits: number
-        championHit: boolean
-      }
-    }
-  >,
-): Map<
+export function assignRanks(scores: Map<string, ScoreRow>): Map<
   string,
   {
     rank: number
     points: number
-    breakdown: {
-      matchPoints: number
-      tournamentPoints: number
-      advancementPoints: number
-      specialsPoints: number
-    }
-    tieBreak: {
-      exactScoreHits: number
-      specialQuestionHits: number
-      championHit: boolean
-    }
+    breakdown: ScoreRow['breakdown']
+    tieBreak: ScoreRow['tieBreak']
   }
 > {
   const sorted = [...scores.entries()].sort((a, b) => {
@@ -187,17 +179,8 @@ export function assignRanks(
     {
       rank: number
       points: number
-      breakdown: {
-        matchPoints: number
-        tournamentPoints: number
-        advancementPoints: number
-        specialsPoints: number
-      }
-      tieBreak: {
-        exactScoreHits: number
-        specialQuestionHits: number
-        championHit: boolean
-      }
+      breakdown: ScoreRow['breakdown']
+      tieBreak: ScoreRow['tieBreak']
     }
   >()
   let rank = 0

@@ -2,8 +2,11 @@ import type { DocumentReference, Firestore } from 'firebase-admin/firestore'
 import type { TeamPlayerDoc } from '../lib/types/predictions'
 import type { PaniniPlayerRow, PaniniRostersFile, Wc2026TeamRow } from './types'
 
+export type RosterSyncSource = 'panini' | 'manual'
+
 export interface SyncPaniniRostersOptions {
   dryRun?: boolean
+  rosterSource?: RosterSyncSource
 }
 
 export interface SyncPaniniRostersResult {
@@ -51,6 +54,7 @@ export async function syncPaniniRosters(
   teams: readonly Wc2026TeamRow[],
   options: SyncPaniniRostersOptions = {},
 ): Promise<SyncPaniniRostersResult> {
+  const rosterSource = options.rosterSource ?? 'panini'
   const result: SyncPaniniRostersResult = {
     synced: 0,
     skipped: 0,
@@ -70,7 +74,7 @@ export async function syncPaniniRosters(
         teamId: team.teamId,
         nameEs: team.nameEs,
         playerCount: 0,
-        reason: 'sin_datos_panini',
+        reason: `sin_datos_${rosterSource}`,
       })
       continue
     }
@@ -96,7 +100,7 @@ export async function syncPaniniRosters(
         {
           rosterSyncedAt: syncedAt,
           rosterPlayerCount: players.length,
-          rosterSource: 'panini',
+          rosterSource,
         },
         { merge: true },
       )

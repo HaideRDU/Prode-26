@@ -12,7 +12,10 @@ export interface RulesetConfig {
   tournamentStartsAtIso: string
   lockWindows: {
     generalPredictionsHoursBeforeTournament: number
+    /** Cierre de edición del jugador por partido (minutos antes del pitazo). */
     knockoutPickMinutesBeforeKickoff: number
+    /** Apertura de la ventana de jugador por partido (horas antes del pitazo). */
+    playerPerMatchOpensHoursBeforeKickoff: number
   }
   features: {
     playerPerMatchEnabled: boolean
@@ -43,6 +46,9 @@ export interface RulesetConfig {
       bestGoalkeeperAverage: number
       bonusQuestion: number
     }
+    playerPerMatch: {
+      goalsPerGoal: number
+    }
   }
 }
 
@@ -54,10 +60,10 @@ export const DEFAULT_RULESET: RulesetConfig = {
   lockWindows: {
     generalPredictionsHoursBeforeTournament: GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT,
     knockoutPickMinutesBeforeKickoff: 60,
+    playerPerMatchOpensHoursBeforeKickoff: 24,
   },
   features: {
-    // Se deja preparado, pero desactivado hasta tener fuente oficial de goleadores por partido.
-    playerPerMatchEnabled: false,
+    playerPerMatchEnabled: true,
   },
   points: {
     group: {
@@ -92,7 +98,22 @@ export const DEFAULT_RULESET: RulesetConfig = {
       bestGoalkeeperAverage: 12,
       bonusQuestion: 5,
     },
+    playerPerMatch: {
+      goalsPerGoal: 2,
+    },
   },
+}
+
+function dateFromFirestoreSeconds(value: object): Date | null {
+  if (!('seconds' in value)) return null
+  const s = (value as { seconds: unknown }).seconds
+  if (typeof s !== 'number' || !Number.isFinite(s)) return null
+  const ns =
+    'nanoseconds' in value && typeof (value as { nanoseconds: unknown }).nanoseconds === 'number'
+      ? (value as { nanoseconds: number }).nanoseconds
+      : 0
+  const d = new Date(s * 1000 + ns / 1e6)
+  return Number.isNaN(d.getTime()) ? null : d
 }
 
 export function toDate(value: unknown): Date | null {
@@ -106,12 +127,13 @@ export function toDate(value: unknown): Date | null {
     const d = new Date(value)
     return Number.isNaN(d.getTime()) ? null : d
   }
-  if (typeof value === 'object' && value !== null && 'toDate' in value) {
-    const maybe = (value as { toDate?: () => Date }).toDate
-    if (typeof maybe === 'function') {
-      const d = maybe()
+  if (typeof value === 'object' && value !== null) {
+    if ('toDate' in value && typeof (value as { toDate?: () => Date }).toDate === 'function') {
+      const d = (value as { toDate: () => Date }).toDate.call(value)
       return Number.isNaN(d.getTime()) ? null : d
     }
+    const fromSeconds = dateFromFirestoreSeconds(value)
+    if (fromSeconds) return fromSeconds
   }
   return null
 }
@@ -125,7 +147,27 @@ export function getKnockoutPickLockAt(
   kickoffAt: unknown,
   config: RulesetConfig = DEFAULT_RULESET,
 ): Date | null {
+  return getPlayerPickLockAt(kickoffAt, config)
+}
+
+/** Cierre de edición del jugador por partido (todas las fases). */
+export function getPlayerPickLockAt(
+  kickoffAt: unknown,
+  config: RulesetConfig = DEFAULT_RULESET,
+): Date | null {
   const kickoff = toDate(kickoffAt)
   if (!kickoff) return null
   return new Date(kickoff.getTime() - config.lockWindows.knockoutPickMinutesBeforeKickoff * 60 * 1000)
+}
+
+/** Apertura de la ventana de jugador por partido. */
+export function getPlayerPerMatchOpensAt(
+  kickoffAt: unknown,
+  config: RulesetConfig = DEFAULT_RULESET,
+): Date | null {
+  const kickoff = toDate(kickoffAt)
+  if (!kickoff) return null
+  return new Date(
+    kickoff.getTime() - config.lockWindows.playerPerMatchOpensHoursBeforeKickoff * 60 * 60 * 1000,
+  )
 }

@@ -1,19 +1,13 @@
 /**
- * Formatea horas de partidos (zona fija del torneo / COL por defecto).
- * La zona del perfil del usuario es solo preferencia visual por ahora.
+ * Formatea horas de partidos en una zona IANA.
+ * En UI autenticada usar `useMatchTimeFormatters()` (zona del perfil).
  */
 import { DEFAULT_USER_TIME_ZONE } from '../data/americasTimezones'
-
-type FirestoreTimestamp = { toDate: () => Date }
+import { toDate } from '../config/ruleset'
 
 function toMs(scheduledAt: unknown): number | null {
-  if (scheduledAt == null) return null
-  if (typeof scheduledAt === 'object' && 'toDate' in (scheduledAt as object)) {
-    return (scheduledAt as FirestoreTimestamp).toDate().getTime()
-  }
-  if (scheduledAt instanceof Date) return scheduledAt.getTime()
-  const parsed = Date.parse(String(scheduledAt))
-  return Number.isFinite(parsed) ? parsed : null
+  const d = toDate(scheduledAt)
+  return d ? d.getTime() : null
 }
 
 export function formatMatchTime(scheduledAt: unknown, timeZone: string): string {

@@ -672,6 +672,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.room-home-player-banner__matches-grid--multi {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .room-home-player-banner__column-card {
   padding: 12px 12px 14px;
   border-radius: var(--wc26-radius-sm);
@@ -714,7 +718,8 @@
   margin-top: 12px;
 }
 
-.room-home-player-banner--dual .room-home-player-banner__vs-column {
+.room-home-player-banner--dual .room-home-player-banner__vs-column,
+.room-home-player-banner--multi .room-home-player-banner__vs-column {
   min-width: 72px;
 }
 
@@ -1042,9 +1047,384 @@
 }
 
 @media (max-width: 768px) {
-  .room-home-player-banner__matches-grid--dual {
+  .room-home-player-banner__matches-grid--dual,
+  .room-home-player-banner__matches-grid--multi {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .room-home-player-banner__matches-grid--multi {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Jugador por partido — maqueta centrada (en juego + predicción) */
+.room-home-player-banner__block {
+  margin-top: 20px;
+}
+
+.room-home-player-banner__block-title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--wc26-text);
+  letter-spacing: 0.02em;
+}
+
+.room-home-player-banner__hero-title {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--wc26-text);
+  line-height: 1.25;
+}
+
+.room-home-player-banner__hero-lead {
+  margin: 10px auto 16px;
+  max-width: 52ch;
+  text-align: center;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--wc26-muted);
+}
+
+.player-pick-fixture-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.player-pick-fixture-grid--live {
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.player-pick-fixture-grid--predict {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 14px;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.player-pick-fixture-grid--predict > .player-pick-fixture-card {
+  flex: 0 1 22rem;
+  width: min(100%, 22rem);
+  max-width: 22rem;
+}
+
+.player-pick-fixture-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 16px 14px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--wc26-border) 80%, #1e293b);
+  background: color-mix(in srgb, #0f172a 55%, var(--wc26-surface-panel));
+  box-sizing: border-box;
+  min-width: 0;
+  text-align: center;
+}
+
+.player-pick-fixture-card--live {
+  padding-bottom: 16px;
+}
+
+.player-pick-fixture-card--pick {
+  position: relative;
+  padding-top: 14px;
+}
+
+.player-pick-fixture-card__time-block {
+  margin-bottom: 10px;
+}
+
+.player-pick-fixture-card--pick .player-pick-fixture-card__time-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.player-pick-fixture-card__time-label {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--wc26-text);
+  text-align: center;
+}
+
+.player-pick-fixture-card--pick .player-pick-fixture-card__time-label {
+  padding-inline: clamp(4.5rem, 38%, 7rem);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.player-pick-fixture-card__time-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px 18px;
+  flex-wrap: wrap;
+}
+
+.player-pick-fixture-card__time-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 4.5rem;
+}
+
+.player-pick-fixture-card--pick .player-pick-fixture-card__time-main {
+  width: 100%;
+}
+
+.player-pick-fixture-card__time-value,
+.player-pick-fixture-card--pick .player-pick-fixture-card__time-value {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 2.35rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--wc26-text);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.player-pick-fixture-card__time-live {
+  margin: 2px 0 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--wc26-text);
+  line-height: 1.1;
+}
+
+.player-pick-fixture-card__tz-value {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--wc26-accent) 55%, var(--wc26-muted));
+}
+
+.player-pick-fixture-card__status-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  max-width: 11rem;
+}
+
+.player-pick-fixture-card__status-col--corner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  align-items: flex-end;
+  gap: 3px;
+  max-width: min(9.5rem, 40%);
+  z-index: 1;
+}
+
+.player-pick-fixture-card__opens-at {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--wc26-muted);
+  text-align: left;
+}
+
+.player-pick-fixture-card__status-col--corner .player-pick-fixture-card__opens-at {
+  font-size: 0.58rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: color-mix(in srgb, var(--wc26-muted) 72%, transparent);
+  opacity: 0.82;
+  text-align: right;
+  letter-spacing: 0.01em;
+}
+
+.player-pick-fixture-card__opens-at time {
+  font-weight: 600;
+}
+
+.player-pick-fixture-card__status-col--corner .player-pick-fixture-card__opens-at time {
+  font-weight: 500;
+}
+
+.player-pick-fixture-card__phase {
+  margin: 0 0 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--wc26-accent);
+  text-align: center;
+}
+
+.player-pick-fixture-card__status {
+  flex-shrink: 0;
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.player-pick-fixture-card__status--emerald {
+  color: #ecfdf5;
+  background: #059669;
+  border: 1px solid color-mix(in srgb, #34d399 65%, #047857);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #6ee7b7 25%, transparent);
+}
+
+.player-pick-fixture-card__status--slate {
+  color: #e2e8f0;
+  background: color-mix(in srgb, #475569 55%, var(--wc26-surface));
+  border: 1px solid color-mix(in srgb, var(--wc26-border) 80%, #64748b);
+}
+
+.player-pick-fixture-card__status--amber {
+  color: #92400e;
+  background: color-mix(in srgb, #fbbf24 30%, var(--wc26-surface));
+}
+
+.player-pick-fixture-card__status--live {
+  color: #fecaca;
+  background: color-mix(in srgb, #dc2626 45%, #0f172a);
+}
+
+.player-pick-fixture-card__matchup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+
+.player-pick-fixture-card__matchup--inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+
+.player-pick-fixture-card__matchup--inline .team-flag-name--compact {
+  font-size: 0.88rem;
+  font-weight: 700;
+  max-width: min(9rem, 38vw);
+}
+
+.player-pick-fixture-card__matchup--inline .player-pick-fixture-card__vs {
+  padding-top: 0;
+  font-size: 0.75rem;
+}
+
+.player-pick-fixture-card__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.player-pick-fixture-card__side .team-flag-name--stack {
+  align-items: center;
+  max-width: 100%;
+}
+
+.player-pick-fixture-card__side .team-flag-name--stack .team-flag-name__text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.player-pick-fixture-card__score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--wc26-text);
+}
+
+.player-pick-fixture-card__score--dim {
+  font-size: 1.1rem;
+  opacity: 0.35;
+}
+
+.player-pick-fixture-card__vs {
+  font-size: 0.8rem;
+  font-weight: 800;
+  opacity: 0.55;
+  padding-top: 1.25rem;
+}
+
+.player-pick-fixture-card__pts-hint {
+  margin: 0 0 10px;
+  font-size: 0.68rem;
+  color: var(--wc26-muted);
+}
+
+.player-pick-fixture-card__pick {
+  margin-top: auto;
+  width: 100%;
+}
+
+.player-pick-fixture-card__select {
+  width: 100%;
+  padding: 11px 36px 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--wc26-border-strong);
+  background: color-mix(in srgb, #020617 40%, var(--wc26-surface));
+  color: var(--wc26-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.player-pick-fixture-card__select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.player-pick-fixture-card__picked-display {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--wc26-border-strong);
+  background: color-mix(in srgb, #020617 50%, var(--wc26-surface));
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--wc26-muted);
+  text-align: center;
+}
+
+.player-pick-fixture-card--live .player-pick-fixture-card__picked-display {
+  color: var(--wc26-text);
+}
+
+.player-pick-fixture-card__roster-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--wc26-muted);
+  text-align: center;
 }
 
 /* Clasificación sala: FAB predicción + tuerca configuración */
