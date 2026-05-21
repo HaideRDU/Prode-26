@@ -61,10 +61,16 @@
   max-width: 20rem;
 }
 
-.app-shell--wc26 .standings-dashboard__update-badge {
-  color: #ecfccb;
-  background: color-mix(in srgb, #84cc16 35%, #1e293b);
-  border: 1px solid color-mix(in srgb, #84cc16 45%, transparent);
+html:not([data-theme='dark']) .app-shell--wc26 .standings-dashboard__update-badge {
+  color: #166534;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+}
+
+html[data-theme='dark'] .app-shell--wc26 .standings-dashboard__update-badge {
+  color: #d9f99d;
+  background: color-mix(in srgb, #4ade80 22%, #1e293b);
+  border: 1px solid color-mix(in srgb, #86efac 35%, transparent);
 }
 
 .standings-dashboard__help-btn {

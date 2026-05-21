@@ -1126,11 +1126,13 @@
   align-items: stretch;
   padding: 16px 14px 14px;
   border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--wc26-border) 80%, #1e293b);
-  background: color-mix(in srgb, #0f172a 55%, var(--wc26-surface-panel));
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface);
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
   box-sizing: border-box;
   min-width: 0;
   text-align: center;
+  color: var(--wc26-text);
 }
 
 .player-pick-fixture-card--live {
@@ -1289,19 +1291,21 @@
 }
 
 .player-pick-fixture-card__status--slate {
-  color: #e2e8f0;
-  background: color-mix(in srgb, #475569 55%, var(--wc26-surface));
-  border: 1px solid color-mix(in srgb, var(--wc26-border) 80%, #64748b);
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid var(--wc26-border-strong);
 }
 
 .player-pick-fixture-card__status--amber {
   color: #92400e;
-  background: color-mix(in srgb, #fbbf24 30%, var(--wc26-surface));
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
 }
 
 .player-pick-fixture-card__status--live {
-  color: #fecaca;
-  background: color-mix(in srgb, #dc2626 45%, #0f172a);
+  color: #fff;
+  background: #dc2626;
+  border: 1px solid #b91c1c;
 }
 
 .player-pick-fixture-card__matchup {
@@ -1388,13 +1392,13 @@
   padding: 11px 36px 11px 12px;
   border-radius: 10px;
   border: 1px solid var(--wc26-border-strong);
-  background: color-mix(in srgb, #020617 40%, var(--wc26-surface));
+  background-color: var(--wc26-surface);
   color: var(--wc26-text);
   font-size: 0.85rem;
   font-weight: 600;
   text-align: center;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
 }
@@ -1408,8 +1412,8 @@
   margin-top: 12px;
   padding: 11px 12px;
   border-radius: 10px;
-  border: 1px solid var(--wc26-border-strong);
-  background: color-mix(in srgb, #020617 50%, var(--wc26-surface));
+  border: 1px solid var(--wc26-border);
+  background: var(--wc26-surface-panel);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--wc26-muted);
@@ -1425,6 +1429,118 @@
   font-size: 0.75rem;
   color: var(--wc26-muted);
   text-align: center;
+}
+
+/* Tarjeta jugador por partido — tema claro: panel blanco */
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card {
+  --player-pick-card-bg: #ffffff;
+  --player-pick-card-text: #0f172a;
+  --player-pick-card-muted: #64748b;
+  --player-pick-card-border: #e2e8f0;
+  --player-pick-card-field: #f8fafc;
+  background: var(--player-pick-card-bg);
+  border-color: var(--player-pick-card-border);
+  color: var(--player-pick-card-text);
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__time-label,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__time-value,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__time-live,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__score,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card .team-flag-name,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card .team-flag-name__text {
+  color: var(--player-pick-card-text);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__tz-value,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__pts-hint,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__opens-at,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__roster-hint,
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__vs {
+  color: var(--player-pick-card-muted);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__select {
+  background-color: var(--player-pick-card-field);
+  border-color: #cbd5e1;
+  color: var(--player-pick-card-text);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__picked-display {
+  background: #f1f5f9;
+  border-color: var(--player-pick-card-border);
+  color: var(--player-pick-card-muted);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card--live .player-pick-fixture-card__picked-display {
+  color: var(--player-pick-card-text);
+}
+
+html:not([data-theme='dark']) .app-shell--wc26 .player-pick-fixture-card__status--slate {
+  color: #475569;
+  background: #f1f5f9;
+  border-color: var(--wc26-border-strong);
+}
+
+/* Tarjeta jugador por partido — tema oscuro */
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card {
+  --player-pick-card-bg: #1e293b;
+  --player-pick-card-text: #f8fafc;
+  --player-pick-card-muted: #94a3b8;
+  --player-pick-card-border: #334155;
+  --player-pick-card-field: #0f172a;
+  background: var(--player-pick-card-bg);
+  border-color: var(--player-pick-card-border);
+  color: var(--player-pick-card-text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__time-label,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__time-value,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__time-live,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__score,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card .team-flag-name,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card .team-flag-name__text {
+  color: var(--player-pick-card-text);
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__tz-value {
+  color: color-mix(in srgb, #93c5fd 70%, var(--player-pick-card-muted));
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__phase {
+  color: #93c5fd;
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__pts-hint,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__opens-at,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__roster-hint,
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__vs {
+  color: var(--player-pick-card-muted);
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__select {
+  background-color: var(--player-pick-card-field);
+  border-color: #475569;
+  color: var(--player-pick-card-text);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__picked-display {
+  background: var(--player-pick-card-field);
+  border-color: var(--player-pick-card-border);
+  color: var(--player-pick-card-muted);
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card--live .player-pick-fixture-card__picked-display {
+  color: var(--player-pick-card-text);
+}
+
+html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__status--slate {
+  color: #cbd5e1;
+  background: #334155;
+  border-color: #475569;
 }
 
 /* Clasificación sala: FAB predicción + tuerca configuración */
