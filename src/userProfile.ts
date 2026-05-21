@@ -18,6 +18,19 @@ export async function syncUserProfile(user: User): Promise<void> {
   )
 }
 
+/** Nombre visible en la app: solo `users.username`, nunca el displayName de Google. */
+export function resolvePublicDisplayName(
+  storedUsername: string | null | undefined,
+  user: User,
+  profileLoaded: boolean,
+): string {
+  if (!profileLoaded) return ''
+  const appUsername = storedUsername?.trim().toLowerCase()
+  if (appUsername) return appUsername
+  const emailLocal = user.email?.split('@')[0]?.trim()
+  return emailLocal || 'usuario'
+}
+
 export async function getStoredUsername(user: User): Promise<string | null> {
   if (!db) return null
   const snapshot = await getDoc(doc(db, 'users', user.uid))

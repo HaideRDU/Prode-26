@@ -26,7 +26,14 @@ import {
   guessTimeZoneFromBrowser,
   type AmericasRegion,
 } from './data/americasTimezones'
-import { getStoredTimeZone, getStoredUsername, saveTimeZone, saveUsername, syncUserProfile } from './userProfile'
+import {
+  getStoredTimeZone,
+  getStoredUsername,
+  resolvePublicDisplayName,
+  saveTimeZone,
+  saveUsername,
+  syncUserProfile,
+} from './userProfile'
 import { MainLayout } from './layout/MainLayout'
 import './layout/MainLayout.css'
 import { DashboardPage } from './pages/DashboardPage'
@@ -125,6 +132,7 @@ function App() {
   const [forgotSuccess, setForgotSuccess] = useState(false)
   const [forgotSending, setForgotSending] = useState(false)
   const [username, setUsername] = useState('')
+  const [profileLoaded, setProfileLoaded] = useState(false)
   const [needsUsername, setNeedsUsername] = useState(false)
   const [needsTimeZone, setNeedsTimeZone] = useState(false)
   const [timeZone, setTimeZone] = useState(DEFAULT_USER_TIME_ZONE)
@@ -212,6 +220,7 @@ function App() {
           setInfo(null)
         }
         if (nextUser) {
+          setProfileLoaded(false)
           const isGoogle = nextUser.providerData?.some((p) => p.providerId === 'google.com')
           if (isGoogle && !nextUser.photoURL && auth) {
             try {
@@ -237,9 +246,11 @@ function App() {
             setTimeZone(tz)
             setAmericasRegion(getRegionForTimeZone(tz))
             setProfileError(null)
+            setProfileLoaded(true)
           } catch (e) {
             setNeedsUsername(true)
             setUsername('')
+            setProfileLoaded(true)
             setProfileError(
               e instanceof Error ? e.message : 'No se pudo guardar el perfil en Firestore.',
             )
@@ -247,6 +258,7 @@ function App() {
         } else {
           setNeedsUsername(false)
           setUsername('')
+          setProfileLoaded(false)
           setProfileError(null)
         }
       } finally {
@@ -621,11 +633,17 @@ function App() {
 
   const needsProfileSetup = needsUsername || needsTimeZone
 
+  const publicDisplayName = useMemo(
+    () => resolvePublicDisplayName(username, user!, profileLoaded),
+    [username, user, profileLoaded],
+  )
+
   const accountOutletContext = useMemo((): AccountOutletContext | null => {
     if (!user) return null
     return {
       user,
-      publicDisplayName: username.trim() || user.email?.split('@')[0] || 'usuario',
+      publicDisplayName,
+      profileLoaded,
       email,
       setEmail,
       password,
@@ -647,7 +665,8 @@ function App() {
     }
   }, [
     user,
-    username,
+    publicDisplayName,
+    profileLoaded,
     email,
     password,
     hasGoogleProvider,
@@ -1040,7 +1059,7 @@ function App() {
             isAuthed && user && accountOutletContext ? (
               <MainLayout
                 user={user}
-                publicDisplayName={username.trim() || user.email?.split('@')[0] || 'usuario'}
+                publicDisplayName={publicDisplayName}
                 accountOutletContext={accountOutletContext}
               />
             ) : (

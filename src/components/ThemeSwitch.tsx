@@ -1,5 +1,6 @@
 import './ThemeSwitch.css'
 import type { AppTheme } from '../theme/appTheme'
+import { THEME_SWITCH_UI_ENABLED } from '../theme/appTheme'
 import { useTranslation } from '../i18n/LocaleContext'
 
 function SunIcon({ active }: { active: boolean }) {
@@ -35,6 +36,8 @@ export function ThemeSwitch({
   /** `auth`: tokens WC26; `default`: variables del shell (perfil, etc.) */
   variant?: 'default' | 'auth'
 }) {
+  if (!THEME_SWITCH_UI_ENABLED) return null
+
   const { t } = useTranslation()
   const isDark = value === 'dark'
   const rootClass = ['theme-switch', variant === 'auth' ? 'theme-switch--auth' : '', className]

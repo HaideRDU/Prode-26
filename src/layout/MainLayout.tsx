@@ -163,7 +163,9 @@ export function MainLayout({
                   {publicDisplayName.slice(0, 1).toUpperCase()}
                 </span>
               )}
-              <span className="app-profile-trigger-name">{publicDisplayName}</span>
+              <span className="app-profile-trigger-name">
+                {accountOutletContext.profileLoaded ? publicDisplayName || '…' : '…'}
+              </span>
             </button>
             {profileOpen ? (
               <div

@@ -18,6 +18,7 @@ export function ProfilePanel({
   const {
     user,
     publicDisplayName,
+    profileLoaded,
     email,
     setEmail,
     password,
@@ -39,6 +40,9 @@ export function ProfilePanel({
   } = ctx
 
   const googleName = user.displayName?.trim()
+  const showGoogleName =
+    Boolean(googleName) &&
+    googleName!.toLowerCase() !== publicDisplayName.trim().toLowerCase()
 
   async function handleTimeZoneChange(next: string) {
     setTimeZone(next)
@@ -75,11 +79,21 @@ export function ProfilePanel({
             />
           ) : (
             <div className="profile-panel-avatar-fallback" aria-hidden>
-              {publicDisplayName.slice(0, 1).toUpperCase()}
+              {(profileLoaded ? publicDisplayName : '?').slice(0, 1).toUpperCase()}
             </div>
           )}
-          <p className="user-name profile-panel-username">{publicDisplayName}</p>
-          {hasGoogleProvider && googleName ? (
+          <p className="user-name profile-panel-username">
+            {profileLoaded ? (
+              publicDisplayName ? (
+                <>@{publicDisplayName}</>
+              ) : (
+                <span className="app-muted">{t('profile.usernamePending')}</span>
+              )
+            ) : (
+              <span className="app-muted">{t('profile.loading')}</span>
+            )}
+          </p>
+          {hasGoogleProvider && showGoogleName ? (
             <p className="user-email">
               <span className="app-muted">{t('profile.googleName')} </span>
               {googleName}

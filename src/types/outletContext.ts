@@ -7,6 +7,8 @@ export interface AccountOutletContext {
   user: User
   /** Nombre de usuario de la app (minúsculas, Firestore users.username) */
   publicDisplayName: string
+  /** false hasta leer users/{uid} (evita mostrar email/Google antes del username). */
+  profileLoaded: boolean
   email: string
   setEmail: (v: string) => void
   password: string
