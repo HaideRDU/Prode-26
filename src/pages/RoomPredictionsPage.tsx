@@ -38,6 +38,7 @@ import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpB
 import { KnockoutSection } from '../predictions/KnockoutSection'
 import { BonusQuestionBank, type MatchPickOption } from '../predictions/BonusQuestionBank'
 import { PodiumExtrasSection } from '../predictions/PodiumExtrasSection'
+import { TournamentSpecialPlayersSection } from '../predictions/TournamentSpecialPlayersSection'
 import { PlayerPerMatchStrip } from '../predictions/PlayerPerMatchStrip'
 import '../predictions/pred-theme.css'
 
@@ -960,6 +961,13 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         secondId={suggestedRunnerUpId}
         thirdId={suggestedThirdId}
         fourthId={suggestedFourthId}
+      />
+
+      <TournamentSpecialPlayersSection
+        roomId={roomId}
+        userId={user.uid}
+        predByQuestionId={predByQuestionId}
+        readOnly={readOnly}
       />
 
       {hasActiveBonusQuestions ? (

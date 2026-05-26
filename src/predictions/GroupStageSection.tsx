@@ -28,7 +28,7 @@ export function GroupStageSection({
     <section className="pred-group-stage">
       <h2 className="pred-section-title">1 · Fase de grupos</h2>
       <p className="app-muted pred-group-intro">
-        Marcador en dos campos (goles local y visita). Se guarda junto con eliminatorias y extras con el
+        Marcador en dos campos (goles Equipo A y Equipo B). Se guarda junto con eliminatorias y extras con el
         botón inferior cuando todo esté completo.
         {groupLocked ? ' · Fase de grupos ya guardada (no editable).' : ''}
       </p>
@@ -130,7 +130,7 @@ function GroupMatchRow({
       </div>
 
       <span className="pred-score-text-label app-muted">Marcador</span>
-      <div className="pred-score-split" role="group" aria-label="Marcador predicho (local y visita)">
+      <div className="pred-score-split" role="group" aria-label="Marcador predicho (Equipo A y Equipo B)">
         <input
           id={`score-home-${match.id}`}
           type="number"
@@ -144,7 +144,7 @@ function GroupMatchRow({
           value={homeStr}
           onChange={(e) => applyHome(e.target.value)}
           disabled={disabled}
-          aria-label="Goles local"
+          aria-label="Goles Equipo A"
         />
         <span className="pred-score-split-sep" aria-hidden>
           -
@@ -162,7 +162,7 @@ function GroupMatchRow({
           value={awayStr}
           onChange={(e) => applyAway(e.target.value)}
           disabled={disabled}
-          aria-label="Goles visita"
+          aria-label="Goles Equipo B"
         />
       </div>
 

@@ -21,9 +21,10 @@ function isMatchPayload(p: unknown): p is MatchPredictionPayload {
   return (
     typeof p === 'object' &&
     p !== null &&
-    'goalsHome' in p &&
-    'goalsAway' in p &&
-    typeof (p as MatchPredictionPayload).goalsHome === 'number'
+    (('goalsTeamA' in p && typeof (p as MatchPredictionPayload).goalsTeamA === 'number') ||
+      ('goalsHome' in p && typeof (p as MatchPredictionPayload).goalsHome === 'number')) &&
+    (('goalsTeamB' in p && typeof (p as MatchPredictionPayload).goalsTeamB === 'number') ||
+      ('goalsAway' in p && typeof (p as MatchPredictionPayload).goalsAway === 'number'))
   )
 }
 

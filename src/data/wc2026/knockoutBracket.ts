@@ -24,7 +24,7 @@ export function koMatchDocId(matchNum: number): string {
   return `wc26-ko-${matchNum}`
 }
 
-/** R32: lados según secciones oficiales (local = primera columna en FIFA). */
+/** R32: lados según secciones oficiales (Equipo A = primera columna en FIFA). */
 export const WC26_KO_MATCHES: readonly KoMatchTemplate[] = [
   { matchNum: 73, round: 'r32', home: { kind: 'group_runner', group: 'A' }, away: { kind: 'group_runner', group: 'B' } },
   { matchNum: 74, round: 'r32', home: { kind: 'group_winner', group: 'E' }, away: { kind: 'third_slot', matchNum: 74 } },

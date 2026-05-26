@@ -61,12 +61,23 @@ export async function saveMatchPrediction(
   if (!db) throw new Error('Firestore no inicializado')
   const id = predictionDocId(roomId, userId, `m_${matchId}`)
   const ref = doc(db, PREDICTIONS, id)
+  const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
+  const goalsTeamB = payload.goalsTeamB ?? payload.goalsAway
+  const penaltiesWinnerTeamA = payload.penaltiesWinnerTeamA ?? payload.penaltiesWinnerHome
   const data: PredictionDoc = {
     userId,
     roomId,
     scope: 'match',
     matchId,
-    payload,
+    payload: {
+      ...payload,
+      goalsHome: goalsTeamA,
+      goalsAway: goalsTeamB,
+      goalsTeamA,
+      goalsTeamB,
+      penaltiesWinnerHome: penaltiesWinnerTeamA,
+      penaltiesWinnerTeamA,
+    },
     updatedAt: serverTimestamp(),
   }
   await setDoc(ref, data, { merge: true })
@@ -82,6 +93,9 @@ export async function saveGroupPredictionsBatch(
   if (entries.length === 0) return
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
+    const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
+    const goalsTeamB = payload.goalsTeamB ?? payload.goalsAway
+    const penaltiesWinnerTeamA = payload.penaltiesWinnerTeamA ?? payload.penaltiesWinnerHome
     const id = predictionDocId(roomId, userId, `m_${matchId}`)
     const ref = doc(db, PREDICTIONS, id)
     const data: PredictionDoc = {
@@ -89,7 +103,15 @@ export async function saveGroupPredictionsBatch(
       roomId,
       scope: 'match',
       matchId,
-      payload,
+      payload: {
+        ...payload,
+        goalsHome: goalsTeamA,
+        goalsAway: goalsTeamB,
+        goalsTeamA,
+        goalsTeamB,
+        penaltiesWinnerHome: penaltiesWinnerTeamA,
+        penaltiesWinnerTeamA,
+      },
       updatedAt: serverTimestamp(),
     }
     batch.set(ref, data, { merge: true })
@@ -107,6 +129,9 @@ export async function saveKoPredictionsBatch(
   if (entries.length === 0) return
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
+    const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
+    const goalsTeamB = payload.goalsTeamB ?? payload.goalsAway
+    const penaltiesWinnerTeamA = payload.penaltiesWinnerTeamA ?? payload.penaltiesWinnerHome
     const id = predictionDocId(roomId, userId, `m_${matchId}`)
     const ref = doc(db, PREDICTIONS, id)
     const data: PredictionDoc = {
@@ -114,7 +139,15 @@ export async function saveKoPredictionsBatch(
       roomId,
       scope: 'match',
       matchId,
-      payload,
+      payload: {
+        ...payload,
+        goalsHome: goalsTeamA,
+        goalsAway: goalsTeamB,
+        goalsTeamA,
+        goalsTeamB,
+        penaltiesWinnerHome: penaltiesWinnerTeamA,
+        penaltiesWinnerTeamA,
+      },
       updatedAt: serverTimestamp(),
     }
     batch.set(ref, data, { merge: true })

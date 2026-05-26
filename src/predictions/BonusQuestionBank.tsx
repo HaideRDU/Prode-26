@@ -429,7 +429,7 @@ function BonusRow({
               placeholder="0"
               value={scoreHome}
               onChange={(e) => setScoreHome(e.target.value)}
-              aria-label="Goles local"
+              aria-label="Goles Equipo A"
               disabled={readOnly}
             />
             <span className="pred-score-split-sep" aria-hidden>
@@ -446,7 +446,7 @@ function BonusRow({
               placeholder="0"
               value={scoreAway}
               onChange={(e) => setScoreAway(e.target.value)}
-              aria-label="Goles visita"
+              aria-label="Goles Equipo B"
               disabled={readOnly}
             />
           </div>

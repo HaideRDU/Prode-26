@@ -8,7 +8,6 @@ import { LandingSection } from './components/LandingSection'
 import { LandingBadge } from './components/LandingBadge'
 import { LandingProgressBar } from './components/LandingProgressBar'
 import { LandingPillTabs } from './components/LandingPillTabs'
-import { LandingTooltip } from './components/LandingTooltip'
 import { ParticiparLink } from './components/ParticiparLink'
 import {
   LANDING_FEATURES,
@@ -30,68 +29,110 @@ const POINT_TABS = [
 ]
 
 const p = DEFAULT_RULESET.points
+const GROUP_POINTS_MATRIX = {
+  headers: ['Grupos', 'R32', 'R16', 'QF', 'SF', '3ro', 'Final'],
+  rows: [
+    { label: 'Resultado (ganador o empate)', values: [1, 1, 2, 3, 3, 3, 4] },
+    { label: 'Marcador exacto: goles Equipo A', values: [2, 3, 3, 3, 4, 4, 5] },
+    { label: 'Marcador exacto: goles Equipo B', values: [2, 3, 3, 3, 4, 4, 5] },
+    { label: 'Máximo Posible', values: [5, 7, 8, 9, 11, 11, 14], max: true },
+  ],
+}
+
+const KNOCKOUT_POINTS_TABLE = {
+  headers: ['R32', 'R16', 'QF', 'SF', '3ro', 'Final'],
+  rows: [
+    {
+      label: 'Marcador exacto',
+      values: [
+        p.knockout.exactScoreByRound.r32,
+        p.knockout.exactScoreByRound.r16,
+        p.knockout.exactScoreByRound.qf,
+        p.knockout.exactScoreByRound.sf,
+        p.knockout.exactScoreByRound.third,
+        p.knockout.exactScoreByRound.final,
+      ],
+      max: true,
+    },
+    {
+      label: 'Un marcador correcto (sin exacto)',
+      values: Array(6).fill(p.knockout.oneScoreHitWhenNotExact),
+    },
+    {
+      label: 'Resultado correcto (sin exacto)',
+      values: Array(6).fill(p.knockout.winnerHitWhenNotExact),
+    },
+  ],
+}
+
+const ADVANCEMENT_POINTS_TABLE = {
+  headers: ['Puntos'],
+  rows: [
+    { label: 'Clasifica a 16avos', values: [p.advancement.toR16] },
+    { label: 'Clasifica a cuartos', values: [p.advancement.toQf] },
+    { label: 'Clasifica a semifinal', values: [p.advancement.toSf] },
+    { label: 'Clasifica a la final', values: [p.advancement.toFinal] },
+    { label: 'Tercer puesto', values: [p.advancement.thirdPlace] },
+    { label: 'Subcampeón', values: [p.advancement.runnerUp] },
+    { label: 'Campeón', values: [p.advancement.champion], max: true },
+  ],
+}
+
+const SPECIAL_POINTS_TABLE = {
+  headers: ['Puntos'],
+  rows: [
+    { label: 'Goleador del torneo', values: [p.specials.topScorer] },
+    { label: 'Mejor arquero (promedio)', values: [p.specials.bestGoalkeeperAverage] },
+    { label: 'Pregunta bonus (c/u)', values: [p.specials.bonusQuestion], max: true },
+  ],
+}
+
+function PointsTable({
+  headers,
+  rows,
+}: {
+  headers: readonly string[]
+  rows: ReadonlyArray<{ label: string; values: readonly number[]; max?: boolean }>
+}) {
+  return (
+    <div className="landing-points-table-wrap">
+      <table className="landing-points-table">
+        <thead>
+          <tr>
+            <th scope="col">Acierto</th>
+            {headers.map((h) => (
+              <th key={h} scope="col">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.label} className={row.max ? 'is-max' : undefined}>
+              <th scope="row">{row.label}</th>
+              {row.values.map((v, idx) => (
+                <td key={`${row.label}-${idx}`}>{v}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 function PointsPanel({ tab }: { tab: (typeof POINT_TABS)[number]['id'] }) {
   if (tab === 'grupos') {
-    return (
-      <ul>
-        <li>
-          Marcador exacto: <strong>+{p.group.exactScore}</strong> pts
-        </li>
-        <li>
-          Un marcador correcto: <strong>+{p.group.oneScoreHit}</strong> · Ganador o empate:{' '}
-          <strong>+{p.group.winnerOrDrawHit}</strong>
-        </li>
-      </ul>
-    )
+    return <PointsTable headers={GROUP_POINTS_MATRIX.headers} rows={GROUP_POINTS_MATRIX.rows} />
   }
   if (tab === 'ko') {
-    return (
-      <ul>
-        <li>
-          Exacto por ronda: R32 <strong>{p.knockout.exactScoreByRound.r32}</strong>, R16{' '}
-          <strong>{p.knockout.exactScoreByRound.r16}</strong>, QF{' '}
-          <strong>{p.knockout.exactScoreByRound.qf}</strong>, SF{' '}
-          <strong>{p.knockout.exactScoreByRound.sf}</strong>, 3.er{' '}
-          <strong>{p.knockout.exactScoreByRound.third}</strong>, Final{' '}
-          <strong>{p.knockout.exactScoreByRound.final}</strong>
-        </li>
-        <li>
-          Sin exacto: un marcador <strong>+{p.knockout.oneScoreHitWhenNotExact}</strong>, resultado{' '}
-          <strong>+{p.knockout.winnerHitWhenNotExact}</strong>
-        </li>
-      </ul>
-    )
+    return <PointsTable headers={KNOCKOUT_POINTS_TABLE.headers} rows={KNOCKOUT_POINTS_TABLE.rows} />
   }
   if (tab === 'avance') {
-    return (
-      <ul>
-        <li>
-          Campeón <strong>+{p.advancement.champion}</strong> · Subcampeón{' '}
-          <strong>+{p.advancement.runnerUp}</strong> · 3.er puesto{' '}
-          <strong>+{p.advancement.thirdPlace}</strong>
-        </li>
-        <li>
-          Llaves: a 16avos <strong>+{p.advancement.toR16}</strong>, cuartos{' '}
-          <strong>+{p.advancement.toQf}</strong>, semis <strong>+{p.advancement.toSf}</strong>, final{' '}
-          <strong>+{p.advancement.toFinal}</strong>
-        </li>
-      </ul>
-    )
+    return <PointsTable headers={ADVANCEMENT_POINTS_TABLE.headers} rows={ADVANCEMENT_POINTS_TABLE.rows} />
   }
-  return (
-    <ul>
-      <li>
-        Goleador del torneo: <strong>+{p.specials.topScorer}</strong>
-      </li>
-      <li>
-        Mejor portero (promedio): <strong>+{p.specials.bestGoalkeeperAverage}</strong>
-      </li>
-      <li>
-        Pregunta bonus: <strong>+{p.specials.bonusQuestion}</strong> c/u
-      </li>
-    </ul>
-  )
+  return <PointsTable headers={SPECIAL_POINTS_TABLE.headers} rows={SPECIAL_POINTS_TABLE.rows} />
 }
 
 export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
@@ -150,12 +191,10 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
         <LandingSection id="puntos" tone="cream">
           <div className="landing-section__head">
             <p className="landing-label">Reglas</p>
-            <h2 className="landing-display landing-display--sm">
-              <LandingTooltip
-                label="Sistema de puntos"
-                tip="Los mismos valores del reglamento oficial de la app."
-              />
-            </h2>
+            <h2 className="landing-display landing-display--sm">Sistema de puntos</h2>
+            <p className="landing-muted landing-points-caption">
+              Esta tabla muestra cómo se suman puntos por acierto en cada fase del torneo.
+            </p>
           </div>
           <LandingPillTabs
             tabs={POINT_TABS}
@@ -163,7 +202,7 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
             onChange={setPointTab}
             ariaLabel="Categorías de puntuación"
           />
-          <div className="landing-points-panel">
+          <div className={`landing-points-panel${pointTab === 'grupos' ? ' landing-points-panel--table' : ''}`}>
             <PointsPanel tab={pointTab} />
           </div>
         </LandingSection>

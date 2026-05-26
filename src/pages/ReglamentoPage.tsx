@@ -79,8 +79,8 @@ export function ReglamentoPage() {
 
         <h3>Eliminatorias — enfrentamiento correcto</h3>
         <p>
-          Cuando la pareja de equipos predicha coincide con la pareja real del partido (el orden de local/visitante o el
-          intercambio equivalente no penaliza: cuenta como misma llave).
+          Cuando la pareja de equipos predicha coincide con la pareja real del partido (el orden Equipo A/Equipo B o
+          el intercambio equivalente no penaliza: cuenta como misma llave).
         </p>
         <ul>
           <li>

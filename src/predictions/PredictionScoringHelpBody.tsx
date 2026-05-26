@@ -30,13 +30,13 @@ export function PredictionScoringHelpBody({
         </p>
       ) : null}
       <p className="app-muted" style={{ marginBottom: 10 }}>
-        <strong>Marcador exacto:</strong> mismo número de goles del local y del visita que el resultado
+        <strong>Marcador exacto:</strong> mismo número de goles del Equipo A y del Equipo B que el resultado
         oficial.
       </p>
       <h3 className="pred-rules-modal__subtitle">Puntos por partido</h3>
       <ul className="pred-rules-modal__list">
         <li>
-          <strong>Fase de grupos:</strong> marcador exacto (local y visita) vale{' '}
+          <strong>Fase de grupos:</strong> marcador exacto (Equipo A y Equipo B) vale{' '}
           <strong>+{GROUP_EXACT_SCORE_POINTS}</strong>. Si no hay exacto, acertar uno de los dos marcadores
           suma <strong>+{GROUP_ONE_SCORE_POINTS}</strong> y acertar ganador/empate suma{' '}
           <strong>+{GROUP_WINNER_POINTS}</strong>.

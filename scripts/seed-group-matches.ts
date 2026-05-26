@@ -48,8 +48,12 @@ async function main(): Promise<void> {
       {
         teamHomeId: row.teamHomeId,
         teamAwayId: row.teamAwayId,
+        teamAId: row.teamHomeId,
+        teamBId: row.teamAwayId,
         goalsHome: null,
         goalsAway: null,
+        goalsTeamA: null,
+        goalsTeamB: null,
         phase: 'group',
         groupId: row.groupId,
         scheduledAt: Timestamp.fromDate(new Date(row.scheduledAt)),

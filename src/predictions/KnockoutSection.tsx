@@ -52,7 +52,7 @@ export function KnockoutSection({
     <section className="pred-knockout-stage">
       <h2 className="pred-section-title">2 · Eliminatorias</h2>
       <p className="app-muted pred-knockout-note">
-        Los cruces se rellenan con tus clasificados predichos. Marcador en dos campos (local y visita). Si
+        Los cruces se rellenan con tus clasificados predichos. Marcador en dos campos (Equipo A y Equipo B). Si
         empatas en goles, elegí ganador en penales. Los campos KO nunca quedan vacíos: si borrás un valor vuelve
         a 0 automáticamente. Cuando grupos, eliminatorias y extras estén completos,
         usá <strong>Guardar predicción</strong> abajo para persistir todo de una vez.
@@ -196,8 +196,8 @@ function KoMatchRow({
 
   const homeStr = String(h)
   const awayStr = String(a)
-  const homePenLabel = homeId ? teamLabel(homeId) : 'Local'
-  const awayPenLabel = awayId ? teamLabel(awayId) : 'Visita'
+  const homePenLabel = homeId ? teamLabel(homeId) : 'Equipo A'
+  const awayPenLabel = awayId ? teamLabel(awayId) : 'Equipo B'
 
   return (
     <div
@@ -233,7 +233,7 @@ function KoMatchRow({
               value={homeStr}
               onChange={(e) => applyHome(e.target.value)}
               disabled={disabled || incomplete}
-              aria-label={homeId ? `Goles ${teamLabel(homeId)}` : 'Goles local'}
+              aria-label={homeId ? `Goles ${teamLabel(homeId)}` : 'Goles Equipo A'}
             />
             <span className="pred-score-split-sep" aria-hidden>
               -
@@ -250,7 +250,7 @@ function KoMatchRow({
               value={awayStr}
               onChange={(e) => applyAway(e.target.value)}
               disabled={disabled || incomplete}
-              aria-label={awayId ? `Goles ${teamLabel(awayId)}` : 'Goles visita'}
+              aria-label={awayId ? `Goles ${teamLabel(awayId)}` : 'Goles Equipo B'}
             />
           </div>
           {draw && (

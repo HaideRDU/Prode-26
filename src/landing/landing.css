@@ -582,22 +582,114 @@
 }
 
 .landing-points-panel {
-  background: #fff;
-  border-radius: var(--landing-radius-card);
-  padding: 1.75rem 2rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: var(--landing-shadow-soft);
+  background: #eef2f7;
+  border-radius: 0.95rem;
+  padding: 1rem;
+  border: 1px solid #d6dde7;
+  box-shadow: none;
 }
 
 .landing-points-panel ul {
   margin: 0;
-  padding-left: 1.25rem;
-  line-height: 1.7;
-  color: var(--landing-slate-500);
+  padding-left: 1.15rem;
+  line-height: 1.55;
+  color: #5e6f82;
+  font-size: 0.96rem;
+  font-weight: 600;
+}
+
+.landing-points-panel ul li + li {
+  margin-top: 0.4rem;
 }
 
 .landing-points-panel li strong {
-  color: var(--landing-navy);
+  color: #1f3046;
+  font-weight: 900;
+}
+
+#puntos {
+  background: #f7f9fc;
+  border-top: 1px solid #e1e8f2;
+  border-bottom: 1px solid #e1e8f2;
+  padding-block: clamp(3rem, 7vw, 4rem);
+}
+
+#puntos .landing-section__head {
+  margin-bottom: 1.1rem;
+}
+
+#puntos .landing-points-caption {
+  margin: 0.45rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #6f7d91;
+}
+
+#puntos .landing-tab-list {
+  margin-bottom: 0.9rem;
+}
+
+.landing-points-panel--table {
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.landing-points-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #cfd7e4;
+  border-radius: 0;
+  background: #f1f4f8;
+}
+
+.landing-points-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 660px;
+  font-size: 0.92rem;
+}
+
+.landing-points-table thead th {
+  background: #172b48;
+  color: #eef3fb;
+  font-weight: 800;
+  text-align: center;
+  padding: 0.6rem 0.5rem;
+  border: 1px solid #3a4e67;
+}
+
+.landing-points-table thead th:first-child {
+  background: #f0f3f8;
+  color: #2a3a4f;
+  text-align: left;
+}
+
+.landing-points-table tbody th,
+.landing-points-table tbody td {
+  border: 1px solid #d0d7e3;
+  padding: 0.55rem 0.55rem;
+}
+
+.landing-points-table tbody th {
+  text-align: left;
+  color: #2f3f56;
+  font-weight: 700;
+  background: #f1f4f8;
+}
+
+.landing-points-table tbody td {
+  text-align: center;
+  color: #3a4a63;
+  background: #f1f4f8;
+  font-weight: 600;
+}
+
+.landing-points-table tbody tr.is-max th,
+.landing-points-table tbody tr.is-max td {
+  background: #e6f5ea;
+  color: #1f8a49;
+  font-weight: 800;
+  border-color: #b9e6c7;
 }
 
 /* Tooltip */

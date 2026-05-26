@@ -37,10 +37,19 @@ export interface TeamPlayerDoc {
 
 /** Partido en Firestore: matches/{matchId} */
 export interface MatchDoc {
+  /** @deprecated Usar teamAId */
   teamHomeId: string
+  /** @deprecated Usar teamBId */
   teamAwayId: string
+  /** Nueva nomenclatura neutral (Equipo A/B). */
+  teamAId?: string
+  teamBId?: string
+  /** @deprecated Usar goalsTeamA */
   goalsHome: number | null
+  /** @deprecated Usar goalsTeamB */
   goalsAway: number | null
+  goalsTeamA?: number | null
+  goalsTeamB?: number | null
   phase: MatchPhase
   groupId?: string
   round?: string
@@ -49,8 +58,9 @@ export interface MatchDoc {
   finishedAt?: unknown
   /** Solo KO: hubo tanda de penales tras empate (resultado oficial) */
   wentToPenalties?: boolean | null
-  /** true = local ganó penales (si wentToPenalties) */
+  /** @deprecated true = Equipo A ganó penales (si wentToPenalties). */
   penaltiesWinnerHome?: boolean | null
+  penaltiesWinnerTeamA?: boolean | null
   /**
    * Contrato futuro para "Jugador por Partido" (90' + prórroga, sin tandas).
    * Se mantiene opcional hasta definir fuente oficial de plantillas/eventos.
@@ -64,12 +74,18 @@ export interface MatchDoc {
 
 /** Predicción de marcador para un partido */
 export interface MatchPredictionPayload {
+  /** @deprecated Usar goalsTeamA */
   goalsHome: number
+  /** @deprecated Usar goalsTeamB */
   goalsAway: number
+  goalsTeamA?: number
+  goalsTeamB?: number
   /** Eliminatorias: empate en 90’/prórroga predicho → desempate por penales */
   wentToPenalties?: boolean
   /** Obligatorio si wentToPenalties y empate en goles */
+  /** @deprecated Usar penaltiesWinnerTeamA */
   penaltiesWinnerHome?: boolean
+  penaltiesWinnerTeamA?: boolean
 }
 
 export type PredictionScope = 'match' | 'tournament' | 'player_per_match'

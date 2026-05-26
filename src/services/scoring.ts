@@ -46,7 +46,36 @@ type MatchForScore = Pick<
   | 'round'
   | 'teamHomeId'
   | 'teamAwayId'
+  | 'teamAId'
+  | 'teamBId'
+  | 'goalsTeamA'
+  | 'goalsTeamB'
+  | 'penaltiesWinnerTeamA'
 >
+
+function goalsForTeamA(match: MatchForScore): number | null {
+  return match.goalsTeamA ?? match.goalsHome ?? null
+}
+
+function goalsForTeamB(match: MatchForScore): number | null {
+  return match.goalsTeamB ?? match.goalsAway ?? null
+}
+
+function teamAId(match: MatchForScore): string | null {
+  return match.teamAId ?? match.teamHomeId ?? null
+}
+
+function teamBId(match: MatchForScore): string | null {
+  return match.teamBId ?? match.teamAwayId ?? null
+}
+
+function predictionGoalsTeamA(prediction: MatchPredictionPayload): number {
+  return prediction.goalsTeamA ?? prediction.goalsHome
+}
+
+function predictionGoalsTeamB(prediction: MatchPredictionPayload): number {
+  return prediction.goalsTeamB ?? prediction.goalsAway
+}
 
 /** Slots predichos en KO (`resolveKoMatchTeams`) cuando existe bracket para la sala/usuario. */
 export interface PredictedKoLineup {
@@ -80,12 +109,14 @@ function scoreKnockoutWrongOpponents(
   actualA: number,
 ): MatchScoreDetails {
   const actualResult = matchResultSign(actualH, actualA)
-  const predResult = matchResultSign(prediction.goalsHome, prediction.goalsAway)
+  const predTeamA = predictionGoalsTeamA(prediction)
+  const predTeamB = predictionGoalsTeamB(prediction)
+  const predResult = matchResultSign(predTeamA, predTeamB)
   const winnerOrDrawHit = predResult === actualResult
 
   function predGoalsForActualTeam(teamId: string): number | null {
-    if (teamId === predHomeId) return prediction.goalsHome
-    if (teamId === predAwayId) return prediction.goalsAway
+    if (teamId === predHomeId) return predTeamA
+    if (teamId === predAwayId) return predTeamB
     return null
   }
   function actualGoals(teamId: string): number | null {
@@ -183,16 +214,20 @@ export function scoreMatchPredictionDetails(
   if (match.status !== 'finished' || prediction == null) {
     return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
   }
-  if (match.goalsHome == null || match.goalsAway == null) {
+  const actualTeamA = goalsForTeamA(match)
+  const actualTeamB = goalsForTeamB(match)
+  if (actualTeamA == null || actualTeamB == null) {
     return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
   }
 
-  const actualH = match.goalsHome
-  const actualA = match.goalsAway
+  const actualH = actualTeamA
+  const actualA = actualTeamB
+  const predTeamA = predictionGoalsTeamA(prediction)
+  const predTeamB = predictionGoalsTeamB(prediction)
   const actualResult = matchResultSign(actualH, actualA)
-  const predResult = matchResultSign(prediction.goalsHome, prediction.goalsAway)
-  const exact = prediction.goalsHome === actualH && prediction.goalsAway === actualA
-  const oneScoreHit = oneSideGoalsHit(actualH, actualA, prediction.goalsHome, prediction.goalsAway)
+  const predResult = matchResultSign(predTeamA, predTeamB)
+  const exact = predTeamA === actualH && predTeamB === actualA
+  const oneScoreHit = oneSideGoalsHit(actualH, actualA, predTeamA, predTeamB)
   const winnerOrDrawHit = predResult === actualResult
 
   if (match.phase === 'group') {
@@ -215,8 +250,8 @@ export function scoreMatchPredictionDetails(
     }
   }
 
-  const ahId = match.teamHomeId
-  const aaId = match.teamAwayId
+  const ahId = teamAId(match)
+  const aaId = teamBId(match)
   const phId = predictedLineup?.predictedHomeId ?? null
   const paId = predictedLineup?.predictedAwayId ?? null
 
