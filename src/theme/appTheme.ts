@@ -1,7 +1,7 @@
 export const APP_THEME_KEY = 'appTheme'
 
 /** Ocultar interruptor claro/oscuro en landing, auth y perfil hasta terminar estilos. */
-export const THEME_SWITCH_UI_ENABLED = false
+export const THEME_SWITCH_UI_ENABLED = true
 
 export type AppTheme = 'light' | 'dark'
 
