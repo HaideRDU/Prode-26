@@ -1,19 +1,22 @@
 import * as admin from 'firebase-admin'
+import { penaltiesWinnerFlagsForTeamA } from '../lib/matchPenalties'
 import type { MatchDoc, MatchStatus } from '../lib/types/predictions'
 import type { TsdbEventItem } from './types'
 import { mapTsdbStatus } from './mapStatus'
 
 export interface MatchFirestoreUpdate {
-  goalsHome: number | null
-  goalsAway: number | null
   goalsTeamA: number | null
   goalsTeamB: number | null
   status: MatchStatus
   wentToPenalties: boolean | null
-  penaltiesWinnerHome: boolean | null
   penaltiesWinnerTeamA: boolean | null
+  penaltiesWinnerTeamB: boolean | null
   finishedAt?: admin.firestore.FieldValue
   theSportsDbEventId: string
+  goalsHome?: admin.firestore.FieldValue
+  goalsAway?: admin.firestore.FieldValue
+  penaltiesWinnerHome?: admin.firestore.FieldValue
+  penaltiesWinnerAway?: admin.firestore.FieldValue
 }
 
 function parseScore(val: string | null | undefined): number | null {
@@ -71,16 +74,22 @@ export function mapEventToMatchUpdate(item: TsdbEventItem): MatchFirestoreUpdate
   const awayGoals = parseScore(item.intAwayScore)
   const { wentToPenalties, penaltiesWinnerHome } = parsePenalties(item, status, homeGoals, awayGoals)
 
+  const penFlags =
+    penaltiesWinnerHome === null
+      ? { penaltiesWinnerTeamA: null as boolean | null, penaltiesWinnerTeamB: null as boolean | null }
+      : penaltiesWinnerFlagsForTeamA(penaltiesWinnerHome)
+
   const update: MatchFirestoreUpdate = {
     theSportsDbEventId: item.idEvent,
-    goalsHome: homeGoals,
-    goalsAway: awayGoals,
     goalsTeamA: homeGoals,
     goalsTeamB: awayGoals,
     status,
     wentToPenalties,
-    penaltiesWinnerHome,
-    penaltiesWinnerTeamA: penaltiesWinnerHome,
+    ...penFlags,
+    goalsHome: admin.firestore.FieldValue.delete(),
+    goalsAway: admin.firestore.FieldValue.delete(),
+    penaltiesWinnerHome: admin.firestore.FieldValue.delete(),
+    penaltiesWinnerAway: admin.firestore.FieldValue.delete(),
   }
 
   if (status === 'finished') {
@@ -92,13 +101,11 @@ export function mapEventToMatchUpdate(item: TsdbEventItem): MatchFirestoreUpdate
 
 export function matchUpdateChanged(current: MatchDoc, next: MatchFirestoreUpdate): boolean {
   if ((current.theSportsDbEventId ?? null) !== next.theSportsDbEventId) return true
-  if (current.goalsHome !== next.goalsHome) return true
-  if (current.goalsAway !== next.goalsAway) return true
   if ((current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA) return true
   if ((current.goalsTeamB ?? current.goalsAway ?? null) !== next.goalsTeamB) return true
   if (current.status !== next.status) return true
   if ((current.wentToPenalties ?? null) !== next.wentToPenalties) return true
-  if ((current.penaltiesWinnerHome ?? null) !== next.penaltiesWinnerHome) return true
   if ((current.penaltiesWinnerTeamA ?? current.penaltiesWinnerHome ?? null) !== next.penaltiesWinnerTeamA) return true
+  if ((current.penaltiesWinnerTeamB ?? current.penaltiesWinnerAway ?? null) !== next.penaltiesWinnerTeamB) return true
   return false
 }

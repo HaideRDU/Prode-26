@@ -1,5 +1,6 @@
 import type { MatchDoc, MatchStatus } from '../types/predictions'
 import { orderedGroupIds } from '../domain/groupStandings'
+import { matchGoalsTeamA, matchGoalsTeamB, matchTeamAId, matchTeamBId } from '../domain/matchFields'
 import { TeamFlagName } from './TeamFlagName'
 import { scoreMatchPrediction } from '../services/scoring'
 import { parseGoalField } from '../domain/parseScoreText'
@@ -18,7 +19,7 @@ export function GroupStageSection({
   draftByMatchId: Map<string, GroupDraftEntry>
   filledMatchIds: ReadonlySet<string>
   onDraftChange: (matchId: string, goalsHome: number | null, goalsAway: number | null) => void
-  teamLabel: (id: string) => string
+  teamLabel: (id: string | null | undefined) => string
   groupLocked: boolean
 }) {
   const groups = orderedGroupIds().filter((g) => matchesByGroup.has(g))
@@ -76,21 +77,25 @@ function GroupMatchRow({
   match: MatchDoc & { id: string; status: MatchStatus }
   draft: GroupDraftEntry
   isFilled: boolean
-  teamLabel: (id: string) => string
+  teamLabel: (id: string | null | undefined) => string
   disabled: boolean
   onChange: (goalsHome: number | null, goalsAway: number | null) => void
 }) {
+  const teamAId = matchTeamAId(match)
+  const teamBId = matchTeamBId(match)
   const homeStr = String(draft.goalsHome ?? 0)
   const awayStr = String(draft.goalsAway ?? 0)
   const earnedPoints =
     disabled &&
     match.status === 'finished' &&
-    match.goalsHome != null &&
-    match.goalsAway != null &&
-    isFilled
+    matchGoalsTeamA(match) != null &&
+    matchGoalsTeamB(match) != null &&
+    isFilled &&
+    teamAId &&
+    teamBId
       ? scoreMatchPrediction(match, {
-          goalsHome: draft.goalsHome as number,
-          goalsAway: draft.goalsAway as number,
+          goalsTeamA: draft.goalsHome as number,
+          goalsTeamB: draft.goalsAway as number,
         })
       : null
 
@@ -122,17 +127,9 @@ function GroupMatchRow({
         </span>
       ) : null}
       <div className="pred-match-row-top pred-match-row-top--group">
-        <TeamFlagName
-          teamId={match.teamHomeId}
-          name={teamLabel(match.teamHomeId)}
-          layout="stack"
-        />
+        <TeamFlagName teamId={teamAId ?? ''} name={teamLabel(teamAId)} layout="stack" />
         <span className="pred-vs-inline">VS</span>
-        <TeamFlagName
-          teamId={match.teamAwayId}
-          name={teamLabel(match.teamAwayId)}
-          layout="stack"
-        />
+        <TeamFlagName teamId={teamBId ?? ''} name={teamLabel(teamBId)} layout="stack" />
       </div>
 
       <span className="pred-score-text-label app-muted">Marcador</span>

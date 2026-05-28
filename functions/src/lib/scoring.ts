@@ -54,6 +54,7 @@ type MatchForScore = Pick<
   | 'goalsAway'
   | 'wentToPenalties'
   | 'penaltiesWinnerHome'
+  | 'penaltiesWinnerAway'
   | 'round'
   | 'teamHomeId'
   | 'teamAwayId'
@@ -62,6 +63,7 @@ type MatchForScore = Pick<
   | 'goalsTeamA'
   | 'goalsTeamB'
   | 'penaltiesWinnerTeamA'
+  | 'penaltiesWinnerTeamB'
 >
 
 function goalsForTeamA(match: MatchForScore): number | null {
@@ -89,19 +91,19 @@ function predictionGoalsTeamB(prediction: MatchPredictionPayload): number {
 }
 
 export interface PredictedKoLineup {
-  predictedHomeId: string | null
-  predictedAwayId: string | null
+  predictedTeamAId: string | null
+  predictedTeamBId: string | null
 }
 
 function koPairMatchesOfficial(
-  predHomeId: string,
-  predAwayId: string,
-  actualHomeId: string,
-  actualAwayId: string,
+  predTeamAId: string,
+  predTeamBId: string,
+  actualTeamAId: string,
+  actualTeamBId: string,
 ): boolean {
   return (
-    (predHomeId === actualHomeId && predAwayId === actualAwayId) ||
-    (predHomeId === actualAwayId && predAwayId === actualHomeId)
+    (predTeamAId === actualTeamAId && predTeamBId === actualTeamBId) ||
+    (predTeamAId === actualTeamBId && predTeamBId === actualTeamAId)
   )
 }
 
@@ -125,11 +127,15 @@ function winnerTeamId(
 function penaltiesWinnerIsHome(
   wentToPenalties: boolean | null | undefined,
   penaltiesWinnerHome: boolean | null | undefined,
+  penaltiesWinnerAway: boolean | null | undefined,
   penaltiesWinnerTeamA: boolean | null | undefined,
+  penaltiesWinnerTeamB: boolean | null | undefined,
 ): boolean | null {
   if (wentToPenalties !== true) return null
   if (penaltiesWinnerTeamA !== undefined && penaltiesWinnerTeamA !== null) return penaltiesWinnerTeamA
+  if (penaltiesWinnerTeamB !== undefined && penaltiesWinnerTeamB !== null) return !penaltiesWinnerTeamB
   if (penaltiesWinnerHome !== undefined && penaltiesWinnerHome !== null) return penaltiesWinnerHome
+  if (penaltiesWinnerAway !== undefined && penaltiesWinnerAway !== null) return !penaltiesWinnerAway
   return null
 }
 
@@ -145,7 +151,9 @@ function koPredictedWinnerTeamId(
   const pensHome = penaltiesWinnerIsHome(
     prediction.wentToPenalties,
     prediction.penaltiesWinnerHome,
+    prediction.penaltiesWinnerAway,
     prediction.penaltiesWinnerTeamA,
+    prediction.penaltiesWinnerTeamB,
   )
   if (pensHome === true) return predSlotAId
   if (pensHome === false) return predSlotBId
@@ -165,7 +173,9 @@ function koActualWinnerTeamId(
   const pensHome = penaltiesWinnerIsHome(
     match.wentToPenalties,
     match.penaltiesWinnerHome,
+    match.penaltiesWinnerAway,
     match.penaltiesWinnerTeamA,
+    match.penaltiesWinnerTeamB,
   )
   if (pensHome === true) return actualSlotAId
   if (pensHome === false) return actualSlotBId
@@ -326,8 +336,8 @@ export function scoreMatchPredictionDetails(
     )
   }
 
-  const phId = predictedLineup?.predictedHomeId ?? ahId
-  const paId = predictedLineup?.predictedAwayId ?? aaId
+  const phId = predictedLineup?.predictedTeamAId ?? ahId
+  const paId = predictedLineup?.predictedTeamBId ?? aaId
   const roundId = normalizeKoRoundId(match.round)
   const row = DEFAULT_RULESET.points.matchByPhase.knockout[roundId]
 

@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteField,
   doc,
   onSnapshot,
   query,
@@ -10,6 +11,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { toTeamOnlyPredictionPayload } from '../domain/matchFields'
 import { assertGeneralPredictionsOpen, assertPlayerPickOpen } from './predictionWriteGuard'
 import type {
   MatchPredictionPayload,
@@ -63,27 +65,19 @@ export async function saveMatchPrediction(
   assertGeneralPredictionsOpen()
   const id = predictionDocId(roomId, userId, `m_${matchId}`)
   const ref = doc(db, PREDICTIONS, id)
-  const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
-  const goalsTeamB = payload.goalsTeamB ?? payload.goalsAway
-  const penaltiesWinnerTeamA = payload.penaltiesWinnerTeamA ?? payload.penaltiesWinnerHome
+  const teamPayload = toTeamOnlyPredictionPayload(payload)
   const data: PredictionDoc = {
     userId,
     roomId,
     scope: 'match',
     matchId,
     payload: {
-      ...payload,
-      goalsHome: goalsTeamA,
-      goalsAway: goalsTeamB,
-      goalsTeamA,
-      goalsTeamB,
-      ...(typeof penaltiesWinnerTeamA === 'boolean'
-        ? {
-            penaltiesWinnerHome: penaltiesWinnerTeamA,
-            penaltiesWinnerTeamA,
-          }
-        : {}),
-    },
+      ...teamPayload,
+      goalsHome: deleteField(),
+      goalsAway: deleteField(),
+      penaltiesWinnerHome: deleteField(),
+      penaltiesWinnerAway: deleteField(),
+    } as unknown as MatchPredictionPayload,
     updatedAt: serverTimestamp(),
   }
   await setDoc(ref, data, { merge: true })
@@ -100,9 +94,7 @@ export async function saveGroupPredictionsBatch(
   assertGeneralPredictionsOpen()
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
-    const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
-    const goalsTeamB = payload.goalsTeamB ?? payload.goalsAway
-    const penaltiesWinnerTeamA = payload.penaltiesWinnerTeamA ?? payload.penaltiesWinnerHome
+    const teamPayload = toTeamOnlyPredictionPayload(payload)
     const id = predictionDocId(roomId, userId, `m_${matchId}`)
     const ref = doc(db, PREDICTIONS, id)
     const data: PredictionDoc = {
@@ -111,18 +103,12 @@ export async function saveGroupPredictionsBatch(
       scope: 'match',
       matchId,
       payload: {
-        ...payload,
-        goalsHome: goalsTeamA,
-        goalsAway: goalsTeamB,
-        goalsTeamA,
-        goalsTeamB,
-        ...(typeof penaltiesWinnerTeamA === 'boolean'
-          ? {
-              penaltiesWinnerHome: penaltiesWinnerTeamA,
-              penaltiesWinnerTeamA,
-            }
-          : {}),
-      },
+        ...teamPayload,
+        goalsHome: deleteField(),
+        goalsAway: deleteField(),
+        penaltiesWinnerHome: deleteField(),
+        penaltiesWinnerAway: deleteField(),
+      } as unknown as MatchPredictionPayload,
       updatedAt: serverTimestamp(),
     }
     batch.set(ref, data, { merge: true })
@@ -141,9 +127,7 @@ export async function saveKoPredictionsBatch(
   assertGeneralPredictionsOpen()
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
-    const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
-    const goalsTeamB = payload.goalsTeamB ?? payload.goalsAway
-    const penaltiesWinnerTeamA = payload.penaltiesWinnerTeamA ?? payload.penaltiesWinnerHome
+    const teamPayload = toTeamOnlyPredictionPayload(payload)
     const id = predictionDocId(roomId, userId, `m_${matchId}`)
     const ref = doc(db, PREDICTIONS, id)
     const data: PredictionDoc = {
@@ -152,18 +136,12 @@ export async function saveKoPredictionsBatch(
       scope: 'match',
       matchId,
       payload: {
-        ...payload,
-        goalsHome: goalsTeamA,
-        goalsAway: goalsTeamB,
-        goalsTeamA,
-        goalsTeamB,
-        ...(typeof penaltiesWinnerTeamA === 'boolean'
-          ? {
-              penaltiesWinnerHome: penaltiesWinnerTeamA,
-              penaltiesWinnerTeamA,
-            }
-          : {}),
-      },
+        ...teamPayload,
+        goalsHome: deleteField(),
+        goalsAway: deleteField(),
+        penaltiesWinnerHome: deleteField(),
+        penaltiesWinnerAway: deleteField(),
+      } as unknown as MatchPredictionPayload,
       updatedAt: serverTimestamp(),
     }
     batch.set(ref, data, { merge: true })

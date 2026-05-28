@@ -6,6 +6,7 @@ import {
   getThirdAndFourthFromPredictions,
 } from '../../src/domain/bracketResolve.ts'
 import { groupScoresMapFromFinished } from './wc26BracketCascade.ts'
+import { penaltiesWinnerFlagsFromPayload } from '../../src/domain/matchPenalties.ts'
 import type { MatchDoc, MatchPredictionPayload, TournamentResultDoc } from '../../src/types/predictions.ts'
 import { koMatchDocId } from '../../src/data/wc2026/knockoutBracket.ts'
 
@@ -18,14 +19,24 @@ function koScoresFromFinishedMatches(
     const gh = m.goalsTeamA ?? m.goalsHome
     const ga = m.goalsTeamB ?? m.goalsAway
     if (typeof gh !== 'number' || typeof ga !== 'number') continue
+    const pens = penaltiesWinnerFlagsFromPayload(m)
     out.set(m.id, {
       goalsHome: gh,
       goalsAway: ga,
       goalsTeamA: gh,
       goalsTeamB: ga,
-      wentToPenalties: m.wentToPenalties === true,
-      ...(m.wentToPenalties === true && m.penaltiesWinnerHome !== undefined && m.penaltiesWinnerHome !== null
-        ? { penaltiesWinnerHome: m.penaltiesWinnerHome, penaltiesWinnerTeamA: m.penaltiesWinnerHome }
+      ...(pens.wentToPenalties === true
+        ? {
+            wentToPenalties: true,
+            ...(pens.penaltiesWinnerTeamA !== null
+              ? {
+                  penaltiesWinnerTeamA: pens.penaltiesWinnerTeamA,
+                  penaltiesWinnerTeamB: pens.penaltiesWinnerTeamB!,
+                  penaltiesWinnerHome: pens.penaltiesWinnerHome!,
+                  penaltiesWinnerAway: pens.penaltiesWinnerAway!,
+                }
+              : {}),
+          }
         : {}),
     })
   }

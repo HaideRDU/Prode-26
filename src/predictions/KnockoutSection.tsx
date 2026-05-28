@@ -4,18 +4,32 @@ import { WC26_KO_MATCHES, koMatchDocId } from '../data/wc2026/knockoutBracket'
 import { resolveKoMatchTeams } from '../domain/bracketResolve'
 import { buildKoPredictionsContext } from '../domain/koRoundSaveGate'
 import { TeamFlagName } from './TeamFlagName'
-import { scoreMatchPrediction } from '../services/scoring'
+import {
+  matchGoalsTeamA,
+  matchGoalsTeamB,
+  matchTeamAId,
+  matchTeamBId,
+  toTeamOnlyPredictionPayload,
+} from '../domain/matchFields'
+import {
+  penaltiesWinnerFlagsForTeamA,
+  penaltiesWinnerIsTeamAFromPayload,
+} from '../domain/matchPenalties'
+import {
+  matchPointsBreakdownLabel,
+  scoreMatchPredictionDetails,
+} from '../services/scoring'
 import { parseGoalField } from '../domain/parseScoreText'
 
 function koLineupMatchesOfficial(
-  predHomeId: string,
-  predAwayId: string,
-  officialHomeId: string,
-  officialAwayId: string,
+  predTeamAId: string,
+  predTeamBId: string,
+  officialTeamAId: string,
+  officialTeamBId: string,
 ): boolean {
   return (
-    (predHomeId === officialHomeId && predAwayId === officialAwayId) ||
-    (predHomeId === officialAwayId && predAwayId === officialHomeId)
+    (predTeamAId === officialTeamAId && predTeamBId === officialTeamBId) ||
+    (predTeamAId === officialTeamBId && predTeamBId === officialTeamAId)
   )
 }
 
@@ -60,6 +74,26 @@ export function KnockoutSection({
 
   const roundOrder = ['r32', 'r16', 'qf', 'sf', 'third', 'final'] as const
 
+  const hasOfficialBracketMismatch = useMemo(() => {
+    for (const def of WC26_KO_MATCHES) {
+      const matchId = koMatchDocId(def.matchNum)
+      const fm = matchesByKoId.get(matchId)
+      if (!fm || (fm.status !== 'finished' && fm.status !== 'live')) continue
+      const officialTeamAId = matchTeamAId(fm)
+      const officialTeamBId = matchTeamBId(fm)
+      if (!officialTeamAId || !officialTeamBId) continue
+      const { teamAId, teamBId } = resolveKoMatchTeams(
+        def.matchNum,
+        ctx.tablesByGroup,
+        ctx.thirdByMatchNum,
+        ctx.winnerByMatchNum,
+      )
+      if (!teamAId || !teamBId) continue
+      if (!koLineupMatchesOfficial(teamAId, teamBId, officialTeamAId, officialTeamBId)) return true
+    }
+    return false
+  }, [ctx, matchesByKoId])
+
   return (
     <section className="pred-knockout-stage">
       <h2 className="pred-section-title">2 · Eliminatorias</h2>
@@ -69,6 +103,12 @@ export function KnockoutSection({
         a 0 automáticamente. Cuando grupos, eliminatorias y extras estén completos,
         usá <strong>Guardar predicción</strong> abajo para persistir todo de una vez.
       </p>
+      {hasOfficialBracketMismatch ? (
+        <p className="pred-ko-bracket-mismatch-note app-muted">
+          Hay resultados oficiales de un cuadro distinto al tuyo. Seguí editando tus cruces abajo; los puntos por
+          partido se calculan solo cuando el cruce oficial de ese número de partido coincida con tu predicción.
+        </p>
+      ) : null}
       {roundOrder.map((round) => {
         const rows = byRound.get(round)
         if (!rows?.length) return null
@@ -79,7 +119,7 @@ export function KnockoutSection({
             <div className="pred-ko-matches">
               {rows.map((def) => {
                 const matchId = koMatchDocId(def.matchNum)
-                const { homeId, awayId } = resolveKoMatchTeams(
+                const { teamAId, teamBId } = resolveKoMatchTeams(
                   def.matchNum,
                   ctx.tablesByGroup,
                   ctx.thirdByMatchNum,
@@ -90,9 +130,9 @@ export function KnockoutSection({
                     key={def.matchNum}
                     matchNum={def.matchNum}
                     matchId={matchId}
-                    homeId={homeId}
-                    awayId={awayId}
-                    initial={koPredByMatchId.get(matchId) ?? { goalsHome: 0, goalsAway: 0 }}
+                    teamAId={teamAId}
+                    teamBId={teamBId}
+                    initial={koPredByMatchId.get(matchId) ?? { goalsTeamA: 0, goalsTeamB: 0 }}
                     firestoreMatch={matchesByKoId.get(matchId)}
                     teamLabel={teamLabel}
                     onKoDraftChange={onKoDraftChange}
@@ -111,8 +151,8 @@ export function KnockoutSection({
 function KoMatchRow({
   matchNum,
   matchId,
-  homeId,
-  awayId,
+  teamAId,
+  teamBId,
   initial,
   firestoreMatch,
   teamLabel,
@@ -121,162 +161,161 @@ function KoMatchRow({
 }: {
   matchNum: number
   matchId: string
-  homeId: string | null
-  awayId: string | null
+  teamAId: string | null
+  teamBId: string | null
   initial: MatchPredictionPayload
   firestoreMatch?: (MatchDoc & { id: string }) | undefined
   teamLabel: (id: string) => string
   onKoDraftChange: (matchId: string, payload: MatchPredictionPayload | null) => void
   readOnly: boolean
 }) {
-  const [h, setH] = useState<number>(initial.goalsHome ?? 0)
-  const [a, setA] = useState<number>(initial.goalsAway ?? 0)
-  const [pensHomeWins, setPensHomeWins] = useState<boolean | null>(
-    initial.penaltiesWinnerHome ?? null,
+  const [goalsA, setGoalsA] = useState<number>(initial.goalsTeamA ?? 0)
+  const [goalsB, setGoalsB] = useState<number>(initial.goalsTeamB ?? 0)
+  const [pensTeamAWins, setPensTeamAWins] = useState<boolean | null>(
+    penaltiesWinnerIsTeamAFromPayload(initial),
   )
 
   useEffect(() => {
-    setH(initial.goalsHome ?? 0)
-    setA(initial.goalsAway ?? 0)
-    setPensHomeWins(initial.penaltiesWinnerHome ?? null)
-  }, [initial.goalsHome, initial.goalsAway, initial.penaltiesWinnerHome, initial.wentToPenalties])
+    setGoalsA(initial.goalsTeamA ?? 0)
+    setGoalsB(initial.goalsTeamB ?? 0)
+    setPensTeamAWins(penaltiesWinnerIsTeamAFromPayload(initial))
+  }, [initial])
 
-  const disabled =
-    readOnly ||
-    firestoreMatch != null &&
-    firestoreMatch.status !== 'scheduled' &&
-    firestoreMatch.status !== 'live'
+  const incomplete = !teamAId || !teamBId
 
-  const draw = h === a
+  // Las predicciones se bloquean solo por readOnly (cierre general), no por el estado oficial del partido.
+  const disabled = readOnly || incomplete
+
+  const draw = goalsA === goalsB
   const pensIncomplete =
-    Boolean(homeId && awayId) && draw && pensHomeWins === null && !disabled
-
-  const incomplete = !homeId || !awayId
+    Boolean(teamAId && teamBId) && draw && pensTeamAWins === null && !disabled
 
   const locked =
     Boolean(firestoreMatch) &&
     firestoreMatch!.status !== 'scheduled' &&
     firestoreMatch!.status !== 'live'
 
-  const predictionForScore: MatchPredictionPayload = {
-    goalsHome: h,
-    goalsAway: a,
-    goalsTeamA: h,
-    goalsTeamB: a,
-    ...(draw && pensHomeWins !== null
-      ? { wentToPenalties: true, penaltiesWinnerHome: pensHomeWins, penaltiesWinnerTeamA: pensHomeWins }
+  const predictionForScore: MatchPredictionPayload = toTeamOnlyPredictionPayload({
+    goalsTeamA: goalsA,
+    goalsTeamB: goalsB,
+    ...(draw && pensTeamAWins !== null
+      ? { wentToPenalties: true, ...penaltiesWinnerFlagsForTeamA(pensTeamAWins) }
       : {}),
-  }
+  })
 
-  const earnedPoints =
+  const scoreDetails =
     locked &&
     firestoreMatch?.status === 'finished' &&
-    firestoreMatch.goalsHome != null &&
-    firestoreMatch.goalsAway != null &&
+    matchGoalsTeamA(firestoreMatch) != null &&
+    matchGoalsTeamB(firestoreMatch) != null &&
     !incomplete
-      ? scoreMatchPrediction(firestoreMatch, predictionForScore, {
-          predictedHomeId: homeId,
-          predictedAwayId: awayId,
+      ? scoreMatchPredictionDetails(firestoreMatch, predictionForScore, {
+          predictedTeamAId: teamAId,
+          predictedTeamBId: teamBId,
         })
       : null
+  const pointsTooltip =
+    scoreDetails && firestoreMatch
+      ? matchPointsBreakdownLabel(firestoreMatch, scoreDetails)
+      : undefined
 
   useEffect(() => {
     if (disabled || incomplete) {
       onKoDraftChange(matchId, null)
       return
     }
-    if (h === a) {
-      if (pensHomeWins === null) {
-        onKoDraftChange(matchId, {
-          goalsHome: h,
-          goalsAway: a,
-        })
+    if (goalsA === goalsB) {
+      if (pensTeamAWins === null) {
+        onKoDraftChange(matchId, { goalsTeamA: goalsA, goalsTeamB: goalsB })
         return
       }
-      onKoDraftChange(matchId, {
-        goalsHome: h,
-        goalsAway: a,
-        wentToPenalties: true,
-        penaltiesWinnerHome: pensHomeWins,
-      })
+      onKoDraftChange(
+        matchId,
+        toTeamOnlyPredictionPayload({
+          goalsTeamA: goalsA,
+          goalsTeamB: goalsB,
+          wentToPenalties: true,
+          ...penaltiesWinnerFlagsForTeamA(pensTeamAWins),
+        }),
+      )
       return
     }
-    onKoDraftChange(matchId, {
-      goalsHome: h,
-      goalsAway: a,
-    })
-  }, [disabled, incomplete, h, a, draw, pensHomeWins, matchId, onKoDraftChange])
+    onKoDraftChange(matchId, { goalsTeamA: goalsA, goalsTeamB: goalsB })
+  }, [disabled, incomplete, goalsA, goalsB, draw, pensTeamAWins, matchId, onKoDraftChange])
 
-  function applyHome(raw: string) {
+  function applyTeamA(raw: string) {
     const g = parseGoalField(raw)
-    if (g !== null) setH(g)
-    else if (!raw.trim()) setH(0)
+    if (g !== null) setGoalsA(g)
+    else if (!raw.trim()) setGoalsA(0)
   }
 
-  function applyAway(raw: string) {
+  function applyTeamB(raw: string) {
     const g = parseGoalField(raw)
-    if (g !== null) setA(g)
-    else if (!raw.trim()) setA(0)
+    if (g !== null) setGoalsB(g)
+    else if (!raw.trim()) setGoalsB(0)
   }
 
-  const homeStr = String(h)
-  const awayStr = String(a)
-  const homePenLabel = homeId ? teamLabel(homeId) : 'Equipo A'
-  const awayPenLabel = awayId ? teamLabel(awayId) : 'Equipo B'
+  const teamAStr = String(goalsA)
+  const teamBStr = String(goalsB)
+  const teamAPenLabel = teamAId ? teamLabel(teamAId) : 'Equipo A'
+  const teamBPenLabel = teamBId ? teamLabel(teamBId) : 'Equipo B'
 
-  const officialHomeId = firestoreMatch?.teamAId ?? firestoreMatch?.teamHomeId ?? null
-  const officialAwayId = firestoreMatch?.teamBId ?? firestoreMatch?.teamAwayId ?? null
-  const officialGoalsHome = firestoreMatch?.goalsTeamA ?? firestoreMatch?.goalsHome
-  const officialGoalsAway = firestoreMatch?.goalsTeamB ?? firestoreMatch?.goalsAway
-  const showOfficialResult =
+  const officialTeamAId = firestoreMatch ? matchTeamAId(firestoreMatch) : null
+  const officialTeamBId = firestoreMatch ? matchTeamBId(firestoreMatch) : null
+  const officialGoalsA = firestoreMatch ? matchGoalsTeamA(firestoreMatch) : null
+  const officialGoalsB = firestoreMatch ? matchGoalsTeamB(firestoreMatch) : null
+  const hasOfficialScore =
     locked &&
-    officialHomeId &&
-    officialAwayId &&
-    typeof officialGoalsHome === 'number' &&
-    typeof officialGoalsAway === 'number'
-  const officialPairMismatch =
-    showOfficialResult &&
-    homeId &&
-    awayId &&
-    !koLineupMatchesOfficial(homeId, awayId, officialHomeId, officialAwayId)
+    officialTeamAId &&
+    officialTeamBId &&
+    typeof officialGoalsA === 'number' &&
+    typeof officialGoalsB === 'number'
+  const officialLineupMatches =
+    hasOfficialScore &&
+    teamAId &&
+    teamBId &&
+    officialTeamAId &&
+    officialTeamBId &&
+    koLineupMatchesOfficial(teamAId, teamBId, officialTeamAId, officialTeamBId)
+  const showOfficialResult = officialLineupMatches
 
   return (
     <div
-      className={`pred-match-card pred-match-card--ko${pensIncomplete ? ' pred-match-card--ko-pens-incomplete' : ''}${earnedPoints !== null ? ' pred-match-card--has-pts' : ''}`}
+      className={`pred-match-card pred-match-card--ko${pensIncomplete ? ' pred-match-card--ko-pens-incomplete' : ''}${scoreDetails !== null && scoreDetails.points > 0 ? ' pred-match-card--has-pts' : ''}`}
     >
-      {earnedPoints !== null ? (
-        <span className="pred-match-card__pts-badge" aria-label={`Puntos obtenidos: ${earnedPoints}`}>
-          Pts: {earnedPoints}
+      {scoreDetails !== null && scoreDetails.points > 0 ? (
+        <span
+          className="pred-match-card__pts-badge"
+          title={pointsTooltip}
+          aria-label={`Puntos del partido: ${scoreDetails.points}. ${pointsTooltip ?? ''}`}
+        >
+          Pts partido: {scoreDetails.points}
         </span>
       ) : null}
       <div className="pred-ko-meta">Partido {matchNum}</div>
       <div className="pred-match-teams pred-match-teams--ko">
-        {homeId ? (
-          <TeamFlagName teamId={homeId} name={teamLabel(homeId)} />
+        {teamAId ? (
+          <TeamFlagName teamId={teamAId} name={teamLabel(teamAId)} />
         ) : (
           <span className="app-muted">Por definir</span>
         )}
         <span className="pred-vs">VS</span>
-        {awayId ? (
-          <TeamFlagName teamId={awayId} name={teamLabel(awayId)} />
+        {teamBId ? (
+          <TeamFlagName teamId={teamBId} name={teamLabel(teamBId)} />
         ) : (
           <span className="app-muted">Por definir</span>
         )}
       </div>
       {showOfficialResult ? (
         <p className="pred-ko-official-result app-muted">
-          <span className="pred-ko-official-result__label">Resultado oficial:</span>{' '}
-          <TeamFlagName teamId={officialHomeId} name={teamLabel(officialHomeId)} layout="inline" />{' '}
-          <strong>
-            {officialGoalsHome} – {officialGoalsAway}
-          </strong>{' '}
-          <TeamFlagName teamId={officialAwayId} name={teamLabel(officialAwayId)} layout="inline" />
-          {officialPairMismatch ? (
-            <span className="pred-ko-official-result__note">
-              {' '}
-              (tu cruce predicho fue otro rival)
-            </span>
-          ) : null}
+          <span className="pred-ko-official-result__label">Resultado oficial:</span>
+          <span className="pred-ko-official-result__line">
+            <TeamFlagName teamId={officialTeamAId!} name={teamLabel(officialTeamAId)} layout="inline" compact />
+            <strong className="pred-ko-official-result__score">
+              {officialGoalsA} – {officialGoalsB}
+            </strong>
+            <TeamFlagName teamId={officialTeamBId!} name={teamLabel(officialTeamBId)} layout="inline" compact />
+          </span>
         </p>
       ) : null}
       <div className="pred-ko-inline-block">
@@ -292,10 +331,10 @@ function KoMatchRow({
               className="field-input pred-score-split-input"
               autoComplete="off"
               placeholder="0"
-              value={homeStr}
-              onChange={(e) => applyHome(e.target.value)}
+              value={teamAStr}
+              onChange={(e) => applyTeamA(e.target.value)}
               disabled={disabled || incomplete}
-              aria-label={homeId ? `Goles ${teamLabel(homeId)}` : 'Goles Equipo A'}
+              aria-label={teamAId ? `Goles ${teamLabel(teamAId)}` : 'Goles Equipo A'}
             />
             <span className="pred-score-split-sep" aria-hidden>
               -
@@ -309,10 +348,10 @@ function KoMatchRow({
               className="field-input pred-score-split-input"
               autoComplete="off"
               placeholder="0"
-              value={awayStr}
-              onChange={(e) => applyAway(e.target.value)}
+              value={teamBStr}
+              onChange={(e) => applyTeamB(e.target.value)}
               disabled={disabled || incomplete}
-              aria-label={awayId ? `Goles ${teamLabel(awayId)}` : 'Goles Equipo B'}
+              aria-label={teamBId ? `Goles ${teamLabel(teamBId)}` : 'Goles Equipo B'}
             />
           </div>
           {draw && (
@@ -322,23 +361,23 @@ function KoMatchRow({
                 <input
                   type="radio"
                   name={`pens-${matchNum}`}
-                  checked={pensHomeWins === true}
-                  onChange={() => setPensHomeWins(true)}
+                  checked={pensTeamAWins === true}
+                  onChange={() => setPensTeamAWins(true)}
                   disabled={disabled || incomplete}
                 />{' '}
-                {homePenLabel}
+                {teamAPenLabel}
               </label>
               <label>
                 <input
                   type="radio"
                   name={`pens-${matchNum}`}
-                  checked={pensHomeWins === false}
-                  onChange={() => setPensHomeWins(false)}
+                  checked={pensTeamAWins === false}
+                  onChange={() => setPensTeamAWins(false)}
                   disabled={disabled || incomplete}
                 />{' '}
-                {awayPenLabel}
+                {teamBPenLabel}
               </label>
-              {pensHomeWins === null ? (
+              {pensTeamAWins === null ? (
                 <span className="pred-bonus-missing-hint" style={{ width: '100%' }}>
                   Elegí un ganador en penales para completar el partido.
                 </span>

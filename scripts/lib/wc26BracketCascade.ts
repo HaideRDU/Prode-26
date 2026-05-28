@@ -3,7 +3,7 @@ import { WC26_KO_MATCHES, koMatchDocId } from '../../src/data/wc2026/knockoutBra
 import { resolveKoMatchTeams } from '../../src/domain/bracketResolve.ts'
 import { buildKoPredictionsContext } from '../../src/domain/koRoundSaveGate.ts'
 
-export type ScoreLike = Pick<MatchPredictionPayload, 'goalsHome' | 'goalsAway'>
+export type ScoreLike = Pick<MatchPredictionPayload, 'goalsTeamA' | 'goalsTeamB'>
 
 export function groupScoresMapFromFinished(
   matches: Array<{
@@ -22,7 +22,7 @@ export function groupScoresMapFromFinished(
     const gh = m.goalsTeamA ?? m.goalsHome
     const ga = m.goalsTeamB ?? m.goalsAway
     if (typeof gh !== 'number' || typeof ga !== 'number') continue
-    out.set(m.id, { goalsHome: gh, goalsAway: ga })
+    out.set(m.id, { goalsTeamA: gh, goalsTeamB: ga })
   }
   return out
 }
@@ -51,20 +51,20 @@ export function cascadeKoMatches(
   for (const def of sorted) {
     const matchId = koMatchDocId(def.matchNum)
     const ctx = buildKoPredictionsContext(groupScores, koScores)
-    const { homeId, awayId } = resolveKoMatchTeams(
+    const { teamAId, teamBId } = resolveKoMatchTeams(
       def.matchNum,
       ctx.tablesByGroup,
       ctx.thirdByMatchNum,
       ctx.winnerByMatchNum,
     )
-    if (!homeId || !awayId) continue
+    if (!teamAId || !teamBId) continue
 
     const payload = onResolvable({
       matchNum: def.matchNum,
       matchId,
       round: def.round,
-      homeId,
-      awayId,
+      homeId: teamAId,
+      awayId: teamBId,
     })
     if (!payload) continue
     koScores.set(matchId, payload)

@@ -73,14 +73,16 @@ function isDraftComplete(entry: GroupDraftEntry | undefined): boolean {
 }
 
 function hasNumericScorePrediction(pred: MatchPredictionPayload | undefined): pred is MatchPredictionPayload {
+  if (!pred) return false
+  const goalsTeamA = pred.goalsTeamA
+  const goalsTeamB = pred.goalsTeamB
   return (
-    !!pred &&
-    typeof pred.goalsHome === 'number' &&
-    typeof pred.goalsAway === 'number' &&
-    !Number.isNaN(pred.goalsHome) &&
-    !Number.isNaN(pred.goalsAway) &&
-    pred.goalsHome >= 0 &&
-    pred.goalsAway >= 0
+    typeof goalsTeamA === 'number' &&
+    typeof goalsTeamB === 'number' &&
+    !Number.isNaN(goalsTeamA) &&
+    !Number.isNaN(goalsTeamB) &&
+    goalsTeamA >= 0 &&
+    goalsTeamB >= 0
   )
 }
 
@@ -117,11 +119,19 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const [draftGroup, setDraftGroup] = useState<Map<string, GroupDraftEntry>>(new Map())
   const draftInitRef = useRef(false)
   const roomDraftRef = useRef<string | null>(null)
+  const prevMatchPredCountRef = useRef(0)
 
   const predByMatchId = useMemo(() => {
     const m = new Map<string, MatchPredictionPayload>()
     for (const p of predictions) {
-      if (p.scope === 'match' && p.matchId && 'goalsHome' in p.payload) {
+      if (
+        p.scope === 'match' &&
+        p.matchId &&
+        p.payload &&
+        typeof p.payload === 'object' &&
+        'goalsTeamA' in p.payload &&
+        'goalsTeamB' in p.payload
+      ) {
         m.set(p.matchId, p.payload as MatchPredictionPayload)
       }
     }
@@ -255,7 +265,24 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   useEffect(() => {
     setKoDraftOverrides(new Map())
     setBonusOverrides(new Map())
+    prevMatchPredCountRef.current = 0
   }, [roomId])
+
+  useEffect(() => {
+    if (!roomId || loadingP) return
+    const currentCount = predByMatchId.size
+    const previousCount = prevMatchPredCountRef.current
+    if (previousCount > 0 && currentCount === 0) {
+      const resetDraft = new Map<string, GroupDraftEntry>()
+      for (const id of groupMatchIds) {
+        resetDraft.set(id, { goalsHome: 0, goalsAway: 0 })
+      }
+      setDraftGroup(resetDraft)
+      setKoDraftOverrides(new Map())
+      setBonusOverrides(new Map())
+    }
+    prevMatchPredCountRef.current = currentCount
+  }, [roomId, loadingP, predByMatchId, groupMatchIds])
 
   useEffect(() => {
     if (!roomId || loadingP || groupMatchIds.size === 0) return
@@ -265,8 +292,8 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     for (const id of groupMatchIds) {
       const p = predByMatchId.get(id)
       m.set(id, {
-        goalsHome: p?.goalsHome ?? 0,
-        goalsAway: p?.goalsAway ?? 0,
+        goalsHome: p?.goalsTeamA ?? 0,
+        goalsAway: p?.goalsTeamB ?? 0,
       })
     }
     setDraftGroup(m)
@@ -278,7 +305,10 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     const m = new Map<string, GroupDraftEntry>()
     for (const id of groupMatchIds) {
       const p = predByMatchId.get(id)
-      m.set(id, { goalsHome: p?.goalsHome ?? 0, goalsAway: p?.goalsAway ?? 0 })
+      m.set(id, {
+        goalsHome: p?.goalsTeamA ?? 0,
+        goalsAway: p?.goalsTeamB ?? 0,
+      })
     }
     setDraftGroup(m)
   }, [groupLocked, groupMatchIds, predByMatchId])
@@ -326,9 +356,9 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     for (const id of groupMatchIds) {
       const d = draftGroup.get(id)
       const p = predByMatchId.get(id)
-      const gh = typeof d?.goalsHome === 'number' ? d.goalsHome : (p?.goalsHome ?? 0)
-      const ga = typeof d?.goalsAway === 'number' ? d.goalsAway : (p?.goalsAway ?? 0)
-      m.set(id, { goalsHome: gh, goalsAway: ga })
+      const gh = typeof d?.goalsHome === 'number' ? d.goalsHome : (p?.goalsTeamA ?? 0)
+      const ga = typeof d?.goalsAway === 'number' ? d.goalsAway : (p?.goalsTeamB ?? 0)
+      m.set(id, { goalsTeamA: gh, goalsTeamB: ga })
     }
     return m
   }, [draftGroup, groupMatchIds, predByMatchId])
@@ -354,13 +384,13 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     const ctx = buildKoPredictionsContext(groupPredForBracket, mergedKoPredByMatchId)
     let koFilled = 0
     for (const def of WC26_KO_MATCHES) {
-      const { homeId, awayId } = resolveKoMatchTeams(
+      const { teamAId, teamBId } = resolveKoMatchTeams(
         def.matchNum,
         ctx.tablesByGroup,
         ctx.thirdByMatchNum,
         ctx.winnerByMatchNum,
       )
-      if (!homeId || !awayId) continue
+      if (!teamAId || !teamBId) continue
       const id = koMatchDocId(def.matchNum)
       const pred = mergedKoPredByMatchId.get(id)
       if (isCompleteMatchPredictionForPicker(pred, 'knockout')) koFilled++
@@ -420,12 +450,17 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         return next
       }
       const cur = prev.get(matchId)
+      const curA = cur?.goalsTeamA
+      const curB = cur?.goalsTeamB
+      const payA = payload.goalsTeamA
+      const payB = payload.goalsTeamB
       if (
         cur &&
-        cur.goalsHome === payload.goalsHome &&
-        cur.goalsAway === payload.goalsAway &&
+        curA === payA &&
+        curB === payB &&
         cur.wentToPenalties === payload.wentToPenalties &&
-        cur.penaltiesWinnerHome === payload.penaltiesWinnerHome
+        cur.penaltiesWinnerTeamA === payload.penaltiesWinnerTeamA &&
+        cur.penaltiesWinnerTeamB === payload.penaltiesWinnerTeamB
       ) {
         return prev
       }
@@ -464,36 +499,36 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       let pred: MatchPredictionPayload | undefined
       if (m.phase === 'group') {
         const d = draftGroup.get(m.id)
-        if (isDraftComplete(d)) pred = { goalsHome: d!.goalsHome!, goalsAway: d!.goalsAway! }
+        if (isDraftComplete(d)) pred = { goalsTeamA: d!.goalsHome!, goalsTeamB: d!.goalsAway! }
         else pred = predByMatchId.get(m.id)
       } else {
         pred = mergedKoPredByMatchId.get(m.id)
       }
       const numericPred = hasNumericScorePrediction(pred)
-      let labelHomeId = m.teamHomeId
-      let labelAwayId = m.teamAwayId
+      let labelTeamAId = m.teamAId
+      let labelTeamBId = m.teamBId
       let koResolved = false
       if (m.phase === 'knockout' && m.id.startsWith('wc26-ko-')) {
         const n = Number(m.id.slice('wc26-ko-'.length))
         if (Number.isFinite(n)) {
-          const { homeId, awayId } = resolveKoMatchTeams(
+          const { teamAId, teamBId } = resolveKoMatchTeams(
             n,
             ctx.tablesByGroup,
             ctx.thirdByMatchNum,
             ctx.winnerByMatchNum,
           )
-          koResolved = Boolean(homeId && awayId)
-          if (homeId && awayId) {
-            labelHomeId = homeId
-            labelAwayId = awayId
+          koResolved = Boolean(teamAId && teamBId)
+          if (teamAId && teamBId) {
+            labelTeamAId = teamAId
+            labelTeamBId = teamBId
           }
         }
       }
       const eligible = m.phase === 'group' || numericPred || koResolved
       if (!eligible) continue
       seenMatchIds.add(m.id)
-      const h = teamLabel(labelHomeId)
-      const a = teamLabel(labelAwayId)
+      const h = teamLabel(labelTeamAId)
+      const a = teamLabel(labelTeamBId)
       const tag =
         m.phase === 'group' && m.groupId
           ? `Grupo ${m.groupId}`
@@ -512,27 +547,31 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     for (const def of WC26_KO_MATCHES) {
       const matchId = koMatchDocId(def.matchNum)
       if (seenMatchIds.has(matchId)) continue
-      const { homeId, awayId } = resolveKoMatchTeams(
+      const { teamAId, teamBId } = resolveKoMatchTeams(
         def.matchNum,
         ctx.tablesByGroup,
         ctx.thirdByMatchNum,
         ctx.winnerByMatchNum,
       )
-      if (!homeId || !awayId) continue
+      if (!teamAId || !teamBId) continue
       const synthetic: MatchDoc & { id: string } = {
         id: matchId,
         phase: 'knockout',
         round: def.round,
-        teamHomeId: homeId,
-        teamAwayId: awayId,
+        teamAId,
+        teamBId,
+        teamHomeId: teamAId,
+        teamAwayId: teamBId,
+        goalsTeamA: null,
+        goalsTeamB: null,
         goalsHome: null,
         goalsAway: null,
         scheduledAt: '',
         status: 'scheduled',
       }
       seenMatchIds.add(matchId)
-      const h = teamLabel(homeId)
-      const a = teamLabel(awayId)
+      const h = teamLabel(teamAId)
+      const a = teamLabel(teamBId)
       const tag = def.round
       rows.push({
         matchId,
@@ -550,25 +589,25 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     const ctx = buildKoPredictionsContext(groupPredForBracket, mergedKoPredByMatchId)
     let resolvable = 0
     for (const def of WC26_KO_MATCHES) {
-      const { homeId, awayId } = resolveKoMatchTeams(
+      const { teamAId, teamBId } = resolveKoMatchTeams(
         def.matchNum,
         ctx.tablesByGroup,
         ctx.thirdByMatchNum,
         ctx.winnerByMatchNum,
       )
-      if (!homeId || !awayId) continue
+      if (!teamAId || !teamBId) continue
       resolvable++
     }
     if (resolvable === 0) return { canSaveKoBatch: false, koResolvableCount: 0 }
 
     for (const def of WC26_KO_MATCHES) {
-      const { homeId, awayId } = resolveKoMatchTeams(
+      const { teamAId, teamBId } = resolveKoMatchTeams(
         def.matchNum,
         ctx.tablesByGroup,
         ctx.thirdByMatchNum,
         ctx.winnerByMatchNum,
       )
-      if (!homeId || !awayId) continue
+      if (!teamAId || !teamBId) continue
       const id = koMatchDocId(def.matchNum)
       const pred = mergedKoPredByMatchId.get(id)
       if (!isCompleteMatchPredictionForPicker(pred, 'knockout')) {
@@ -659,7 +698,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
           if (!isDraftComplete(d)) continue
           groupEntries.push({
             matchId: id,
-            payload: { goalsHome: d!.goalsHome!, goalsAway: d!.goalsAway! },
+            payload: { goalsTeamA: d!.goalsHome!, goalsTeamB: d!.goalsAway! },
           })
         }
         await saveGroupPredictionsBatch(roomId, user.uid, groupEntries)
@@ -670,13 +709,13 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       const koEntries: { matchId: string; payload: MatchPredictionPayload }[] = []
       const ctx = buildKoPredictionsContext(groupPredForBracket, mergedKoPredByMatchId)
       for (const def of [...WC26_KO_MATCHES].sort((a, b) => a.matchNum - b.matchNum)) {
-        const { homeId, awayId } = resolveKoMatchTeams(
+        const { teamAId, teamBId } = resolveKoMatchTeams(
           def.matchNum,
           ctx.tablesByGroup,
           ctx.thirdByMatchNum,
           ctx.winnerByMatchNum,
         )
-        if (!homeId || !awayId) continue
+        if (!teamAId || !teamBId) continue
         const id = koMatchDocId(def.matchNum)
         const pred = mergedKoPredByMatchId.get(id)
         if (!isCompleteMatchPredictionForPicker(pred, 'knockout')) {

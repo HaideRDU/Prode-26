@@ -70,9 +70,11 @@ export function PlayerPickFixtureCard({
 
   const canEdit = mode === 'pick' && effectiveState === 'enabled' && Boolean(roomId && userId)
 
-  const homeOptions = options.filter((o) => o.side === 'home')
-  const awayOptions = options.filter((o) => o.side === 'away')
-  const allOptions = useMemo(() => [...homeOptions, ...awayOptions], [homeOptions, awayOptions])
+  const teamAId = match.teamAId ?? match.teamHomeId
+  const teamBId = match.teamBId ?? match.teamAwayId
+  const teamAOptions = options.filter((o) => o.side === 'teamA')
+  const teamBOptions = options.filter((o) => o.side === 'teamB')
+  const allOptions = useMemo(() => [...teamAOptions, ...teamBOptions], [teamAOptions, teamBOptions])
 
   const handleChange = useCallback(
     async (nextKey: string) => {
@@ -126,20 +128,12 @@ export function PlayerPickFixtureCard({
           <div className="player-pick-fixture-card__matchup">
             <div className="player-pick-fixture-card__side">
               <span className="player-pick-fixture-card__score">{h}</span>
-              <TeamFlagName
-                teamId={match.teamHomeId}
-                name={teamLabel(match.teamHomeId)}
-                layout="stack"
-              />
+              <TeamFlagName teamId={teamAId} name={teamLabel(teamAId)} layout="stack" />
             </div>
             <span className="player-pick-fixture-card__vs">vs</span>
             <div className="player-pick-fixture-card__side">
               <span className="player-pick-fixture-card__score">{a}</span>
-              <TeamFlagName
-                teamId={match.teamAwayId}
-                name={teamLabel(match.teamAwayId)}
-                layout="stack"
-              />
+              <TeamFlagName teamId={teamBId} name={teamLabel(teamBId)} layout="stack" />
             </div>
           </div>
 
@@ -173,19 +167,9 @@ export function PlayerPickFixtureCard({
           <p className="player-pick-fixture-card__phase">{phaseLabel(match)}</p>
 
           <div className="player-pick-fixture-card__matchup player-pick-fixture-card__matchup--inline">
-            <TeamFlagName
-              teamId={match.teamHomeId}
-              name={teamLabel(match.teamHomeId)}
-              size={24}
-              compact
-            />
+            <TeamFlagName teamId={teamAId} name={teamLabel(teamAId)} size={24} compact />
             <span className="player-pick-fixture-card__vs">vs</span>
-            <TeamFlagName
-              teamId={match.teamAwayId}
-              name={teamLabel(match.teamAwayId)}
-              size={24}
-              compact
-            />
+            <TeamFlagName teamId={teamBId} name={teamLabel(teamBId)} size={24} compact />
           </div>
 
           <p className="player-pick-fixture-card__pts-hint">+{ptsPerGoal} pts por gol del jugador</p>
@@ -199,22 +183,22 @@ export function PlayerPickFixtureCard({
                 className="player-pick-fixture-card__select"
                 value={localKey}
                 disabled={!canEdit || rosterLoading}
-                aria-label={`Jugador que anota, ${teamLabel(match.teamHomeId)} vs ${teamLabel(match.teamAwayId)}`}
+                aria-label={`Jugador que anota, ${teamLabel(teamAId)} vs ${teamLabel(teamBId)}`}
                 onChange={(e) => void handleChange(e.target.value)}
               >
                 <option value="">Nombre de jugador</option>
-              {homeOptions.length > 0 ? (
-                <optgroup label={teamLabel(match.teamHomeId)}>
-                  {homeOptions.map((o) => (
+              {teamAOptions.length > 0 ? (
+                <optgroup label={teamLabel(teamAId)}>
+                  {teamAOptions.map((o) => (
                     <option key={o.playerKey} value={o.playerKey}>
                       {o.name}
                     </option>
                   ))}
                 </optgroup>
               ) : null}
-              {awayOptions.length > 0 ? (
-                <optgroup label={teamLabel(match.teamAwayId)}>
-                  {awayOptions.map((o) => (
+              {teamBOptions.length > 0 ? (
+                <optgroup label={teamLabel(teamBId)}>
+                  {teamBOptions.map((o) => (
                     <option key={o.playerKey} value={o.playerKey}>
                       {o.name}
                     </option>

@@ -1,3 +1,5 @@
+import { predictionGoalsTeamA, predictionGoalsTeamB } from './matchFields'
+import { penaltiesWinnerIsTeamAFromPayload } from './matchPenalties'
 import type { MatchPredictionPayload } from '../types/predictions'
 import { WC26_KO_BY_NUM, type KoBracketSide, koMatchDocId } from '../data/wc2026/knockoutBracket'
 import type { StandingRow } from './groupStandings'
@@ -9,13 +11,14 @@ const THIRD_PLACE_MATCH_NUM = 103
 
 export function koWinnerSide(
   pred: MatchPredictionPayload | undefined,
-): 'home' | 'away' | null {
+): 'teamA' | 'teamB' | null {
   if (!pred) return null
-  if (pred.goalsHome > pred.goalsAway) return 'home'
-  if (pred.goalsHome < pred.goalsAway) return 'away'
+  if (predictionGoalsTeamA(pred) > predictionGoalsTeamB(pred)) return 'teamA'
+  if (predictionGoalsTeamA(pred) < predictionGoalsTeamB(pred)) return 'teamB'
   if (!pred.wentToPenalties) return null
-  if (pred.penaltiesWinnerHome === undefined) return null
-  return pred.penaltiesWinnerHome ? 'home' : 'away'
+  const winnerIsTeamA = penaltiesWinnerIsTeamAFromPayload(pred)
+  if (winnerIsTeamA === null) return null
+  return winnerIsTeamA ? 'teamA' : 'teamB'
 }
 
 function teamAtPlace(table: StandingRow[] | undefined, place1Based: number): string | null {
@@ -62,7 +65,7 @@ export function propagateKoWinners(
     const pred = predByKoId.get(koMatchDocId(num))
     const side = koWinnerSide(pred)
     if (!side) continue
-    winnerByMatchNum.set(num, side === 'home' ? hid : aid)
+    winnerByMatchNum.set(num, side === 'teamA' ? hid : aid)
   }
   return winnerByMatchNum
 }
@@ -72,12 +75,12 @@ export function resolveKoMatchTeams(
   tablesByGroup: Map<string, StandingRow[]>,
   thirdByMatchNum: Map<number, string>,
   winnerByMatchNum: Map<number, string>,
-): { homeId: string | null; awayId: string | null } {
+) {
   const m = WC26_KO_BY_NUM.get(matchNum)
-  if (!m) return { homeId: null, awayId: null }
+  if (!m) return { teamAId: null, teamBId: null }
   return {
-    homeId: resolveSide(m.home, tablesByGroup, thirdByMatchNum, winnerByMatchNum),
-    awayId: resolveSide(m.away, tablesByGroup, thirdByMatchNum, winnerByMatchNum),
+    teamAId: resolveSide(m.home, tablesByGroup, thirdByMatchNum, winnerByMatchNum),
+    teamBId: resolveSide(m.away, tablesByGroup, thirdByMatchNum, winnerByMatchNum),
   }
 }
 
@@ -96,18 +99,18 @@ export function getChampionAndRunnerUpFromPredictions(
   const thirds = topEightThirds(groupPredByMatchId)
   const thirdByMatchNum = assignThirdsToR32Slots(thirds)
   const winnerByMatchNum = propagateKoWinners(koPredByMatchId, tablesByGroup, thirdByMatchNum)
-  const { homeId, awayId } = resolveKoMatchTeams(
+  const { teamAId, teamBId } = resolveKoMatchTeams(
     FINAL_MATCH_NUM,
     tablesByGroup,
     thirdByMatchNum,
     winnerByMatchNum,
   )
-  if (!homeId || !awayId) return { championId: null, runnerUpId: null }
+  if (!teamAId || !teamBId) return { championId: null, runnerUpId: null }
   const pred = koPredByMatchId.get(koMatchDocId(FINAL_MATCH_NUM))
   const side = koWinnerSide(pred)
   if (!side) return { championId: null, runnerUpId: null }
-  const championId = side === 'home' ? homeId : awayId
-  const runnerUpId = side === 'home' ? awayId : homeId
+  const championId = side === 'teamA' ? teamAId : teamBId
+  const runnerUpId = side === 'teamA' ? teamBId : teamAId
   return { championId, runnerUpId }
 }
 
@@ -123,17 +126,17 @@ export function getThirdAndFourthFromPredictions(
   const thirds = topEightThirds(groupPredByMatchId)
   const thirdByMatchNum = assignThirdsToR32Slots(thirds)
   const winnerByMatchNum = propagateKoWinners(koPredByMatchId, tablesByGroup, thirdByMatchNum)
-  const { homeId, awayId } = resolveKoMatchTeams(
+  const { teamAId, teamBId } = resolveKoMatchTeams(
     THIRD_PLACE_MATCH_NUM,
     tablesByGroup,
     thirdByMatchNum,
     winnerByMatchNum,
   )
-  if (!homeId || !awayId) return { thirdId: null, fourthId: null }
+  if (!teamAId || !teamBId) return { thirdId: null, fourthId: null }
   const pred = koPredByMatchId.get(koMatchDocId(THIRD_PLACE_MATCH_NUM))
   const side = koWinnerSide(pred)
   if (!side) return { thirdId: null, fourthId: null }
-  const thirdId = side === 'home' ? homeId : awayId
-  const fourthId = side === 'home' ? awayId : homeId
+  const thirdId = side === 'teamA' ? teamAId : teamBId
+  const fourthId = side === 'teamA' ? teamBId : teamAId
   return { thirdId, fourthId }
 }

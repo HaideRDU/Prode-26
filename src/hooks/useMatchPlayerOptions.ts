@@ -6,7 +6,7 @@ export type MatchPlayerOption = {
   playerKey: string
   name: string
   teamId: string
-  side: 'home' | 'away'
+  side: 'teamA' | 'teamB'
 }
 
 export function useMatchPlayerOptions(match: MatchDoc | null | undefined): {
@@ -14,73 +14,73 @@ export function useMatchPlayerOptions(match: MatchDoc | null | undefined): {
   loading: boolean
   hasRoster: boolean
 } {
-  const [homePlayers, setHomePlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
-  const [awayPlayers, setAwayPlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
+  const [teamAPlayers, setTeamAPlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
+  const [teamBPlayers, setTeamBPlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
   const [loading, setLoading] = useState(true)
 
-  const homeId = match?.teamHomeId
-  const awayId = match?.teamAwayId
+  const teamAId = match?.teamAId ?? match?.teamHomeId
+  const teamBId = match?.teamBId ?? match?.teamAwayId
 
   useEffect(() => {
-    if (!homeId || !awayId) {
-      setHomePlayers([])
-      setAwayPlayers([])
+    if (!teamAId || !teamBId) {
+      setTeamAPlayers([])
+      setTeamBPlayers([])
       setLoading(false)
       return
     }
     setLoading(true)
-    let homeReady = false
-    let awayReady = false
-    const unsubHome = subscribeTeamPlayers(
-      homeId,
+    let teamAReady = false
+    let teamBReady = false
+    const unsubTeamA = subscribeTeamPlayers(
+      teamAId,
       (rows) => {
-        setHomePlayers(rows)
-        homeReady = true
-        if (awayReady) setLoading(false)
+        setTeamAPlayers(rows)
+        teamAReady = true
+        if (teamBReady) setLoading(false)
       },
       () => {
-        setHomePlayers([])
-        homeReady = true
-        if (awayReady) setLoading(false)
+        setTeamAPlayers([])
+        teamAReady = true
+        if (teamBReady) setLoading(false)
       },
     )
-    const unsubAway = subscribeTeamPlayers(
-      awayId,
+    const unsubTeamB = subscribeTeamPlayers(
+      teamBId,
       (rows) => {
-        setAwayPlayers(rows)
-        awayReady = true
-        if (homeReady) setLoading(false)
+        setTeamBPlayers(rows)
+        teamBReady = true
+        if (teamAReady) setLoading(false)
       },
       () => {
-        setAwayPlayers([])
-        awayReady = true
-        if (homeReady) setLoading(false)
+        setTeamBPlayers([])
+        teamBReady = true
+        if (teamAReady) setLoading(false)
       },
     )
     return () => {
-      unsubHome?.()
-      unsubAway?.()
+      unsubTeamA?.()
+      unsubTeamB?.()
     }
-  }, [homeId, awayId])
+  }, [teamAId, teamBId])
 
   const options = useMemo(() => {
     const list: MatchPlayerOption[] = []
     const seen = new Set<string>()
-    for (const p of homePlayers) {
+    for (const p of teamAPlayers) {
       const key = playerDocToKey(p)
       if (seen.has(key)) continue
       seen.add(key)
-      list.push({ playerKey: key, name: p.name, teamId: homeId!, side: 'home' })
+      list.push({ playerKey: key, name: p.name, teamId: teamAId!, side: 'teamA' })
     }
-    for (const p of awayPlayers) {
+    for (const p of teamBPlayers) {
       const key = playerDocToKey(p)
       if (seen.has(key)) continue
       seen.add(key)
-      list.push({ playerKey: key, name: p.name, teamId: awayId!, side: 'away' })
+      list.push({ playerKey: key, name: p.name, teamId: teamBId!, side: 'teamB' })
     }
     list.sort((a, b) => a.name.localeCompare(b.name, 'es'))
     return list
-  }, [homePlayers, awayPlayers, homeId, awayId])
+  }, [teamAPlayers, teamBPlayers, teamAId, teamBId])
 
   const hasRoster = options.length > 0
 

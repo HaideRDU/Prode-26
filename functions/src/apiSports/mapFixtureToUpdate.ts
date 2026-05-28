@@ -1,19 +1,22 @@
 import * as admin from 'firebase-admin'
+import { penaltiesWinnerFlagsForTeamA } from '../lib/matchPenalties'
 import type { MatchDoc, MatchStatus } from '../lib/types/predictions'
 import type { ApiSportsFixtureItem } from './types'
 import { mapApiStatusShort } from './mapStatus'
 
 export interface MatchFirestoreUpdate {
-  goalsHome: number | null
-  goalsAway: number | null
   goalsTeamA: number | null
   goalsTeamB: number | null
   status: MatchStatus
   wentToPenalties: boolean | null
-  penaltiesWinnerHome: boolean | null
   penaltiesWinnerTeamA: boolean | null
+  penaltiesWinnerTeamB: boolean | null
   finishedAt?: admin.firestore.FieldValue
   apiSportsFixtureId: number
+  goalsHome?: admin.firestore.FieldValue
+  goalsAway?: admin.firestore.FieldValue
+  penaltiesWinnerHome?: admin.firestore.FieldValue
+  penaltiesWinnerAway?: admin.firestore.FieldValue
 }
 
 function pickGoals(item: ApiSportsFixtureItem, status: MatchStatus): { home: number | null; away: number | null } {
@@ -50,16 +53,22 @@ export function mapFixtureToMatchUpdate(item: ApiSportsFixtureItem): MatchFirest
   const goals = pickGoals(item, status)
   const pen = pickPenalties(item)
 
+  const penFlags =
+    pen.penaltiesWinnerHome === null
+      ? { penaltiesWinnerTeamA: null as boolean | null, penaltiesWinnerTeamB: null as boolean | null }
+      : penaltiesWinnerFlagsForTeamA(pen.penaltiesWinnerHome)
+
   const update: MatchFirestoreUpdate = {
     apiSportsFixtureId: item.fixture.id,
-    goalsHome: goals.home,
-    goalsAway: goals.away,
     goalsTeamA: goals.home,
     goalsTeamB: goals.away,
     status,
     wentToPenalties: pen.wentToPenalties,
-    penaltiesWinnerHome: pen.penaltiesWinnerHome,
-    penaltiesWinnerTeamA: pen.penaltiesWinnerHome,
+    ...penFlags,
+    goalsHome: admin.firestore.FieldValue.delete(),
+    goalsAway: admin.firestore.FieldValue.delete(),
+    penaltiesWinnerHome: admin.firestore.FieldValue.delete(),
+    penaltiesWinnerAway: admin.firestore.FieldValue.delete(),
   }
   if (status === 'finished') {
     update.finishedAt = admin.firestore.FieldValue.serverTimestamp()
@@ -69,13 +78,11 @@ export function mapFixtureToMatchUpdate(item: ApiSportsFixtureItem): MatchFirest
 
 export function matchUpdateChanged(current: MatchDoc, next: MatchFirestoreUpdate): boolean {
   if (current.apiSportsFixtureId !== next.apiSportsFixtureId) return true
-  if (current.goalsHome !== next.goalsHome) return true
-  if (current.goalsAway !== next.goalsAway) return true
   if ((current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA) return true
   if ((current.goalsTeamB ?? current.goalsAway ?? null) !== next.goalsTeamB) return true
   if (current.status !== next.status) return true
   if ((current.wentToPenalties ?? null) !== next.wentToPenalties) return true
-  if ((current.penaltiesWinnerHome ?? null) !== next.penaltiesWinnerHome) return true
   if ((current.penaltiesWinnerTeamA ?? current.penaltiesWinnerHome ?? null) !== next.penaltiesWinnerTeamA) return true
+  if ((current.penaltiesWinnerTeamB ?? current.penaltiesWinnerAway ?? null) !== next.penaltiesWinnerTeamB) return true
   return false
 }

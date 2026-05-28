@@ -6,22 +6,28 @@ import {
   getChampionAndRunnerUpFromPredictions,
   getThirdAndFourthFromPredictions,
 } from '../src/domain/bracketResolve.ts'
+import { koMatchDocId } from '../src/data/wc2026/knockoutBracket.ts'
 import type { MatchPredictionPayload, PredictionDoc, TournamentPredictionPayload } from '../src/types/predictions.ts'
 import { cascadeKoMatches } from './lib/wc26BracketCascade.ts'
 import {
-  buildGroupPredictionsForChampion,
-  koPayloadWinner,
-  randomKnockoutPayload,
+  buildGroupPredictionsForFavorites,
+  koPayloadForPodiumSlot,
 } from './lib/predictionChampion.ts'
 
 const args = process.argv.slice(2)
 const roomArg = args.find((x) => x.startsWith('--room='))?.slice('--room='.length).trim()
 const userArg = args.find((x) => x.startsWith('--user='))?.slice('--user='.length).trim()
 const championArg =
-  args.find((x) => x.startsWith('--champion='))?.slice('--champion='.length).trim().toUpperCase() || 'CIV'
+  args.find((x) => x.startsWith('--champion='))?.slice('--champion='.length).trim().toUpperCase() || 'JPN'
+const runnerUpArg = args
+  .find((x) => x.startsWith('--runner-up='))
+  ?.slice('--runner-up='.length)
+  .trim()
+  .toUpperCase()
 
 const roomId = roomArg || 'global'
 const championId = championArg
+const runnerUpId = runnerUpArg || null
 
 const projectId =
   process.env.FIREBASE_PROJECT_ID ||
@@ -96,12 +102,15 @@ function tournamentEntries(
   gkPlayerId: string,
   groupPred: Map<string, MatchPredictionPayload>,
   koPred: Map<string, MatchPredictionPayload>,
+  forcedChampionId: string,
+  forcedRunnerUpId: string | null,
 ): Array<{ questionId: string; payload: TournamentPredictionPayload }> {
-  const { championId: bracketChampion, runnerUpId } = getChampionAndRunnerUpFromPredictions(groupPred, koPred)
+  const { championId: bracketChampion, runnerUpId: bracketRunnerUp } =
+    getChampionAndRunnerUpFromPredictions(groupPred, koPred)
   const { thirdId, fourthId } = getThirdAndFourthFromPredictions(groupPred, koPred)
 
-  const champion = bracketChampion ?? championId
-  let runnerUp = runnerUpId ?? pickRandom(teamIds.filter((t) => t !== champion))
+  const champion = forcedChampionId
+  let runnerUp = forcedRunnerUpId ?? bracketRunnerUp ?? pickRandom(teamIds.filter((t) => t !== champion))
   if (runnerUp === champion) runnerUp = pickRandom(teamIds)
 
   let third = thirdId ?? pickRandom(teamIds)
@@ -138,7 +147,13 @@ async function main(): Promise<void> {
   const userId = await resolveUserId(roomId)
   const teamIds = await loadAllTeamIds()
   if (!teamIds.includes(championId)) {
-    throw new Error(`Equipo campeón "${championId}" no está en teams/.`)
+    throw new Error(`Campeón "${championId}" no está en teams/.`)
+  }
+  if (runnerUpId && !teamIds.includes(runnerUpId)) {
+    throw new Error(`Subcampeón "${runnerUpId}" no está en teams/.`)
+  }
+  if (runnerUpId === championId) {
+    throw new Error('Campeón y subcampeón deben ser equipos distintos.')
   }
 
   const topScorerPlayer = await loadRandomPlayerKeyByType(false)
@@ -147,23 +162,46 @@ async function main(): Promise<void> {
     throw new Error('Sin jugadores en rosters para extras.')
   }
 
-  const userGroupPred = buildGroupPredictionsForChampion(championId)
+  const favorites = runnerUpId ? [championId, runnerUpId] : [championId]
+  const userGroupPred = buildGroupPredictionsForFavorites(favorites)
 
-  const { koScores: userKoPred } = cascadeKoMatches(userGroupPred, (slot) => {
-    if (slot.homeId === championId || slot.awayId === championId) {
-      return koPayloadWinner(slot.homeId, slot.awayId, championId)
-    }
-    return randomKnockoutPayload()
-  })
+  const runnerForKo = runnerUpId ?? championId
+  const { koScores: userKoPred } = cascadeKoMatches(userGroupPred, (slot) =>
+    koPayloadForPodiumSlot({
+      matchNum: slot.matchNum,
+      homeId: slot.homeId,
+      awayId: slot.awayId,
+      championId,
+      runnerUpId: runnerForKo,
+    }),
+  )
 
-  const { championId: verified } = getChampionAndRunnerUpFromPredictions(userGroupPred, userKoPred)
-  if (verified !== championId) {
-    throw new Error(
-      `El cuadro no dejó a ${championId} como campeón (obtuvo ${verified ?? 'null'}). Revisá el bracket.`,
+  const { championId: bracketChampion, runnerUpId: bracketRunnerUp } = getChampionAndRunnerUpFromPredictions(
+    userGroupPred,
+    userKoPred,
+  )
+
+  if (bracketChampion !== championId) {
+    console.warn(
+      `[seed:prediction-champion] Aviso: el cuadro KO dejó campeón ${bracketChampion ?? 'null'} (esperado ${championId}). Extras forzados a ${championId}.`,
+    )
+  }
+  if (runnerUpId && bracketRunnerUp !== runnerUpId) {
+    console.warn(
+      `[seed:prediction-champion] Aviso: el cuadro KO dejó subcampeón ${bracketRunnerUp ?? 'null'} (esperado ${runnerUpId}). Extra subcampeón forzado a ${runnerUpId}.`,
     )
   }
 
-  const tournament = tournamentEntries(teamIds, topScorerPlayer, gkPlayer, userGroupPred, userKoPred)
+  const finalPred = userKoPred.get(koMatchDocId(104))
+  const tournament = tournamentEntries(
+    teamIds,
+    topScorerPlayer,
+    gkPlayer,
+    userGroupPred,
+    userKoPred,
+    championId,
+    runnerUpId,
+  )
 
   const writer = db.bulkWriter()
 
@@ -215,10 +253,15 @@ async function main(): Promise<void> {
     roomId,
     userId,
     championId,
+    runnerUpId: runnerUpId ?? bracketRunnerUp,
     groupPredictions: userGroupPred.size,
     koPredictions: userKoPred.size,
-    tournamentPredictions: tournament.length,
+    finalMatchId: koMatchDocId(104),
+    finalPrediction: finalPred,
     championExtra: tournament.find((t) => t.questionId === EXTRA_IDS.champion)?.payload,
+    runnerUpExtra: tournament.find((t) => t.questionId === EXTRA_IDS.runnerUp)?.payload,
+    bracketChampion,
+    bracketRunnerUp,
   })
 }
 

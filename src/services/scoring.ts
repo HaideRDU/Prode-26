@@ -8,6 +8,15 @@ import type {
 } from '../types/predictions'
 import { BONUS_QUESTION_IDS, EXTRA_IDS } from '../data/questionIds'
 import {
+  matchGoalsTeamA,
+  matchGoalsTeamB,
+  matchTeamAId,
+  matchTeamBId,
+  predictionGoalsTeamA,
+  predictionGoalsTeamB,
+} from '../domain/matchFields'
+import { penaltiesWinnerIsTeamAFromPayload } from '../domain/matchPenalties'
+import {
   DEFAULT_RULESET,
   maxMatchPoints,
   type KnockoutRoundId,
@@ -50,58 +59,36 @@ type MatchForScore = Pick<
   MatchDoc,
   | 'phase'
   | 'status'
-  | 'goalsHome'
-  | 'goalsAway'
   | 'wentToPenalties'
-  | 'penaltiesWinnerHome'
   | 'round'
-  | 'teamHomeId'
-  | 'teamAwayId'
   | 'teamAId'
   | 'teamBId'
   | 'goalsTeamA'
   | 'goalsTeamB'
   | 'penaltiesWinnerTeamA'
+  | 'penaltiesWinnerTeamB'
+  | 'goalsHome'
+  | 'goalsAway'
+  | 'teamHomeId'
+  | 'teamAwayId'
+  | 'penaltiesWinnerHome'
+  | 'penaltiesWinnerAway'
 >
 
-function goalsForTeamA(match: MatchForScore): number | null {
-  return match.goalsTeamA ?? match.goalsHome ?? null
-}
-
-function goalsForTeamB(match: MatchForScore): number | null {
-  return match.goalsTeamB ?? match.goalsAway ?? null
-}
-
-function teamAId(match: MatchForScore): string | null {
-  return match.teamAId ?? match.teamHomeId ?? null
-}
-
-function teamBId(match: MatchForScore): string | null {
-  return match.teamBId ?? match.teamAwayId ?? null
-}
-
-function predictionGoalsTeamA(prediction: MatchPredictionPayload): number {
-  return prediction.goalsTeamA ?? prediction.goalsHome
-}
-
-function predictionGoalsTeamB(prediction: MatchPredictionPayload): number {
-  return prediction.goalsTeamB ?? prediction.goalsAway
-}
-
 export interface PredictedKoLineup {
-  predictedHomeId: string | null
-  predictedAwayId: string | null
+  predictedTeamAId: string | null
+  predictedTeamBId: string | null
 }
 
 function koPairMatchesOfficial(
-  predHomeId: string,
-  predAwayId: string,
-  actualHomeId: string,
-  actualAwayId: string,
+  predTeamAId: string,
+  predTeamBId: string,
+  actualTeamAId: string,
+  actualTeamBId: string,
 ): boolean {
   return (
-    (predHomeId === actualHomeId && predAwayId === actualAwayId) ||
-    (predHomeId === actualAwayId && predAwayId === actualHomeId)
+    (predTeamAId === actualTeamAId && predTeamBId === actualTeamBId) ||
+    (predTeamAId === actualTeamBId && predTeamBId === actualTeamAId)
   )
 }
 
@@ -122,17 +109,6 @@ function winnerTeamId(
   return r === 1 ? teamA : teamB
 }
 
-function penaltiesWinnerIsHome(
-  wentToPenalties: boolean | null | undefined,
-  penaltiesWinnerHome: boolean | null | undefined,
-  penaltiesWinnerTeamA: boolean | null | undefined,
-): boolean | null {
-  if (wentToPenalties !== true) return null
-  if (penaltiesWinnerTeamA !== undefined && penaltiesWinnerTeamA !== null) return penaltiesWinnerTeamA
-  if (penaltiesWinnerHome !== undefined && penaltiesWinnerHome !== null) return penaltiesWinnerHome
-  return null
-}
-
 /** Ganador predicho en KO (incluye penales si hubo empate en el marcador). */
 function koPredictedWinnerTeamId(
   prediction: MatchPredictionPayload,
@@ -143,13 +119,9 @@ function koPredictedWinnerTeamId(
   const ga = predictionGoalsTeamB(prediction)
   if (gh > ga) return predSlotAId
   if (gh < ga) return predSlotBId
-  const pensHome = penaltiesWinnerIsHome(
-    prediction.wentToPenalties,
-    prediction.penaltiesWinnerHome,
-    prediction.penaltiesWinnerTeamA,
-  )
-  if (pensHome === true) return predSlotAId
-  if (pensHome === false) return predSlotBId
+  const winnerIsTeamA = penaltiesWinnerIsTeamAFromPayload(prediction)
+  if (winnerIsTeamA === true) return predSlotAId
+  if (winnerIsTeamA === false) return predSlotBId
   return 'draw'
 }
 
@@ -159,18 +131,14 @@ function koActualWinnerTeamId(
   actualSlotAId: string,
   actualSlotBId: string,
 ): string | 'draw' {
-  const ga = goalsForTeamA(match)
-  const gb = goalsForTeamB(match)
+  const ga = matchGoalsTeamA(match)
+  const gb = matchGoalsTeamB(match)
   if (ga == null || gb == null) return 'draw'
   if (ga > gb) return actualSlotAId
   if (ga < gb) return actualSlotBId
-  const pensHome = penaltiesWinnerIsHome(
-    match.wentToPenalties,
-    match.penaltiesWinnerHome,
-    match.penaltiesWinnerTeamA,
-  )
-  if (pensHome === true) return actualSlotAId
-  if (pensHome === false) return actualSlotBId
+  const winnerIsTeamA = penaltiesWinnerIsTeamAFromPayload(match)
+  if (winnerIsTeamA === true) return actualSlotAId
+  if (winnerIsTeamA === false) return actualSlotBId
   return 'draw'
 }
 
@@ -257,30 +225,32 @@ function scoreAdditiveMatch(
     exactScoreHit: exact,
     oneScoreHit,
     winnerOrDrawHit,
+    goalsAHit,
+    goalsBHit,
   }
 }
 
 function scoreKnockoutWrongOpponents(
   prediction: MatchPredictionPayload,
   match: MatchForScore,
-  actualHomeId: string,
-  actualAwayId: string,
-  predHomeId: string,
-  predAwayId: string,
-  actualH: number,
+  actualTeamAId: string,
+  actualTeamBId: string,
+  predTeamAId: string,
+  predTeamBId: string,
   actualA: number,
+  actualB: number,
   row: MatchPointsRow,
 ): MatchScoreDetails {
   return scoreAdditiveMatch(
     row,
     predictionGoalsTeamA(prediction),
     predictionGoalsTeamB(prediction),
-    actualH,
     actualA,
-    predHomeId,
-    predAwayId,
-    actualHomeId,
-    actualAwayId,
+    actualB,
+    predTeamAId,
+    predTeamBId,
+    actualTeamAId,
+    actualTeamBId,
     { prediction, match },
   )
 }
@@ -290,6 +260,8 @@ export interface MatchScoreDetails {
   exactScoreHit: boolean
   oneScoreHit: boolean
   winnerOrDrawHit: boolean
+  goalsAHit: boolean
+  goalsBHit: boolean
 }
 
 export function scoreMatchPredictionDetails(
@@ -297,24 +269,26 @@ export function scoreMatchPredictionDetails(
   prediction: MatchPredictionPayload | null | undefined,
   predictedLineup?: PredictedKoLineup | null,
 ): MatchScoreDetails {
-  if (match.status !== 'finished' || prediction == null) {
-    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
+  const empty: MatchScoreDetails = {
+    points: 0,
+    exactScoreHit: false,
+    oneScoreHit: false,
+    winnerOrDrawHit: false,
+    goalsAHit: false,
+    goalsBHit: false,
   }
-  const actualTeamA = goalsForTeamA(match)
-  const actualTeamB = goalsForTeamB(match)
-  if (actualTeamA == null || actualTeamB == null) {
-    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
-  }
+  if (match.status !== 'finished' || prediction == null) return empty
+  const actualTeamA = matchGoalsTeamA(match)
+  const actualTeamB = matchGoalsTeamB(match)
+  if (actualTeamA == null || actualTeamB == null) return empty
 
   const predTeamA = predictionGoalsTeamA(prediction)
   const predTeamB = predictionGoalsTeamB(prediction)
-  const ahId = teamAId(match)
-  const aaId = teamBId(match)
+  const ahId = matchTeamAId(match)
+  const aaId = matchTeamBId(match)
 
   if (match.phase === 'group') {
-    if (!ahId || !aaId) {
-      return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
-    }
+    if (!ahId || !aaId) return empty
     return scoreAdditiveMatch(
       GROUP_ROW,
       predTeamA,
@@ -328,8 +302,8 @@ export function scoreMatchPredictionDetails(
     )
   }
 
-  const phId = predictedLineup?.predictedHomeId ?? ahId
-  const paId = predictedLineup?.predictedAwayId ?? aaId
+  const phId = predictedLineup?.predictedTeamAId ?? ahId
+  const paId = predictedLineup?.predictedTeamBId ?? aaId
   const roundId = normalizeKoRoundId(match.round)
   const row = DEFAULT_RULESET.points.matchByPhase.knockout[roundId]
 
@@ -354,9 +328,7 @@ export function scoreMatchPredictionDetails(
     )
   }
 
-  if (!ahId || !aaId || !phId || !paId) {
-    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
-  }
+  if (!ahId || !aaId || !phId || !paId) return empty
 
   return scoreAdditiveMatch(
     row,
@@ -378,6 +350,24 @@ export function scoreMatchPrediction(
   predictedLineup?: PredictedKoLineup | null,
 ): number {
   return scoreMatchPredictionDetails(match, prediction, predictedLineup).points
+}
+
+/** Texto breve para tooltip: desglose de puntos del partido (no incluye extras de campeón). */
+export function matchPointsBreakdownLabel(
+  match: MatchForScore,
+  details: MatchScoreDetails,
+): string {
+  if (details.points === 0) return 'Sin puntos de partido'
+  const roundId = normalizeKoRoundId(match.round)
+  const row =
+    match.phase === 'group'
+      ? GROUP_ROW
+      : DEFAULT_RULESET.points.matchByPhase.knockout[roundId]
+  const parts: string[] = []
+  if (details.winnerOrDrawHit) parts.push(`ganador +${row.winnerOrDraw}`)
+  if (details.goalsAHit) parts.push(`gol A +${row.goalsTeamA}`)
+  if (details.goalsBHit) parts.push(`gol B +${row.goalsTeamB}`)
+  return `${parts.join(', ')} (total partido ${details.points}; campeón +22 va en ESPECIALES)`
 }
 
 function payloadsEqual(

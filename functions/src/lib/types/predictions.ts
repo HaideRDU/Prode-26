@@ -33,12 +33,10 @@ export interface TeamPlayerDoc {
 }
 
 export interface MatchDoc {
-  /** @deprecated Usar teamAId */
-  teamHomeId: string
-  /** @deprecated Usar teamBId */
-  teamAwayId: string
-  teamAId?: string
-  teamBId?: string
+  teamAId: string
+  teamBId: string
+  teamHomeId?: string
+  teamAwayId?: string
   /** @deprecated Usar goalsTeamA */
   goalsHome: number | null
   /** @deprecated Usar goalsTeamB */
@@ -52,9 +50,10 @@ export interface MatchDoc {
   status: MatchStatus
   finishedAt?: unknown
   wentToPenalties?: boolean | null
-  /** @deprecated Usar penaltiesWinnerTeamA */
   penaltiesWinnerHome?: boolean | null
+  penaltiesWinnerAway?: boolean | null
   penaltiesWinnerTeamA?: boolean | null
+  penaltiesWinnerTeamB?: boolean | null
   scorers?: { playerKey: string; goals: number; includesPenalties?: boolean }[]
   /** ID de evento en TheSportsDB (league 4429); lo rellena el sync. */
   theSportsDbEventId?: string
@@ -63,16 +62,15 @@ export interface MatchDoc {
 }
 
 export interface MatchPredictionPayload {
-  /** @deprecated Usar goalsTeamA */
-  goalsHome: number
-  /** @deprecated Usar goalsTeamB */
-  goalsAway: number
-  goalsTeamA?: number
-  goalsTeamB?: number
+  goalsTeamA: number
+  goalsTeamB: number
   wentToPenalties?: boolean
-  /** @deprecated Usar penaltiesWinnerTeamA */
-  penaltiesWinnerHome?: boolean
   penaltiesWinnerTeamA?: boolean
+  penaltiesWinnerTeamB?: boolean
+  goalsHome?: number
+  goalsAway?: number
+  penaltiesWinnerHome?: boolean
+  penaltiesWinnerAway?: boolean
 }
 
 export type PredictionScope = 'match' | 'tournament' | 'player_per_match'

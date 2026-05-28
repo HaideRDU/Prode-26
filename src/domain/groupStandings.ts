@@ -5,6 +5,7 @@
  */
 import { GROUP_STAGE_SCHEDULE } from '../data/wc2026/groupStageSchedule'
 import { WC2026_TEAMS_BY_GROUP } from '../data/wc2026/teamsByGroup'
+import type { MatchPredictionPayload } from '../types/predictions'
 
 export interface StandingRow {
   teamId: string
@@ -17,11 +18,12 @@ export interface StandingRow {
 
 const GROUP_ORDER = 'ABCDEFGHIJKL'.split('')
 
-function goalsFromPred(
-  pred: { goalsHome: number; goalsAway: number } | undefined,
-): { h: number; a: number } {
+function goalsFromPred(pred: MatchPredictionPayload | undefined): { h: number; a: number } {
   if (!pred) return { h: 0, a: 0 }
-  return { h: pred.goalsHome, a: pred.goalsAway }
+  return {
+    h: pred.goalsTeamA ?? 0,
+    a: pred.goalsTeamB ?? 0,
+  }
 }
 
 function headToHeadTwo(
@@ -47,7 +49,7 @@ function headToHeadTwo(
 /** Tabla de un grupo (4 equipos) ordenada 1º→4º según predicciones de los 6 partidos del grupo */
 export function computeGroupStandings(
   groupId: string,
-  predByMatchId: Map<string, { goalsHome: number; goalsAway: number }>,
+  predByMatchId: Map<string, MatchPredictionPayload>,
 ): StandingRow[] {
   const teams = WC2026_TEAMS_BY_GROUP.filter((t) => t.groupId === groupId).map((t) => t.teamId)
   if (teams.length !== 4) return []
@@ -101,7 +103,7 @@ export function orderedGroupIds(): string[] {
 
 /** Terceros de todos los grupos con su fila de clasificación (posición 3 en cada grupo) */
 export function collectThirdPlaced(
-  predByMatchId: Map<string, { goalsHome: number; goalsAway: number }>,
+  predByMatchId: Map<string, MatchPredictionPayload>,
 ): { teamId: string; groupId: string; row: StandingRow }[] {
   const out: { teamId: string; groupId: string; row: StandingRow }[] = []
   for (const g of orderedGroupIds()) {
@@ -128,7 +130,7 @@ export function rankThirdPlaced(
 }
 
 export function topEightThirds(
-  predByMatchId: Map<string, { goalsHome: number; goalsAway: number }>,
+  predByMatchId: Map<string, MatchPredictionPayload>,
 ): { teamId: string; groupId: string; row: StandingRow; rank: number }[] {
   const ranked = rankThirdPlaced(collectThirdPlaced(predByMatchId))
   return ranked.slice(0, 8)

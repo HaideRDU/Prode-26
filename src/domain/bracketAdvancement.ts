@@ -21,9 +21,9 @@ const KO_ROUND_TO_ADVANCEMENT: Partial<Record<KnockoutRoundId, AdvancementRoundK
 
 const ADVANCEMENT_ORDER: AdvancementRoundKey[] = ['toR32', 'toR16', 'toQf', 'toSf', 'toFinal']
 
-function teamIdsFromMatch(m: Pick<MatchDoc, 'teamAId' | 'teamBId' | 'teamHomeId' | 'teamAwayId'>): string[] {
-  const a = m.teamAId ?? m.teamHomeId
-  const b = m.teamBId ?? m.teamAwayId
+function teamIdsFromMatch(m: Pick<MatchDoc, 'teamAId' | 'teamBId'>): string[] {
+  const a = m.teamAId
+  const b = m.teamBId
   return [a, b].filter((id): id is string => typeof id === 'string' && id.length > 0)
 }
 
@@ -63,14 +63,14 @@ export function predictedTeamsByAdvancementRound(
   for (const m of WC26_KO_MATCHES) {
     const adv = KO_ROUND_TO_ADVANCEMENT[m.round]
     if (!adv) continue
-    const { homeId, awayId } = resolveKoMatchTeams(
+    const { teamAId, teamBId } = resolveKoMatchTeams(
       m.matchNum,
       tablesByGroup,
       thirdByMatchNum,
       winnerByMatchNum,
     )
-    if (homeId) out.get(adv)!.add(homeId)
-    if (awayId) out.get(adv)!.add(awayId)
+    if (teamAId) out.get(adv)!.add(teamAId)
+    if (teamBId) out.get(adv)!.add(teamBId)
   }
   return out
 }
@@ -103,7 +103,7 @@ export function extractGroupAndKoPredMaps(
   for (const pr of predictions) {
     if (pr.scope !== 'match' || !pr.matchId) continue
     const p = pr.payload as MatchPredictionPayload
-    if (!p || typeof p.goalsHome !== 'number') continue
+    if (!p || typeof p.goalsTeamA !== 'number' || typeof p.goalsTeamB !== 'number') continue
     if (pr.matchId.startsWith('wc26-ko-')) {
       koPredByMatchId.set(pr.matchId, p)
     } else if (pr.matchId.startsWith('wc26-')) {

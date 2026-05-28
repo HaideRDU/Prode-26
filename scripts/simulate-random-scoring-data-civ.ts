@@ -21,6 +21,7 @@ import type {
   PredictionDoc,
   TournamentPredictionPayload,
 } from '../src/types/predictions.ts'
+import { finishedMatchUpdate, koMatchTeamsUpdate } from './lib/matchFinishedUpdate.ts'
 import { cascadeKoMatches } from './lib/wc26BracketCascade.ts'
 import { formatPodiumLog, syncTournamentResultsFromMatches } from './lib/syncTournamentResultsFromMatches.ts'
 import {
@@ -76,20 +77,6 @@ function koPayloadForChampion(homeId: string, awayId: string): MatchPredictionPa
     return koPayloadWinner(homeId, awayId, championId)
   }
   return randomKnockoutPayload()
-}
-
-function finishedMatchUpdate(payload: MatchPredictionPayload): Record<string, unknown> {
-  return {
-    status: 'finished',
-    goalsHome: payload.goalsHome,
-    goalsAway: payload.goalsAway,
-    goalsTeamA: payload.goalsHome,
-    goalsTeamB: payload.goalsAway,
-    wentToPenalties: payload.wentToPenalties ?? null,
-    penaltiesWinnerHome: payload.penaltiesWinnerHome ?? null,
-    penaltiesWinnerTeamA: payload.penaltiesWinnerTeamA ?? null,
-    finishedAt: FieldValue.serverTimestamp(),
-  }
 }
 
 async function resolveUserId(targetRoomId: string): Promise<string> {
@@ -275,8 +262,7 @@ async function main(): Promise<void> {
     writer.set(
       db.collection('matches').doc(slot.matchId),
       {
-        teamHomeId: slot.homeId,
-        teamAwayId: slot.awayId,
+        ...koMatchTeamsUpdate(slot.homeId, slot.awayId),
         teamAId: slot.homeId,
         teamBId: slot.awayId,
         phase: 'knockout',

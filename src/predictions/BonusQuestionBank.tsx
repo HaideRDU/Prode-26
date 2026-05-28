@@ -1,10 +1,38 @@
 import { useEffect, useMemo, useRef, useState, type FocusEvent, type ReactNode } from 'react'
-import { subscribeTeams } from '../services/teamsService'
-import type { TeamDoc, TournamentPredictionPayload } from '../types/predictions'
+import { playerDocToKey, subscribeTeamPlayers, subscribeTeams } from '../services/teamsService'
+import type { TeamDoc, TeamPlayerDoc, TournamentPredictionPayload } from '../types/predictions'
 import type { QuestionMeta } from '../data/bonusQuestionsMeta'
-import { parseGoalField, formatScorePair, parseScoreText } from '../domain/parseScoreText'
+import { formatScorePair } from '../domain/parseScoreText'
 
 export type MatchPickOption = { matchId: string; label: string; groupLabel: string }
+const BONUS_SCORE_MAX = 99
+
+function parseBonusScoreField(raw: string): number | null {
+  const t = raw.trim()
+  if (t === '') return null
+  const n = Number(t)
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0 || n > BONUS_SCORE_MAX) return null
+  return n
+}
+
+function parseBonusScorePairText(raw: string): { home: number; away: number } | null {
+  const t = raw.trim()
+  if (!t) return null
+  const m = t.match(/^(\d+)\s*-\s*(\d+)$/)
+  if (!m) return null
+  const home = parseBonusScoreField(m[1] ?? '')
+  const away = parseBonusScoreField(m[2] ?? '')
+  if (home === null || away === null) return null
+  return { home, away }
+}
+
+function normalizeBonusScoreInput(raw: string): string {
+  const digitsOnly = raw.replace(/\D+/g, '')
+  if (!digitsOnly) return ''
+  const n = Number(digitsOnly)
+  if (!Number.isFinite(n)) return ''
+  return String(Math.max(0, Math.min(BONUS_SCORE_MAX, Math.floor(n))))
+}
 
 function groupMatchPickOptions(options: MatchPickOption[]): { groupLabel: string; items: MatchPickOption[] }[] {
   const order: string[] = []
@@ -21,9 +49,9 @@ function groupMatchPickOptions(options: MatchPickOption[]): { groupLabel: string
 
 function scorePairInitial(initial: TournamentPredictionPayload | undefined): { home: string; away: string } {
   if (initial?.kind !== 'text' || !initial.value) return { home: '', away: '' }
-  const p = parseScoreText(initial.value)
+  const p = parseBonusScorePairText(initial.value)
   if (!p) return { home: '', away: '' }
-  return { home: String(p.goalsHome), away: String(p.goalsAway) }
+  return { home: String(p.home), away: String(p.away) }
 }
 
 function payloadsEqual(
@@ -71,8 +99,11 @@ export function BonusQuestionBank({
   readOnly?: boolean
 }) {
   const [teams, setTeams] = useState<(TeamDoc & { id: string })[]>([])
+  const [colombiaPlayers, setColombiaPlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
   const [loading, setLoading] = useState(true)
+  const [playersLoading, setPlayersLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
+  const [playersErr, setPlayersErr] = useState<string | null>(null)
 
   useEffect(() => {
     const u = subscribeTeams(
@@ -89,6 +120,38 @@ export function BonusQuestionBank({
     return () => u?.()
   }, [])
 
+  useEffect(() => {
+    if (!teams.length) {
+      setColombiaPlayers([])
+      setPlayersLoading(false)
+      return
+    }
+    setPlayersLoading(true)
+    setPlayersErr(null)
+    const colombiaTeam =
+      teams.find((t) => t.teamId === 'COL') ??
+      teams.find((t) => t.nameEs.toLowerCase().includes('colombia'))
+    if (!colombiaTeam) {
+      setColombiaPlayers([])
+      setPlayersLoading(false)
+      return
+    }
+    const unsub = subscribeTeamPlayers(
+      colombiaTeam.id,
+      (list) => {
+        setColombiaPlayers(
+          [...list].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es')),
+        )
+        setPlayersLoading(false)
+      },
+      (e) => {
+        setPlayersErr(e.message)
+        setPlayersLoading(false)
+      },
+    )
+    return () => unsub?.()
+  }, [teams])
+
   const teamOptions = useMemo(
     () =>
       teams.map((t) => (
@@ -97,6 +160,16 @@ export function BonusQuestionBank({
         </option>
       )),
     [teams],
+  )
+
+  const colombiaPlayerOptions = useMemo(
+    () =>
+      colombiaPlayers.map((p) => {
+        const key = playerDocToKey(p)
+        const label = p.position ? `${p.name} (${p.position})` : p.name
+        return { key, label, value: p.name }
+      }),
+    [colombiaPlayers],
   )
 
   return (
@@ -108,6 +181,8 @@ export function BonusQuestionBank({
       </p>
       {loading && <p className="user-email">Cargando equipos…</p>}
       {err && <p className="auth-error">{err}</p>}
+      {playersLoading && <p className="user-email">Cargando jugadores de Colombia…</p>}
+      {playersErr && <p className="auth-error">{playersErr}</p>}
       <div className="pred-bonus-list">
         {questionMetas.map((meta) => (
           <BonusRow
@@ -115,6 +190,7 @@ export function BonusQuestionBank({
             meta={meta}
             value={mergedBonusByQuestionId.get(meta.id)}
             teamOptions={teamOptions}
+            colombiaPlayerOptions={colombiaPlayerOptions}
             matchOptions={matchPickOptions}
             groupIds={groupIds}
             onDraftChange={(p) => onBonusDraftChange(meta.id, p)}
@@ -131,6 +207,7 @@ function BonusRow({
   meta,
   value,
   teamOptions,
+  colombiaPlayerOptions,
   matchOptions,
   groupIds,
   onDraftChange,
@@ -140,6 +217,7 @@ function BonusRow({
   meta: QuestionMeta
   value: TournamentPredictionPayload | undefined
   teamOptions: ReactNode
+  colombiaPlayerOptions: Array<{ key: string; label: string; value: string }>
   matchOptions: MatchPickOption[]
   groupIds: readonly string[]
   onDraftChange: (p: TournamentPredictionPayload | null) => void
@@ -258,8 +336,8 @@ function BonusRow({
       return { kind: 'group', groupId }
     }
     if (meta.control === 'text' && meta.id === 'q_special_biggest_win_scoreline') {
-      const gh = parseGoalField(scoreHome)
-      const ga = parseGoalField(scoreAway)
+      const gh = parseBonusScoreField(scoreHome)
+      const ga = parseBonusScoreField(scoreAway)
       if (gh === null || ga === null) return null
       return { kind: 'text', value: formatScorePair(gh, ga) }
     }
@@ -409,6 +487,22 @@ function BonusRow({
             ))}
           </select>
         </div>
+      ) : meta.control === 'text' && meta.id === 'q_special_first_goal_colombia' ? (
+        <div className="pred-bonus-controls">
+          <select
+            className="field-input pred-bonus-select"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            disabled={readOnly}
+          >
+            <option value="">— Elegir jugador de Colombia —</option>
+            {colombiaPlayerOptions.map((o) => (
+              <option key={o.key} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
       ) : meta.control === 'text' && meta.id === 'q_special_biggest_win_scoreline' ? (
         <div className="pred-bonus-controls">
           <div
@@ -419,16 +513,15 @@ function BonusRow({
             onBlurCapture={onScorePairBlurCapture}
           >
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
-              min={0}
-              max={20}
-              step={1}
+              pattern="[0-9]*"
+              maxLength={2}
               className="field-input pred-score-split-input"
               autoComplete="off"
               placeholder="0"
               value={scoreHome}
-              onChange={(e) => setScoreHome(e.target.value)}
+              onChange={(e) => setScoreHome(normalizeBonusScoreInput(e.target.value))}
               aria-label="Goles Equipo A"
               disabled={readOnly}
             />
@@ -436,16 +529,15 @@ function BonusRow({
               -
             </span>
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
-              min={0}
-              max={20}
-              step={1}
+              pattern="[0-9]*"
+              maxLength={2}
               className="field-input pred-score-split-input"
               autoComplete="off"
               placeholder="0"
               value={scoreAway}
-              onChange={(e) => setScoreAway(e.target.value)}
+              onChange={(e) => setScoreAway(normalizeBonusScoreInput(e.target.value))}
               aria-label="Goles Equipo B"
               disabled={readOnly}
             />

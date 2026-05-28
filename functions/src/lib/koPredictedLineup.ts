@@ -6,6 +6,14 @@ import { propagateKoWinners, resolveKoMatchTeams } from './bracketResolve'
 import { assignThirdsToR32Slots } from './assignThirdsGreedy'
 import { computeGroupStandings, orderedGroupIds, topEightThirds } from './groupStandings'
 
+function predictionGoalsTeamA(payload: MatchPredictionPayload): number {
+  return payload.goalsTeamA ?? payload.goalsHome ?? 0
+}
+
+function predictionGoalsTeamB(payload: MatchPredictionPayload): number {
+  return payload.goalsTeamB ?? payload.goalsAway ?? 0
+}
+
 export function parseWc26KoMatchNum(matchId: string): number | null {
   const m = /^wc26-ko-(\d+)$/.exec(matchId)
   if (!m) return null
@@ -16,16 +24,16 @@ export function parseWc26KoMatchNum(matchId: string): number | null {
 export function getPredictedKoLineupForMatch(
   predictionsForUser: PredictionDoc[],
   matchId: string,
-): { predictedHomeId: string | null; predictedAwayId: string | null } {
+): { predictedTeamAId: string | null; predictedTeamBId: string | null } {
   const num = parseWc26KoMatchNum(matchId)
-  if (num == null) return { predictedHomeId: null, predictedAwayId: null }
+  if (num == null) return { predictedTeamAId: null, predictedTeamBId: null }
 
   const groupPredByMatchId = new Map<string, MatchPredictionPayload>()
   const koPredByMatchId = new Map<string, MatchPredictionPayload>()
   for (const pr of predictionsForUser) {
     if (pr.scope !== 'match' || !pr.matchId) continue
     const p = pr.payload as MatchPredictionPayload
-    if (typeof p.goalsHome !== 'number' || typeof p.goalsAway !== 'number') continue
+    if (typeof predictionGoalsTeamA(p) !== 'number' || typeof predictionGoalsTeamB(p) !== 'number') continue
     if (pr.matchId.startsWith('wc26-ko-')) koPredByMatchId.set(pr.matchId, p)
     else groupPredByMatchId.set(pr.matchId, p)
   }
@@ -37,6 +45,6 @@ export function getPredictedKoLineupForMatch(
   const thirds = topEightThirds(groupPredByMatchId)
   const thirdByMatchNum = assignThirdsToR32Slots(thirds)
   const winnerByMatchNum = propagateKoWinners(koPredByMatchId, tablesByGroup, thirdByMatchNum)
-  const { homeId, awayId } = resolveKoMatchTeams(num, tablesByGroup, thirdByMatchNum, winnerByMatchNum)
-  return { predictedHomeId: homeId, predictedAwayId: awayId }
+  const { teamAId, teamBId } = resolveKoMatchTeams(num, tablesByGroup, thirdByMatchNum, winnerByMatchNum)
+  return { predictedTeamAId: teamAId, predictedTeamBId: teamBId }
 }

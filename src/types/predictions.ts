@@ -37,13 +37,11 @@ export interface TeamPlayerDoc {
 
 /** Partido en Firestore: matches/{matchId} */
 export interface MatchDoc {
-  /** @deprecated Usar teamAId */
-  teamHomeId: string
-  /** @deprecated Usar teamBId */
-  teamAwayId: string
-  /** Nueva nomenclatura neutral (Equipo A/B). */
-  teamAId?: string
-  teamBId?: string
+  teamAId: string
+  teamBId: string
+  /** @deprecated Solo lectura de documentos antiguos */
+  teamHomeId?: string
+  teamAwayId?: string
   /** @deprecated Usar goalsTeamA */
   goalsHome: number | null
   /** @deprecated Usar goalsTeamB */
@@ -58,9 +56,15 @@ export interface MatchDoc {
   finishedAt?: unknown
   /** Solo KO: hubo tanda de penales tras empate (resultado oficial) */
   wentToPenalties?: boolean | null
-  /** @deprecated true = Equipo A ganó penales (si wentToPenalties). */
+  /**
+   * Penales tras empate en KO. Convención: en el ganador va `true`, en el perdedor `false`.
+   * `penaltiesWinnerTeamA` / `penaltiesWinnerHome` = ganó Equipo A / local.
+   * `penaltiesWinnerTeamB` / `penaltiesWinnerAway` = ganó Equipo B / visitante.
+   */
   penaltiesWinnerHome?: boolean | null
+  penaltiesWinnerAway?: boolean | null
   penaltiesWinnerTeamA?: boolean | null
+  penaltiesWinnerTeamB?: boolean | null
   /**
    * Contrato futuro para "Jugador por Partido" (90' + prórroga, sin tandas).
    * Se mantiene opcional hasta definir fuente oficial de plantillas/eventos.
@@ -72,20 +76,20 @@ export interface MatchDoc {
   apiSportsFixtureId?: number
 }
 
-/** Predicción de marcador para un partido */
+/** Predicción de marcador para un partido (canónico: Equipo A / Equipo B). */
 export interface MatchPredictionPayload {
-  /** @deprecated Usar goalsTeamA */
-  goalsHome: number
-  /** @deprecated Usar goalsTeamB */
-  goalsAway: number
-  goalsTeamA?: number
-  goalsTeamB?: number
+  goalsTeamA: number
+  goalsTeamB: number
   /** Eliminatorias: empate en 90’/prórroga predicho → desempate por penales */
   wentToPenalties?: boolean
-  /** Obligatorio si wentToPenalties y empate en goles */
-  /** @deprecated Usar penaltiesWinnerTeamA */
-  penaltiesWinnerHome?: boolean
+  /** Penales: true = ganó ese lado, false = perdió. */
   penaltiesWinnerTeamA?: boolean
+  penaltiesWinnerTeamB?: boolean
+  /** @deprecated Solo lectura de documentos antiguos */
+  goalsHome?: number
+  goalsAway?: number
+  penaltiesWinnerHome?: boolean
+  penaltiesWinnerAway?: boolean
 }
 
 export type PredictionScope = 'match' | 'tournament' | 'player_per_match'

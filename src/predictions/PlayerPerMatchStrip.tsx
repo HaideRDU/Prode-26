@@ -1,4 +1,5 @@
 import type { MatchDoc } from '../types/predictions'
+import { matchTeamAId, matchTeamBId } from '../domain/matchFields'
 import { DEFAULT_RULESET } from '../config/ruleset'
 import { useMatchTimeFormatters } from '../hooks/useUserTimeZone'
 import { classifyPlayerPickMatches } from '../utils/playerPerMatchWindows'
@@ -8,7 +9,7 @@ export function PlayerPerMatchStrip({
   teamLabel,
 }: {
   matches: (MatchDoc & { id: string })[]
-  teamLabel: (id: string) => string
+  teamLabel: (id: string | null | undefined) => string
 }) {
   const openH = DEFAULT_RULESET.lockWindows.playerPerMatchOpensHoursBeforeKickoff
   const { formatMatchTime } = useMatchTimeFormatters()
@@ -26,7 +27,8 @@ export function PlayerPerMatchStrip({
       {first ? (
         <div className="pred-player-strip-card">
           <div>
-            <strong>En ventana / foco:</strong> {teamLabel(first.teamHomeId)} vs {teamLabel(first.teamAwayId)}
+            <strong>En ventana / foco:</strong> {teamLabel(matchTeamAId(first))} vs{' '}
+            {teamLabel(matchTeamBId(first))}
           </div>
           <div className="app-muted" style={{ marginTop: 4 }}>
             {formatMatchTime(first.scheduledAt)}

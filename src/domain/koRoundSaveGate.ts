@@ -84,13 +84,13 @@ export function canSaveKoMatch(args: {
 
   const prevMatches = WC26_KO_MATCHES.filter((m) => m.round === prev)
   for (const m of prevMatches) {
-    const { homeId, awayId } = resolveKoMatchTeams(
+    const { teamAId, teamBId } = resolveKoMatchTeams(
       m.matchNum,
       ctx.tablesByGroup,
       ctx.thirdByMatchNum,
       ctx.winnerByMatchNum,
     )
-    if (!homeId || !awayId) continue
+    if (!teamAId || !teamBId) continue
     const pred = koPredByMatchId.get(koMatchDocId(m.matchNum))
     if (!isCompleteMatchPredictionForPicker(pred, 'knockout')) {
       const targetRound = row.round as 'r16' | 'qf' | 'sf' | 'third' | 'final'

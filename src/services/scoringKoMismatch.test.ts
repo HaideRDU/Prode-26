@@ -18,8 +18,8 @@ function main() {
   }
 
   const wrongLineup = {
-    predictedHomeId: 'BRA',
-    predictedAwayId: 'CRO',
+    predictedTeamAId: 'BRA',
+    predictedTeamBId: 'CRO',
   }
 
   const detailsWrongPair = scoreMatchPredictionDetails(
@@ -59,8 +59,8 @@ function main() {
   }
 
   const overlapLineup = {
-    predictedHomeId: 'team_B',
-    predictedAwayId: 'team_C',
+    predictedTeamAId: 'team_B',
+    predictedTeamBId: 'team_C',
   }
 
   const detailsOverlap = scoreMatchPredictionDetails(
@@ -90,10 +90,24 @@ function main() {
       wentToPenalties: true,
       penaltiesWinnerHome: true,
     },
-    { predictedHomeId: 'CIV', predictedAwayId: 'CZE' },
+    { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
   )
   assert.equal(detailsPensWinner.winnerOrDrawHit, true)
   assert.equal(detailsPensWinner.points, 4, 'Ganador final por penales aunque el rival predicho difiera')
+
+  const detailsPensAwayOnly = scoreMatchPredictionDetails(
+    matchFinal,
+    {
+      goalsHome: 0,
+      goalsAway: 0,
+      wentToPenalties: true,
+      penaltiesWinnerTeamB: true,
+      penaltiesWinnerAway: true,
+    },
+    { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
+  )
+  assert.equal(detailsPensAwayOnly.winnerOrDrawHit, false)
+  assert.equal(detailsPensAwayOnly.points, 0, 'Ganador visitante en penales no cuenta como local')
 
   console.log('scoringKoMismatch.test.ts: OK')
 }

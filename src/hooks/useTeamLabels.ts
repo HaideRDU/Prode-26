@@ -3,7 +3,7 @@ import { subscribeTeams } from '../services/teamsService'
 
 /** Mapa teamId (ISO-3) → nombre en español; si Firestore está vacío, el fallback es el propio id. */
 export function useTeamLabels(): {
-  label: (teamId: string) => string
+  label: (teamId: string | null | undefined) => string
   loading: boolean
   error: string | null
 } {
@@ -16,7 +16,9 @@ export function useTeamLabels(): {
       (teams) => {
         const m = new Map<string, string>()
         for (const t of teams) {
-          const id = t.teamId.trim().toUpperCase()
+          const raw = t.teamId?.trim()
+          if (!raw) continue
+          const id = raw.toUpperCase()
           m.set(id, t.nameEs)
         }
         setById(m)
@@ -32,7 +34,11 @@ export function useTeamLabels(): {
   }, [])
 
   const label = useMemo(
-    () => (teamId: string) => byId.get(teamId.trim().toUpperCase()) ?? teamId,
+    () => (teamId: string | null | undefined) => {
+      if (teamId == null || teamId === '') return '—'
+      const id = teamId.trim().toUpperCase()
+      return byId.get(id) ?? id
+    },
     [byId],
   )
 
