@@ -7,6 +7,18 @@ import { TeamFlagName } from './TeamFlagName'
 import { scoreMatchPrediction } from '../services/scoring'
 import { parseGoalField } from '../domain/parseScoreText'
 
+function koLineupMatchesOfficial(
+  predHomeId: string,
+  predAwayId: string,
+  officialHomeId: string,
+  officialAwayId: string,
+): boolean {
+  return (
+    (predHomeId === officialHomeId && predAwayId === officialAwayId) ||
+    (predHomeId === officialAwayId && predAwayId === officialHomeId)
+  )
+}
+
 const ROUND_TITLE: Record<string, string> = {
   r32: 'Dieciseisavos de final',
   r16: 'Octavos de final',
@@ -212,6 +224,22 @@ function KoMatchRow({
   const homePenLabel = homeId ? teamLabel(homeId) : 'Equipo A'
   const awayPenLabel = awayId ? teamLabel(awayId) : 'Equipo B'
 
+  const officialHomeId = firestoreMatch?.teamAId ?? firestoreMatch?.teamHomeId ?? null
+  const officialAwayId = firestoreMatch?.teamBId ?? firestoreMatch?.teamAwayId ?? null
+  const officialGoalsHome = firestoreMatch?.goalsTeamA ?? firestoreMatch?.goalsHome
+  const officialGoalsAway = firestoreMatch?.goalsTeamB ?? firestoreMatch?.goalsAway
+  const showOfficialResult =
+    locked &&
+    officialHomeId &&
+    officialAwayId &&
+    typeof officialGoalsHome === 'number' &&
+    typeof officialGoalsAway === 'number'
+  const officialPairMismatch =
+    showOfficialResult &&
+    homeId &&
+    awayId &&
+    !koLineupMatchesOfficial(homeId, awayId, officialHomeId, officialAwayId)
+
   return (
     <div
       className={`pred-match-card pred-match-card--ko${pensIncomplete ? ' pred-match-card--ko-pens-incomplete' : ''}${earnedPoints !== null ? ' pred-match-card--has-pts' : ''}`}
@@ -235,6 +263,22 @@ function KoMatchRow({
           <span className="app-muted">Por definir</span>
         )}
       </div>
+      {showOfficialResult ? (
+        <p className="pred-ko-official-result app-muted">
+          <span className="pred-ko-official-result__label">Resultado oficial:</span>{' '}
+          <TeamFlagName teamId={officialHomeId} name={teamLabel(officialHomeId)} layout="inline" />{' '}
+          <strong>
+            {officialGoalsHome} – {officialGoalsAway}
+          </strong>{' '}
+          <TeamFlagName teamId={officialAwayId} name={teamLabel(officialAwayId)} layout="inline" />
+          {officialPairMismatch ? (
+            <span className="pred-ko-official-result__note">
+              {' '}
+              (tu cruce predicho fue otro rival)
+            </span>
+          ) : null}
+        </p>
+      ) : null}
       <div className="pred-ko-inline-block">
         <span className="pred-score-text-label app-muted">Marcador</span>
         <div className="pred-match-inputs pred-match-inputs--ko pred-ko-score-row">

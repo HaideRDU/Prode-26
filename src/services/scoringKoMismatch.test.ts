@@ -71,6 +71,30 @@ function main() {
   assert.equal(detailsOverlap.exactScoreHit, false)
   assert.equal(detailsOverlap.points, 3, 'Solo goles de team_B acertados en R16')
 
+  const matchFinal = {
+    phase: 'knockout' as const,
+    status: 'finished' as const,
+    goalsHome: 1,
+    goalsAway: 0,
+    wentToPenalties: false,
+    round: 'final',
+    teamHomeId: 'CIV',
+    teamAwayId: 'JOR',
+  }
+
+  const detailsPensWinner = scoreMatchPredictionDetails(
+    matchFinal,
+    {
+      goalsHome: 0,
+      goalsAway: 0,
+      wentToPenalties: true,
+      penaltiesWinnerHome: true,
+    },
+    { predictedHomeId: 'CIV', predictedAwayId: 'CZE' },
+  )
+  assert.equal(detailsPensWinner.winnerOrDrawHit, true)
+  assert.equal(detailsPensWinner.points, 4, 'Ganador final por penales aunque el rival predicho difiera')
+
   console.log('scoringKoMismatch.test.ts: OK')
 }
 

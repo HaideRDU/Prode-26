@@ -122,6 +122,56 @@ function winnerTeamId(
   return r === 1 ? teamA : teamB
 }
 
+function penaltiesWinnerIsHome(
+  wentToPenalties: boolean | null | undefined,
+  penaltiesWinnerHome: boolean | null | undefined,
+  penaltiesWinnerTeamA: boolean | null | undefined,
+): boolean | null {
+  if (wentToPenalties !== true) return null
+  if (penaltiesWinnerTeamA !== undefined && penaltiesWinnerTeamA !== null) return penaltiesWinnerTeamA
+  if (penaltiesWinnerHome !== undefined && penaltiesWinnerHome !== null) return penaltiesWinnerHome
+  return null
+}
+
+function koPredictedWinnerTeamId(
+  prediction: MatchPredictionPayload,
+  predSlotAId: string,
+  predSlotBId: string,
+): string | 'draw' {
+  const gh = predictionGoalsTeamA(prediction)
+  const ga = predictionGoalsTeamB(prediction)
+  if (gh > ga) return predSlotAId
+  if (gh < ga) return predSlotBId
+  const pensHome = penaltiesWinnerIsHome(
+    prediction.wentToPenalties,
+    prediction.penaltiesWinnerHome,
+    prediction.penaltiesWinnerTeamA,
+  )
+  if (pensHome === true) return predSlotAId
+  if (pensHome === false) return predSlotBId
+  return 'draw'
+}
+
+function koActualWinnerTeamId(
+  match: MatchForScore,
+  actualSlotAId: string,
+  actualSlotBId: string,
+): string | 'draw' {
+  const ga = goalsForTeamA(match)
+  const gb = goalsForTeamB(match)
+  if (ga == null || gb == null) return 'draw'
+  if (ga > gb) return actualSlotAId
+  if (ga < gb) return actualSlotBId
+  const pensHome = penaltiesWinnerIsHome(
+    match.wentToPenalties,
+    match.penaltiesWinnerHome,
+    match.penaltiesWinnerTeamA,
+  )
+  if (pensHome === true) return actualSlotAId
+  if (pensHome === false) return actualSlotBId
+  return 'draw'
+}
+
 function normalizeKoRoundId(round: string | undefined): KnockoutRoundId {
   switch (round) {
     case 'r32':
@@ -165,14 +215,19 @@ function scoreAdditiveMatch(
   predSlotBId: string,
   actualSlotAId: string,
   actualSlotBId: string,
+  koContext?: { prediction: MatchPredictionPayload; match: MatchForScore },
 ): MatchScoreDetails {
   let points = 0
   let winnerOrDrawHit = false
   let goalsAHit = false
   let goalsBHit = false
 
-  const predWinner = winnerTeamId(predTeamA, predTeamB, predSlotAId, predSlotBId)
-  const actualWinner = winnerTeamId(actualA, actualB, actualSlotAId, actualSlotBId)
+  const predWinner = koContext
+    ? koPredictedWinnerTeamId(koContext.prediction, predSlotAId, predSlotBId)
+    : winnerTeamId(predTeamA, predTeamB, predSlotAId, predSlotBId)
+  const actualWinner = koContext
+    ? koActualWinnerTeamId(koContext.match, actualSlotAId, actualSlotBId)
+    : winnerTeamId(actualA, actualB, actualSlotAId, actualSlotBId)
   if (predWinner === actualWinner) {
     points += row.winnerOrDraw
     winnerOrDrawHit = true
@@ -205,6 +260,7 @@ function scoreAdditiveMatch(
 
 function scoreKnockoutWrongOpponents(
   prediction: MatchPredictionPayload,
+  match: MatchForScore,
   actualHomeId: string,
   actualAwayId: string,
   predHomeId: string,
@@ -223,6 +279,7 @@ function scoreKnockoutWrongOpponents(
     predAwayId,
     actualHomeId,
     actualAwayId,
+    { prediction, match },
   )
 }
 
@@ -282,7 +339,17 @@ export function scoreMatchPredictionDetails(
     paId &&
     !koPairMatchesOfficial(phId, paId, ahId, aaId)
   ) {
-    return scoreKnockoutWrongOpponents(prediction, ahId, aaId, phId, paId, actualTeamA, actualTeamB, row)
+    return scoreKnockoutWrongOpponents(
+      prediction,
+      match,
+      ahId,
+      aaId,
+      phId,
+      paId,
+      actualTeamA,
+      actualTeamB,
+      row,
+    )
   }
 
   if (!ahId || !aaId || !phId || !paId) {
@@ -299,6 +366,7 @@ export function scoreMatchPredictionDetails(
     paId,
     ahId,
     aaId,
+    { prediction, match },
   )
 }
 
