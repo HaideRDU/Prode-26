@@ -139,21 +139,34 @@ function KoMatchRow({
   const pensIncomplete =
     Boolean(homeId && awayId) && draw && pensHomeWins === null && !disabled
 
-  const preview =
+  const incomplete = !homeId || !awayId
+
+  const locked =
+    Boolean(firestoreMatch) &&
+    firestoreMatch!.status !== 'scheduled' &&
+    firestoreMatch!.status !== 'live'
+
+  const predictionForScore: MatchPredictionPayload = {
+    goalsHome: h,
+    goalsAway: a,
+    goalsTeamA: h,
+    goalsTeamB: a,
+    ...(draw && pensHomeWins !== null
+      ? { wentToPenalties: true, penaltiesWinnerHome: pensHomeWins, penaltiesWinnerTeamA: pensHomeWins }
+      : {}),
+  }
+
+  const earnedPoints =
+    locked &&
     firestoreMatch?.status === 'finished' &&
     firestoreMatch.goalsHome != null &&
     firestoreMatch.goalsAway != null &&
-    Number.isFinite(h) &&
-    Number.isFinite(a)
-      ? scoreMatchPrediction(firestoreMatch, {
-          goalsHome: h,
-          goalsAway: a,
-          wentToPenalties: draw ? true : undefined,
-          penaltiesWinnerHome: draw ? (pensHomeWins ?? undefined) : undefined,
+    !incomplete
+      ? scoreMatchPrediction(firestoreMatch, predictionForScore, {
+          predictedHomeId: homeId,
+          predictedAwayId: awayId,
         })
       : null
-
-  const incomplete = !homeId || !awayId
 
   useEffect(() => {
     if (disabled || incomplete) {
@@ -201,8 +214,13 @@ function KoMatchRow({
 
   return (
     <div
-      className={`pred-match-card pred-match-card--ko${pensIncomplete ? ' pred-match-card--ko-pens-incomplete' : ''}`}
+      className={`pred-match-card pred-match-card--ko${pensIncomplete ? ' pred-match-card--ko-pens-incomplete' : ''}${earnedPoints !== null ? ' pred-match-card--has-pts' : ''}`}
     >
+      {earnedPoints !== null ? (
+        <span className="pred-match-card__pts-badge" aria-label={`Puntos obtenidos: ${earnedPoints}`}>
+          Pts: {earnedPoints}
+        </span>
+      ) : null}
       <div className="pred-ko-meta">Partido {matchNum}</div>
       <div className="pred-match-teams pred-match-teams--ko">
         {homeId ? (
@@ -282,9 +300,6 @@ function KoMatchRow({
                 </span>
               ) : null}
             </div>
-          )}
-          {preview != null && preview > 0 && (
-            <span className="app-muted pred-preview-pts">Pts: {preview}</span>
           )}
         </div>
       </div>

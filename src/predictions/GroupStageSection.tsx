@@ -82,7 +82,8 @@ function GroupMatchRow({
 }) {
   const homeStr = String(draft.goalsHome ?? 0)
   const awayStr = String(draft.goalsAway ?? 0)
-  const preview =
+  const earnedPoints =
+    disabled &&
     match.status === 'finished' &&
     match.goalsHome != null &&
     match.goalsAway != null &&
@@ -113,8 +114,13 @@ function GroupMatchRow({
 
   return (
     <div
-      className={`pred-match-card pred-match-card--group pred-match-card--compact ${!isFilled && !disabled ? 'pred-match-card--incomplete' : ''}`}
+      className={`pred-match-card pred-match-card--group pred-match-card--compact ${!isFilled && !disabled ? 'pred-match-card--incomplete' : ''}${earnedPoints !== null ? ' pred-match-card--has-pts' : ''}`}
     >
+      {earnedPoints !== null ? (
+        <span className="pred-match-card__pts-badge" aria-label={`Puntos obtenidos: ${earnedPoints}`}>
+          Pts: {earnedPoints}
+        </span>
+      ) : null}
       <div className="pred-match-row-top pred-match-row-top--group">
         <TeamFlagName
           teamId={match.teamHomeId}
@@ -166,9 +172,6 @@ function GroupMatchRow({
         />
       </div>
 
-      {preview != null && preview > 0 ? (
-        <span className="app-muted pred-preview-pts">Pts: {preview}</span>
-      ) : null}
     </div>
   )
 }
