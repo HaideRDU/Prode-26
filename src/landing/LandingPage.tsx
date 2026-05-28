@@ -24,7 +24,7 @@ import { TeamFlagName } from '../predictions/TeamFlagName'
 
 const POINT_TABS = [
   { id: 'grupos' as const, label: 'Grupos' },
-  { id: 'ko' as const, label: 'Eliminatorias' },
+  { id: 'ko' as const, label: 'Bonus' },
   { id: 'avance' as const, label: 'Avance' },
   { id: 'especiales' as const, label: 'Especiales' },
 ]
@@ -57,11 +57,11 @@ const GROUP_POINTS_MATRIX = {
 }
 
 const KNOCKOUT_POINTS_TABLE = {
-  headers: ['R32', 'R16', 'QF', 'SF', '3ro', 'Final'],
+  headers: ['Grupos', 'R32', 'R16', 'QF', 'SF', '3ro', 'Final'],
   rows: [
     {
-      label: 'Máximo por partido',
-      values: koRounds.map((r) => KO_EXACT_SCORE_BY_ROUND[r]),
+      label: 'Puntos por gol',
+      values: [1, 2, 3, 3, 4, 4, 5],
       max: true,
     },
   ],
@@ -75,7 +75,7 @@ const ADVANCEMENT_POINTS_TABLE = {
     { label: 'Clasifica a cuartos (QF)', values: [ADVANCEMENT_POINTS.toQf] },
     { label: 'Clasifica a semifinal (SF)', values: [ADVANCEMENT_POINTS.toSf] },
     { label: 'Clasifica a la final', values: [ADVANCEMENT_POINTS.toFinal] },
-    { label: 'Podio: tercero / sub / campeón', values: [ADVANCEMENT_POINTS.thirdPlace] },
+    { label: 'Tercer puesto', values: [ADVANCEMENT_POINTS.thirdPlace] },
     { label: 'Subcampeón', values: [ADVANCEMENT_POINTS.runnerUp] },
     { label: 'Campeón', values: [ADVANCEMENT_POINTS.champion], max: true },
   ],
@@ -93,16 +93,18 @@ const SPECIAL_POINTS_TABLE = {
 function PointsTable({
   headers,
   rows,
+  firstColumnLabel = 'Acierto',
 }: {
   headers: readonly string[]
   rows: ReadonlyArray<{ label: string; values: readonly number[]; max?: boolean }>
+  firstColumnLabel?: string
 }) {
   return (
     <div className="landing-points-table-wrap">
       <table className="landing-points-table">
         <thead>
           <tr>
-            <th scope="col">Acierto</th>
+            <th scope="col">{firstColumnLabel}</th>
             {headers.map((h) => (
               <th key={h} scope="col">
                 {h}
@@ -130,7 +132,13 @@ function PointsPanel({ tab }: { tab: (typeof POINT_TABS)[number]['id'] }) {
     return <PointsTable headers={GROUP_POINTS_MATRIX.headers} rows={GROUP_POINTS_MATRIX.rows} />
   }
   if (tab === 'ko') {
-    return <PointsTable headers={KNOCKOUT_POINTS_TABLE.headers} rows={KNOCKOUT_POINTS_TABLE.rows} />
+    return (
+      <PointsTable
+        headers={KNOCKOUT_POINTS_TABLE.headers}
+        rows={KNOCKOUT_POINTS_TABLE.rows}
+        firstColumnLabel="Ronda"
+      />
+    )
   }
   if (tab === 'avance') {
     return <PointsTable headers={ADVANCEMENT_POINTS_TABLE.headers} rows={ADVANCEMENT_POINTS_TABLE.rows} />
@@ -174,8 +182,8 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
               Cómo jugar sin perderse en las reglas
             </h2>
             <p className="landing-how-play__lead">
-              La experiencia está diseñada como un recorrido progresivo: primero entiendes la dinámica,
-              luego completas tus pronósticos y finalmente ves cómo se calculan tus puntos.
+              El sistema avanza paso a paso: entiende cómo funciona, haz tus pronósticos y mira tu
+              clasificación al instante.
             </p>
           </div>
           <div className="landing-how-play__grid">
@@ -196,7 +204,11 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
             <p className="landing-label">Reglas</p>
             <h2 className="landing-display landing-display--sm">Sistema de puntos</h2>
             <p className="landing-muted landing-points-caption">
-              Esta tabla muestra cómo se suman puntos por acierto en cada fase del torneo.
+              {pointTab === 'ko'
+                ? 'Antes de cada partido, seleccioná un goleador: si anota, sumas puntos adicionales según la ronda.'
+                : pointTab === 'especiales'
+                  ? 'Aciertos adicionales que no dependen de la fase del torneo.'
+                : 'Cada tipo de acierto tiene un puntaje que cambia según la fase del torneo.'}
             </p>
           </div>
           <LandingPillTabs
@@ -205,7 +217,7 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
             onChange={setPointTab}
             ariaLabel="Categorías de puntuación"
           />
-          <div className={`landing-points-panel${pointTab === 'grupos' ? ' landing-points-panel--table' : ''}`}>
+          <div className="landing-points-panel landing-points-panel--table">
             <PointsPanel tab={pointTab} />
           </div>
         </LandingSection>
@@ -262,7 +274,9 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
           <div className="landing-section__head">
             <p className="landing-label">Clasificación</p>
             <h2 className="landing-display landing-display--sm">Ranking en vivo</h2>
-            <p className="landing-muted">Demo de sala — los puntos se actualizan solos al cerrar partidos.</p>
+            <p className="landing-muted">
+              Tabla de posicionamiento de sala, se actualizara cada vez que finalize un partido.
+            </p>
           </div>
           <div className="landing-card landing-card--ranking">
             <LandingProgressBar value={72} />

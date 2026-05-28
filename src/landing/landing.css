@@ -950,10 +950,18 @@
   align-items: center;
   justify-content: center;
   width: 1.75rem;
+  min-width: 1.75rem;
+  max-width: 1.75rem;
   height: 1.75rem;
-  border-radius: 50%;
+  min-height: 1.75rem;
+  max-height: 1.75rem;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border-radius: 999px;
   font-weight: 900;
   font-size: 0.75rem;
+  line-height: 1;
 }
 
 .landing-rank-pos--1 {
