@@ -10,6 +10,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { assertGeneralPredictionsOpen, assertPlayerPickOpen } from './predictionWriteGuard'
 import type {
   MatchPredictionPayload,
   PlayerPerMatchPayload,
@@ -59,6 +60,7 @@ export async function saveMatchPrediction(
   payload: MatchPredictionPayload,
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
+  assertGeneralPredictionsOpen()
   const id = predictionDocId(roomId, userId, `m_${matchId}`)
   const ref = doc(db, PREDICTIONS, id)
   const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
@@ -91,6 +93,7 @@ export async function saveGroupPredictionsBatch(
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
   if (entries.length === 0) return
+  assertGeneralPredictionsOpen()
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
     const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
@@ -127,6 +130,7 @@ export async function saveKoPredictionsBatch(
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
   if (entries.length === 0) return
+  assertGeneralPredictionsOpen()
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
     const goalsTeamA = payload.goalsTeamA ?? payload.goalsHome
@@ -162,6 +166,7 @@ export async function saveTournamentPrediction(
   payload: TournamentPredictionPayload,
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
+  assertGeneralPredictionsOpen()
   const id = predictionDocId(roomId, userId, `t_${questionId}`)
   const ref = doc(db, PREDICTIONS, id)
   const data: PredictionDoc = {
@@ -183,6 +188,7 @@ export async function saveTournamentPredictionsBatch(
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
   if (entries.length === 0) return
+  assertGeneralPredictionsOpen()
   const batch = writeBatch(db)
   for (const { questionId, payload } of entries) {
     const id = predictionDocId(roomId, userId, `t_${questionId}`)
@@ -206,8 +212,10 @@ export async function savePlayerPerMatchPrediction(
   userId: string,
   matchId: string,
   playerKey: string,
+  scheduledAt: unknown,
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
+  assertPlayerPickOpen(scheduledAt)
   const id = predictionDocId(roomId, userId, `p_${matchId}`)
   const ref = doc(db, PREDICTIONS, id)
   const payload: PlayerPerMatchPayload = { kind: 'player_match_pick', playerKey }

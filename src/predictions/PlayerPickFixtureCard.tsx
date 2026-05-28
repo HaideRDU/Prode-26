@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { DEFAULT_RULESET, getPlayerPerMatchOpensAt } from '../config/ruleset'
+import { DEFAULT_RULESET, getPlayerPerMatchOpensAt, type KnockoutRoundId } from '../config/ruleset'
 import { useMatchPlayerOptions } from '../hooks/useMatchPlayerOptions'
 import { savePlayerPerMatchPrediction } from '../services/predictionsService'
 import type { MatchDoc } from '../types/predictions'
@@ -8,6 +8,12 @@ import { getPlayerPickCardState, type PlayerPickCardState } from '../utils/playe
 import { TeamFlagName } from './TeamFlagName'
 
 type SaveUiState = 'idle' | 'saving' | 'saved' | 'error'
+
+function playerGoalsPerGoal(match: Pick<MatchDoc, 'phase' | 'round'>): number {
+  if (match.phase === 'group') return DEFAULT_RULESET.points.playerPerMatch.goalsPerGoalByRound.group
+  const round = (match.round ?? 'r32') as KnockoutRoundId
+  return DEFAULT_RULESET.points.playerPerMatch.goalsPerGoalByRound[round] ?? 2
+}
 
 function phaseLabel(match: MatchDoc): string {
   if (match.phase === 'group' && match.groupId) return `Grupo ${match.groupId}`
@@ -75,7 +81,7 @@ export function PlayerPickFixtureCard({
       const gen = ++saveGen.current
       setSaveUi('saving')
       try {
-        await savePlayerPerMatchPrediction(roomId, userId, match.id, nextKey)
+        await savePlayerPerMatchPrediction(roomId, userId, match.id, nextKey, match.scheduledAt)
         if (gen === saveGen.current) setSaveUi('saved')
       } catch {
         if (gen === saveGen.current) setSaveUi('error')
@@ -90,7 +96,7 @@ export function PlayerPickFixtureCard({
   const opensAt = getPlayerPerMatchOpensAt(match.scheduledAt)
   const opensLabel = opensAt ? formatMatchTime(opensAt, timeZone) : null
   const showOpensHint = mode === 'pick' && effectiveState === 'blocked' && opensLabel
-  const ptsPerGoal = DEFAULT_RULESET.points.playerPerMatch.goalsPerGoal
+  const ptsPerGoal = playerGoalsPerGoal(match)
   const pickedName = allOptions.find((o) => o.playerKey === localKey)?.name
 
   const h =

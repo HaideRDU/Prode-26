@@ -86,6 +86,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Cierre general: 4 días antes del 11-jun-2026 00:00 America/Bogota (~7-jun-2026 05:00 UTC).
+    function generalPredictionsOpen() {
+      return request.time < timestamp.date(2026, 6, 7);
+    }
+
     match /predictions/{predictionId} {
       allow read: if request.auth != null
         && (
@@ -97,11 +102,19 @@ service cloud.firestore {
           )
         );
       allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && (
+          request.resource.data.scope == 'player_per_match'
+          || generalPredictionsOpen()
+        );
       allow update, delete: if request.auth != null
         && (
           resource.data.userId == request.auth.uid
           || isPrivateRoomOwner(resource.data.roomId)
+        )
+        && (
+          resource.data.scope == 'player_per_match'
+          || generalPredictionsOpen()
         );
     }
 

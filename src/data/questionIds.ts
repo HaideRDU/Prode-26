@@ -5,10 +5,10 @@
 
 /** Extras con puntos específicos (no 3) */
 export const EXTRA_IDS = {
-  champion: 'extra_champion', // 5 pts
-  runnerUp: 'extra_runner_up', // 3 pts
-  thirdPlace: 'extra_third_place', // 2 pts
-  fourthPlace: 'extra_fourth_place', // 1 pt
+  champion: 'extra_champion', // 22 pts
+  runnerUp: 'extra_runner_up', // 15 pts
+  thirdPlace: 'extra_third_place', // 12 pts
+  fourthPlace: 'extra_fourth_place', // 0 pts
   topScorer: 'extra_top_scorer',
   bestGoalkeeperAverage: 'special_best_goalkeeper_average',
 } as const

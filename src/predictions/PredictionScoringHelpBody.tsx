@@ -1,9 +1,9 @@
 import {
+  ADVANCEMENT_POINTS,
   GROUP_EXACT_SCORE_POINTS,
   GROUP_ONE_SCORE_POINTS,
   GROUP_WINNER_POINTS,
-  KO_ONE_SCORE_POINTS,
-  KO_WINNER_POINTS,
+  KO_EXACT_SCORE_BY_ROUND,
   POINTS_BEST_GOALKEEPER_AVERAGE,
   POINTS_BONUS_QUESTION,
   POINTS_CHAMPION,
@@ -42,10 +42,16 @@ export function PredictionScoringHelpBody({
           <strong>+{GROUP_WINNER_POINTS}</strong>.
         </li>
         <li>
-          <strong>Eliminatorias (90 minutos):</strong> marcador exacto suma según ronda (R32=6, R16=7,
-          QF=8, SF=10, 3er puesto=9, final=12). Si no hay exacto, acertar un marcador suma{' '}
-          <strong>+{KO_ONE_SCORE_POINTS}</strong> y acertar ganador/empate suma{' '}
-          <strong>+{KO_WINNER_POINTS}</strong>.
+          <strong>Eliminatorias (90 minutos):</strong> aciertos independientes por ronda (máx. R32=
+          {KO_EXACT_SCORE_BY_ROUND.r32}, R16={KO_EXACT_SCORE_BY_ROUND.r16}, QF=
+          {KO_EXACT_SCORE_BY_ROUND.qf}, SF={KO_EXACT_SCORE_BY_ROUND.sf}, 3.º=
+          {KO_EXACT_SCORE_BY_ROUND.third}, final={KO_EXACT_SCORE_BY_ROUND.final}). Los goles cuentan por
+          identidad del equipo (Selección A / B de tu pronóstico).
+        </li>
+        <li>
+          <strong>Avance por fases:</strong> +{ADVANCEMENT_POINTS.toR32} (R32), +{ADVANCEMENT_POINTS.toR16}{' '}
+          (R16), +{ADVANCEMENT_POINTS.toQf} (QF), +{ADVANCEMENT_POINTS.toSf} (SF), +{ADVANCEMENT_POINTS.toFinal}{' '}
+          (final) por cada selección acertada.
         </li>
       </ul>
       <h3 className="pred-rules-modal__subtitle">Avance y especiales</h3>

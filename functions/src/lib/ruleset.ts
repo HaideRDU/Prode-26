@@ -2,8 +2,17 @@ export type RulesetId = 'wc2026_v1'
 
 export type KnockoutRoundId = 'r32' | 'r16' | 'qf' | 'sf' | 'third' | 'final'
 
-/** Horas en que se cierran las predicciones generales antes del pitazo inicial del torneo (14 días = 2 semanas). */
-export const GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT = 24 * 14
+export type MatchPointsRow = {
+  winnerOrDraw: number
+  goalsTeamA: number
+  goalsTeamB: number
+}
+
+export function maxMatchPoints(row: MatchPointsRow): number {
+  return row.winnerOrDraw + row.goalsTeamA + row.goalsTeamB
+}
+
+export const GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT = 24 * 4
 
 export interface RulesetConfig {
   id: RulesetId
@@ -12,22 +21,15 @@ export interface RulesetConfig {
   tournamentStartsAtIso: string
   lockWindows: {
     generalPredictionsHoursBeforeTournament: number
-    knockoutPickMinutesBeforeKickoff: number
     playerPerMatchOpensHoursBeforeKickoff: number
   }
   features: {
     playerPerMatchEnabled: boolean
   }
   points: {
-    group: {
-      exactScore: number
-      oneScoreHit: number
-      winnerOrDrawHit: number
-    }
-    knockout: {
-      exactScoreByRound: Record<KnockoutRoundId, number>
-      oneScoreHitWhenNotExact: number
-      winnerHitWhenNotExact: number
+    matchByPhase: {
+      group: MatchPointsRow
+      knockout: Record<KnockoutRoundId, MatchPointsRow>
     }
     advancement: {
       toR32: number
@@ -45,48 +47,43 @@ export interface RulesetConfig {
       bonusQuestion: number
     }
     playerPerMatch: {
-      goalsPerGoal: number
+      goalsPerGoalByRound: Record<'group' | KnockoutRoundId, number>
     }
   }
 }
 
+const KO_ROWS: Record<KnockoutRoundId, MatchPointsRow> = {
+  r32: { winnerOrDraw: 1, goalsTeamA: 3, goalsTeamB: 3 },
+  r16: { winnerOrDraw: 2, goalsTeamA: 3, goalsTeamB: 3 },
+  qf: { winnerOrDraw: 3, goalsTeamA: 3, goalsTeamB: 3 },
+  sf: { winnerOrDraw: 3, goalsTeamA: 4, goalsTeamB: 4 },
+  third: { winnerOrDraw: 3, goalsTeamA: 4, goalsTeamB: 4 },
+  final: { winnerOrDraw: 4, goalsTeamA: 5, goalsTeamB: 5 },
+}
+
 export const DEFAULT_RULESET: RulesetConfig = {
   id: 'wc2026_v1',
-  versionLabel: 'WC2026 v1 · vigente (mayo 2026)',
+  versionLabel: 'WC2026 v1 · reglamento oficial (jun 2026)',
   timezone: 'America/Bogota',
   tournamentStartsAtIso: '2026-06-11T00:00:00-05:00',
   lockWindows: {
     generalPredictionsHoursBeforeTournament: GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT,
-    knockoutPickMinutesBeforeKickoff: 60,
     playerPerMatchOpensHoursBeforeKickoff: 24,
   },
   features: {
     playerPerMatchEnabled: true,
   },
   points: {
-    group: {
-      exactScore: 5,
-      oneScoreHit: 2,
-      winnerOrDrawHit: 1,
-    },
-    knockout: {
-      exactScoreByRound: {
-        r32: 6,
-        r16: 7,
-        qf: 8,
-        sf: 10,
-        third: 9,
-        final: 12,
-      },
-      oneScoreHitWhenNotExact: 2,
-      winnerHitWhenNotExact: 1,
+    matchByPhase: {
+      group: { winnerOrDraw: 1, goalsTeamA: 2, goalsTeamB: 2 },
+      knockout: KO_ROWS,
     },
     advancement: {
-      toR32: 6,
-      toR16: 8,
-      toQf: 10,
-      toSf: 13,
-      toFinal: 16,
+      toR32: 2,
+      toR16: 4,
+      toQf: 6,
+      toSf: 8,
+      toFinal: 10,
       thirdPlace: 12,
       champion: 22,
       runnerUp: 15,
@@ -97,7 +94,15 @@ export const DEFAULT_RULESET: RulesetConfig = {
       bonusQuestion: 5,
     },
     playerPerMatch: {
-      goalsPerGoal: 2,
+      goalsPerGoalByRound: {
+        group: 1,
+        r32: 2,
+        r16: 3,
+        qf: 3,
+        sf: 4,
+        third: 4,
+        final: 5,
+      },
     },
   },
 }
@@ -138,14 +143,68 @@ export function toDate(value: unknown): Date | null {
 
 export function getGeneralPredictionsLockAt(config: RulesetConfig = DEFAULT_RULESET): Date {
   const start = new Date(config.tournamentStartsAtIso)
-  return new Date(start.getTime() - config.lockWindows.generalPredictionsHoursBeforeTournament * 60 * 60 * 1000)
+  return new Date(
+    start.getTime() - config.lockWindows.generalPredictionsHoursBeforeTournament * 60 * 60 * 1000,
+  )
 }
 
-export function getKnockoutPickLockAt(
-  kickoffAt: unknown,
-  config: RulesetConfig = DEFAULT_RULESET,
-): Date | null {
-  return getPlayerPickLockAt(kickoffAt, config)
+function localDateKeyInZone(ms: number, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(ms))
+}
+
+function parseDayKey(key: string): { y: number; m: number; d: number } {
+  const [y, m, d] = key.split('-').map(Number)
+  return { y, m, d }
+}
+
+function shiftCalendarDay(key: string, deltaDays: number): string {
+  const { y, m, d } = parseDayKey(key)
+  const t = Date.UTC(y, m - 1, d + deltaDays)
+  const nd = new Date(t)
+  return `${nd.getUTCFullYear()}-${String(nd.getUTCMonth() + 1).padStart(2, '0')}-${String(nd.getUTCDate()).padStart(2, '0')}`
+}
+
+function msAtLocalHms(
+  dayKey: string,
+  hour: number,
+  minute: number,
+  second: number,
+  timeZone: string,
+): Date {
+  const { y, m, d } = parseDayKey(dayKey)
+  let utc = Date.UTC(y, m - 1, d, 12, 0, 0)
+  for (let i = 0; i < 8; i++) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+    }).formatToParts(new Date(utc))
+    const n = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0)
+    if (
+      n('year') === y &&
+      n('month') === m &&
+      n('day') === d &&
+      n('hour') === hour &&
+      n('minute') === minute &&
+      n('second') === second
+    ) {
+      return new Date(utc)
+    }
+    const desired = Date.UTC(y, m - 1, d, hour, minute, second)
+    const actual = Date.UTC(n('year'), n('month') - 1, n('day'), n('hour'), n('minute'), n('second'))
+    utc += desired - actual
+  }
+  return new Date(utc)
 }
 
 export function getPlayerPickLockAt(
@@ -154,7 +213,17 @@ export function getPlayerPickLockAt(
 ): Date | null {
   const kickoff = toDate(kickoffAt)
   if (!kickoff) return null
-  return new Date(kickoff.getTime() - config.lockWindows.knockoutPickMinutesBeforeKickoff * 60 * 1000)
+  const tz = config.timezone
+  const matchDayKey = localDateKeyInZone(kickoff.getTime(), tz)
+  const prevDayKey = shiftCalendarDay(matchDayKey, -1)
+  return msAtLocalHms(prevDayKey, 23, 59, 59, tz)
+}
+
+export function getKnockoutPickLockAt(
+  kickoffAt: unknown,
+  config: RulesetConfig = DEFAULT_RULESET,
+): Date | null {
+  return getPlayerPickLockAt(kickoffAt, config)
 }
 
 export function getPlayerPerMatchOpensAt(
@@ -166,4 +235,18 @@ export function getPlayerPerMatchOpensAt(
   return new Date(
     kickoff.getTime() - config.lockWindows.playerPerMatchOpensHoursBeforeKickoff * 60 * 60 * 1000,
   )
+}
+
+export function isGeneralPredictionsLocked(nowMs: number, config: RulesetConfig = DEFAULT_RULESET): boolean {
+  return nowMs >= getGeneralPredictionsLockAt(config).getTime()
+}
+
+export function isPlayerPickLocked(
+  kickoffAt: unknown,
+  nowMs: number = Date.now(),
+  config: RulesetConfig = DEFAULT_RULESET,
+): boolean {
+  const lock = getPlayerPickLockAt(kickoffAt, config)
+  if (!lock) return true
+  return nowMs > lock.getTime()
 }

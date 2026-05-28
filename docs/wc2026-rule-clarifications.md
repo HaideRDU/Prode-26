@@ -1,44 +1,27 @@
-# Aclaraciones operativas WC2026 (implementación actual)
+# Aclaraciones operativas WC2026 (reglamento oficial)
 
-Este documento fija supuestos de implementación para casos no 100% explícitos en el PDF.
+## 1) Fase de grupos y eliminatorias (puntos additive)
 
-## 1) Fase de grupos (parciales)
+Cada acierto suma de forma independiente (ganador/empate, goles Selección A, goles Selección B).
+Máximo fase de grupos: 5 pts. Máximos KO: R32=7, R16=8, QF=9, SF/3.º=11, Final=14.
 
-| Caso | Puntos |
-|---|---:|
-| Marcador exacto (local y visita) | 5 |
-| No exacto + acierta uno de los dos marcadores | 2 |
-| No exacto + acierta ganador/empate | 1 |
-| No exacto + acierta un marcador **y** ganador/empate | 3 (2+1) |
+En eliminatorias, los goles se evalúan por **identidad del equipo** (regla de oro): si el rival real no coincide con el pronosticado en esa casilla, no sumás por sus goles.
 
-Regla de prioridad: si hay exacto, se otorgan solo 5.
+## 2) Avance por fases
 
-## 2) Eliminatorias (90 minutos)
+Por cada selección predicha que efectivamente participa en la fase: R32 +2, R16 +4, QF +6, SF +8, Final +10.
 
-Marcador exacto por ronda:
+## 3) Podio y especiales
 
-- R32: 6
-- R16: 7
-- QF: 8
-- SF: 10
-- 3er puesto: 9
-- Final: 12
+- Campeón: 22 · Subcampeón: 15 · Tercer puesto: 12
+- Goleador del torneo: 18 · Mejor arquero: 12
+- Preguntas del banco: 5 c/u
 
-Si no hay exacto:
+## 4) Jugador por partido
 
-- acierto de un marcador: +2
-- acierto de ganador/empate (en 90'): +1
+Puntos por gol según ronda (Gr=1 … Final=5). Cierre: 23:59 del día anterior al partido (zona del torneo).
+Apertura: 24 h antes del pitazo.
 
-## 3) Avance y especiales
+## 5) Cierre predicciones generales
 
-- Campeón: 22
-- Subcampeón: 15
-- Tercer puesto: 12
-- Goleador: 18
-- Arquero mejor promedio: 12
-- Preguntas especiales del banco: 5 cada una
-
-## 4) Dinámica \"Jugador por Partido\"
-
-Queda desacoplada (feature flag apagado) hasta contar con fuente oficial de goleadores por partido
-(90' + prórroga, excluyendo tandas de penales).
+4 días antes del pitido inicial del mundial.

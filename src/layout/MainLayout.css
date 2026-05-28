@@ -727,6 +727,48 @@ html:not([data-theme='dark']) .app-shell--wc26 .app-topbar {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
+.rules-points-tables {
+  margin: 16px 0;
+}
+
+.rules-points-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0 20px;
+}
+
+.rules-points-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.rules-points-table caption {
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.rules-points-table th,
+.rules-points-table td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.rules-points-table th:first-child,
+.rules-points-table td:first-child {
+  text-align: left;
+}
+
+.rules-points-table thead th {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.rules-points-note {
+  font-size: 0.88rem;
+  margin-top: 8px;
+}
+
 .reglamento-public-shell {
   min-height: 100dvh;
   background:

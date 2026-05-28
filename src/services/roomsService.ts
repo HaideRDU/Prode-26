@@ -1,6 +1,5 @@
 import {
   collection,
-  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -75,7 +74,7 @@ export async function createRoom(
   const prizesWritten = normalizePodiumPrizesForWrite(podiumPrizes ?? undefined)
   const room: RoomDoc = {
     name: nameClipped,
-    description: descriptionClipped || undefined,
+    description: descriptionClipped,
     inviteCode,
     maxMembers,
     createdBy: userId,
@@ -120,7 +119,7 @@ export async function updatePrivateRoomDetails(
   const description = clipLen(payload.description.trim(), ROOM_DESCRIPTION_MAX_CHARS)
   await updateDoc(doc(db, ROOMS, roomId), {
     name,
-    ...(description ? { description } : { description: deleteField() }),
+    description,
   })
 }
 

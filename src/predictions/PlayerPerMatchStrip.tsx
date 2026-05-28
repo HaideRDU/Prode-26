@@ -11,8 +11,6 @@ export function PlayerPerMatchStrip({
   teamLabel: (id: string) => string
 }) {
   const openH = DEFAULT_RULESET.lockWindows.playerPerMatchOpensHoursBeforeKickoff
-  const lockMin = DEFAULT_RULESET.lockWindows.knockoutPickMinutesBeforeKickoff
-  const pts = DEFAULT_RULESET.points.playerPerMatch.goalsPerGoal
   const { formatMatchTime } = useMatchTimeFormatters()
   const classified = classifyPlayerPickMatches(matches)
   const first = classified.prediction[0] ?? classified.live[0] ?? classified.preview[0] ?? null
@@ -21,11 +19,9 @@ export function PlayerPerMatchStrip({
     <section className="pred-player-strip">
       <h2 className="pred-section-title">Jugador por partido</h2>
       <p className="app-muted" style={{ marginTop: 4 }}>
-        Elegís <strong>un jugador</strong> por encuentro en la ventana de{' '}
-        <strong>{openH} horas antes</strong> del pitazo (cierre{' '}
-        <strong>{lockMin === 60 ? '1 hora' : `${lockMin} min`}</strong> antes). Sumás{' '}
-        <strong>{pts} pts por gol</strong> en 90&apos; + prórroga (no penales). Se guarda al seleccionar en
-        clasificación.
+        Elegís <strong>un jugador</strong> por encuentro desde <strong>{openH} horas antes</strong> del pitazo.
+        Cierre: <strong>11:59 p. m. del día anterior</strong> al partido (hora del torneo). Puntos por gol según
+        fase (grupos 1 pt, hasta 5 en la final). Se guarda al seleccionar en clasificación.
       </p>
       {first ? (
         <div className="pred-player-strip-card">

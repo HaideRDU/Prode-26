@@ -11,6 +11,12 @@ import type {
 } from './types/predictions'
 import { getPredictedKoLineupForMatch } from './koPredictedLineup'
 import {
+  extractGroupAndKoPredMaps,
+  officialTeamsByAdvancementRound,
+  predictedTeamsByAdvancementRound,
+  scoreBracketAdvancement,
+} from './bracketAdvancement'
+import {
   totalPointsFromParts,
   type MatchScoreInput,
   type PlayerPerMatchScoreInput,
@@ -123,6 +129,8 @@ export function computeScoresForRoom(
     })
   }
 
+  const officialByRound = officialTeamsByAdvancementRound(matchesById)
+
   const out = new Map<
     string,
     {
@@ -142,6 +150,11 @@ export function computeScoresForRoom(
     }
   >()
   for (const [uid, parts] of byUser) {
+    const userPreds = predsByUser.get(uid) ?? []
+    const { groupPredByMatchId, koPredByMatchId } = extractGroupAndKoPredMaps(userPreds)
+    const predictedByRound = predictedTeamsByAdvancementRound(groupPredByMatchId, koPredByMatchId)
+    const bracketAdvancementPoints = scoreBracketAdvancement(predictedByRound, officialByRound)
+
     const {
       total,
       matchPoints,
@@ -154,6 +167,7 @@ export function computeScoresForRoom(
       parts.matchParts,
       parts.tournamentParts,
       parts.playerPickParts,
+      bracketAdvancementPoints,
     )
     out.set(uid, {
       points: total,

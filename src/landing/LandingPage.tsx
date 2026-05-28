@@ -17,6 +17,7 @@ import {
   TEAM_NAME_ES,
 } from './landingDemoData'
 import { DEFAULT_RULESET } from '../config/ruleset'
+import { ADVANCEMENT_POINTS, KO_EXACT_SCORE_BY_ROUND, MATCH_POINTS_BY_PHASE } from '../services/scoring'
 import { LandingBracketBoard } from './components/LandingBracketBoard'
 import { LandingRankMovement } from './components/LandingRankMovement'
 import { TeamFlagName } from '../predictions/TeamFlagName'
@@ -28,14 +29,30 @@ const POINT_TABS = [
   { id: 'especiales' as const, label: 'Especiales' },
 ]
 
-const p = DEFAULT_RULESET.points
+const gr = MATCH_POINTS_BY_PHASE.group
+const ko = MATCH_POINTS_BY_PHASE.knockout
+const koRounds = ['r32', 'r16', 'qf', 'sf', 'third', 'final'] as const
+
 const GROUP_POINTS_MATRIX = {
   headers: ['Grupos', 'R32', 'R16', 'QF', 'SF', '3ro', 'Final'],
   rows: [
-    { label: 'Resultado (ganador o empate)', values: [1, 1, 2, 3, 3, 3, 4] },
-    { label: 'Marcador exacto: goles Equipo A', values: [2, 3, 3, 3, 4, 4, 5] },
-    { label: 'Marcador exacto: goles Equipo B', values: [2, 3, 3, 3, 4, 4, 5] },
-    { label: 'Máximo Posible', values: [5, 7, 8, 9, 11, 11, 14], max: true },
+    {
+      label: 'Ganador / empate',
+      values: [gr.winnerOrDraw, ...koRounds.map((r) => ko[r].winnerOrDraw)],
+    },
+    {
+      label: 'Goles Selección A',
+      values: [gr.goalsTeamA, ...koRounds.map((r) => ko[r].goalsTeamA)],
+    },
+    {
+      label: 'Goles Selección B',
+      values: [gr.goalsTeamB, ...koRounds.map((r) => ko[r].goalsTeamB)],
+    },
+    {
+      label: 'Máximo posible',
+      values: [5, ...koRounds.map((r) => KO_EXACT_SCORE_BY_ROUND[r])],
+      max: true,
+    },
   ],
 }
 
@@ -43,24 +60,9 @@ const KNOCKOUT_POINTS_TABLE = {
   headers: ['R32', 'R16', 'QF', 'SF', '3ro', 'Final'],
   rows: [
     {
-      label: 'Marcador exacto',
-      values: [
-        p.knockout.exactScoreByRound.r32,
-        p.knockout.exactScoreByRound.r16,
-        p.knockout.exactScoreByRound.qf,
-        p.knockout.exactScoreByRound.sf,
-        p.knockout.exactScoreByRound.third,
-        p.knockout.exactScoreByRound.final,
-      ],
+      label: 'Máximo por partido',
+      values: koRounds.map((r) => KO_EXACT_SCORE_BY_ROUND[r]),
       max: true,
-    },
-    {
-      label: 'Un marcador correcto (sin exacto)',
-      values: Array(6).fill(p.knockout.oneScoreHitWhenNotExact),
-    },
-    {
-      label: 'Resultado correcto (sin exacto)',
-      values: Array(6).fill(p.knockout.winnerHitWhenNotExact),
     },
   ],
 }
@@ -68,22 +70,23 @@ const KNOCKOUT_POINTS_TABLE = {
 const ADVANCEMENT_POINTS_TABLE = {
   headers: ['Puntos'],
   rows: [
-    { label: 'Clasifica a 16avos', values: [p.advancement.toR16] },
-    { label: 'Clasifica a cuartos', values: [p.advancement.toQf] },
-    { label: 'Clasifica a semifinal', values: [p.advancement.toSf] },
-    { label: 'Clasifica a la final', values: [p.advancement.toFinal] },
-    { label: 'Tercer puesto', values: [p.advancement.thirdPlace] },
-    { label: 'Subcampeón', values: [p.advancement.runnerUp] },
-    { label: 'Campeón', values: [p.advancement.champion], max: true },
+    { label: 'Clasifica a dieciseisavos (R32)', values: [ADVANCEMENT_POINTS.toR32] },
+    { label: 'Clasifica a octavos (R16)', values: [ADVANCEMENT_POINTS.toR16] },
+    { label: 'Clasifica a cuartos (QF)', values: [ADVANCEMENT_POINTS.toQf] },
+    { label: 'Clasifica a semifinal (SF)', values: [ADVANCEMENT_POINTS.toSf] },
+    { label: 'Clasifica a la final', values: [ADVANCEMENT_POINTS.toFinal] },
+    { label: 'Podio: tercero / sub / campeón', values: [ADVANCEMENT_POINTS.thirdPlace] },
+    { label: 'Subcampeón', values: [ADVANCEMENT_POINTS.runnerUp] },
+    { label: 'Campeón', values: [ADVANCEMENT_POINTS.champion], max: true },
   ],
 }
 
 const SPECIAL_POINTS_TABLE = {
   headers: ['Puntos'],
   rows: [
-    { label: 'Goleador del torneo', values: [p.specials.topScorer] },
-    { label: 'Mejor arquero (promedio)', values: [p.specials.bestGoalkeeperAverage] },
-    { label: 'Pregunta bonus (c/u)', values: [p.specials.bonusQuestion], max: true },
+    { label: 'Goleador del torneo', values: [DEFAULT_RULESET.points.specials.topScorer] },
+    { label: 'Mejor arquero (promedio)', values: [DEFAULT_RULESET.points.specials.bestGoalkeeperAverage] },
+    { label: 'Pregunta bonus (c/u)', values: [DEFAULT_RULESET.points.specials.bonusQuestion], max: true },
   ],
 }
 
