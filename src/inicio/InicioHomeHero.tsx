@@ -15,11 +15,11 @@ export function InicioHomeHero() {
           <p className="inicio-home__badge">Mundial 2026 · Ya estás dentro</p>
           {name ? <p className="inicio-home__greeting">Hola, {name}</p> : null}
           <h1 id="inicio-hero-title" className="inicio-home__display">
-            Tu quiniela del Mundial 2026
+            No es azar, gana quien mejor entiende el Mundial
           </h1>
           <p className="inicio-home__lead">
-            Compite en la sala global con todos los usuarios o armá tu liga en salas privadas con
-            amigos. Sumá puntos con marcadores exactos y seguí el ranking en vivo.
+            Lee cada grupo, analiza cada cruce e interpreta el desarrollo del torneo. Acierta tus
+            predicciones, suma puntos y compite por quedarte con el primer puesto.
           </p>
           <TournamentCountdown />
           <div className="inicio-home__ctas">
@@ -36,18 +36,33 @@ export function InicioHomeHero() {
               Crear o unirse
             </Link>
           </div>
-          <div className="inicio-home__metrics" aria-label="Datos del torneo">
-            <div className="inicio-home__metric">
-              <strong>72</strong>
-              <span>partidos de grupos</span>
+          <div className="inicio-home__highlights" aria-label="Beneficios del torneo">
+            <div className="inicio-home__highlight-card">
+              <span className="inicio-home__highlight-icon" aria-hidden>
+                👥
+              </span>
+              <div className="inicio-home__highlight-text">
+                <strong>3 Ganadores</strong>
+                <span>Podio final</span>
+              </div>
             </div>
-            <div className="inicio-home__metric">
-              <strong>+22</strong>
-              <span>pts por campeón</span>
+            <div className="inicio-home__highlight-card">
+              <span className="inicio-home__highlight-icon" aria-hidden>
+                🎁
+              </span>
+              <div className="inicio-home__highlight-text">
+                <strong>BONUS</strong>
+                <span>En cada partido</span>
+              </div>
             </div>
-            <div className="inicio-home__metric">
-              <strong>Live</strong>
-              <span>ranking automático</span>
+            <div className="inicio-home__highlight-card">
+              <span className="inicio-home__highlight-icon" aria-hidden>
+                ⚡
+              </span>
+              <div className="inicio-home__highlight-text">
+                <strong>Live</strong>
+                <span>Ranking en tiempo real</span>
+              </div>
             </div>
           </div>
         </div>

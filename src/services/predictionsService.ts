@@ -77,8 +77,12 @@ export async function saveMatchPrediction(
       goalsAway: goalsTeamB,
       goalsTeamA,
       goalsTeamB,
-      penaltiesWinnerHome: penaltiesWinnerTeamA,
-      penaltiesWinnerTeamA,
+      ...(typeof penaltiesWinnerTeamA === 'boolean'
+        ? {
+            penaltiesWinnerHome: penaltiesWinnerTeamA,
+            penaltiesWinnerTeamA,
+          }
+        : {}),
     },
     updatedAt: serverTimestamp(),
   }
@@ -112,8 +116,12 @@ export async function saveGroupPredictionsBatch(
         goalsAway: goalsTeamB,
         goalsTeamA,
         goalsTeamB,
-        penaltiesWinnerHome: penaltiesWinnerTeamA,
-        penaltiesWinnerTeamA,
+        ...(typeof penaltiesWinnerTeamA === 'boolean'
+          ? {
+              penaltiesWinnerHome: penaltiesWinnerTeamA,
+              penaltiesWinnerTeamA,
+            }
+          : {}),
       },
       updatedAt: serverTimestamp(),
     }
@@ -149,8 +157,12 @@ export async function saveKoPredictionsBatch(
         goalsAway: goalsTeamB,
         goalsTeamA,
         goalsTeamB,
-        penaltiesWinnerHome: penaltiesWinnerTeamA,
-        penaltiesWinnerTeamA,
+        ...(typeof penaltiesWinnerTeamA === 'boolean'
+          ? {
+              penaltiesWinnerHome: penaltiesWinnerTeamA,
+              penaltiesWinnerTeamA,
+            }
+          : {}),
       },
       updatedAt: serverTimestamp(),
     }
