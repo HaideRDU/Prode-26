@@ -27,7 +27,7 @@ export function GroupStageSection({
 
   return (
     <section className="pred-group-stage">
-      <h2 className="pred-section-title">1 · Fase de grupos</h2>
+      <h2 className="pred-section-title">3 · Fase de grupos</h2>
       <p className="app-muted pred-group-intro">
         Marcador en dos campos (goles Equipo A y Equipo B). Se guarda junto con eliminatorias y extras con el
         botón inferior cuando todo esté completo.

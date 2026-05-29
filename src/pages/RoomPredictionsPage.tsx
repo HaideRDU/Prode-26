@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import type { User } from 'firebase/auth'
 import { useMatchList } from '../hooks/useMatchList'
 import { usePredictions } from '../hooks/usePredictions'
@@ -784,9 +784,14 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const showGlobalSaveBar =
     Boolean(roomId) && !loadingM && !loadingP && matches.length > 0 && finalizedResolved && !readOnly
 
+  const showStandingsFab =
+    Boolean(roomId) && finalizedResolved && !loadingM && !loadingP && matches.length > 0
+
   const pageBottomPad = showGlobalSaveBar
-    ? 'calc(88px + env(safe-area-inset-bottom, 0px))'
-    : undefined
+    ? 'calc(148px + env(safe-area-inset-bottom, 0px))'
+    : showStandingsFab
+      ? 'calc(88px + env(safe-area-inset-bottom, 0px))'
+      : undefined
 
   if (!roomId) return <p className="auth-error">Sala no válida</p>
 
@@ -806,6 +811,16 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       className="pred-wc26 pred-wc26-page"
       style={pageBottomPad ? { paddingBottom: pageBottomPad } : undefined}
     >
+      {showStandingsFab ? (
+        <button
+          type="button"
+          className={`room-standings-fab-predictions${showGlobalSaveBar ? ' room-standings-fab-predictions--above-save' : ''}`}
+          aria-label="Ir a ver la clasificación"
+          onClick={() => navigate(`/room/${roomId}/standings`)}
+        >
+          Ver clasificación
+        </button>
+      ) : null}
       <div className="pred-page pred-page-card">
       {showRulesIntroModal ? (
         <div className="modal-overlay pred-rules-modal-overlay" role="presentation">
@@ -880,10 +895,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
           </div>
         </div>
       ) : null}
-      <p className="app-muted" style={{ marginBottom: 16 }}>
-        <Link to="/inicio">Inicio</Link> ·{' '}
-        <Link to={`/room/${roomId}/standings`}>Ver clasificación</Link>
-      </p>
       <div className="page-title-with-help">
         <h1 className="app-page-title">Predicciones</h1>
         <button
@@ -897,17 +908,17 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </button>
       </div>
       <p className="auth-lead" style={{ textAlign: 'left', marginBottom: 16 }}>
-        Aquí llenas tu predicción en 3 pasos: <strong>grupos</strong> (marcadores), <strong>eliminatorias</strong>{' '}
-        (marcadores y, si hay empate, ganador por penales) y <strong>podio</strong> (campeón, subcampeón, etc.)
+        Orden: <strong>podio</strong>, <strong>eliminatorias</strong> (final, semis, cuartos, octavos y
+        dieciseisavos), <strong>grupos</strong>
         {hasActiveBonusQuestions ? (
           <>
             {' '}
-            + <strong>preguntas extra</strong>.
+            y <strong>preguntas especiales</strong>
           </>
         ) : (
           '.'
-        )}{' '}
-        Cuando todo esté completo, el botón de abajo <strong>guardará todo</strong>.
+        )}
+        . En KO, si hay empate elegí ganador por penales. Al terminar, usá <strong>Guardar predicción</strong>.
       </p>
       <PlayerPerMatchStrip matches={matches} teamLabel={teamLabel} />
       {!finalizedResolved ? (
@@ -967,6 +978,25 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </div>
       ) : null}
 
+      <PodiumExtrasSection
+        user={user}
+        roomId={roomId}
+        teamLabel={teamLabel}
+        firstId={suggestedChampionId}
+        secondId={suggestedRunnerUpId}
+        thirdId={suggestedThirdId}
+        fourthId={suggestedFourthId}
+      />
+
+      <KnockoutSection
+        groupPredByMatchId={groupPredForBracket}
+        koPredByMatchId={mergedKoPredByMatchId}
+        matchesByKoId={matchesByKoId}
+        teamLabel={teamLabel}
+        onKoDraftChange={onKoDraftChange}
+        readOnly={readOnly}
+      />
+
       {groupMatches.length > 0 ? (
         <GroupStageSection
           matchesByGroup={matchesByGroup}
@@ -982,25 +1012,6 @@ export function RoomPredictionsPage({ user }: { user: User }) {
           <code className="app-muted">npm run seed:wc2026-group-stage</code> con Firebase Admin).
         </p>
       ) : null}
-
-      <KnockoutSection
-        groupPredByMatchId={groupPredForBracket}
-        koPredByMatchId={mergedKoPredByMatchId}
-        matchesByKoId={matchesByKoId}
-        teamLabel={teamLabel}
-        onKoDraftChange={onKoDraftChange}
-        readOnly={readOnly}
-      />
-
-      <PodiumExtrasSection
-        user={user}
-        roomId={roomId}
-        teamLabel={teamLabel}
-        firstId={suggestedChampionId}
-        secondId={suggestedRunnerUpId}
-        thirdId={suggestedThirdId}
-        fourthId={suggestedFourthId}
-      />
 
       <TournamentSpecialPlayersSection
         roomId={roomId}

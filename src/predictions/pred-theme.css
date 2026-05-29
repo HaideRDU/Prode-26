@@ -1751,6 +1751,10 @@ html:not([data-theme='dark']) .app-shell--wc26 .standings-move--flat {
   outline-offset: 3px;
 }
 
+.room-standings-fab-predictions--above-save {
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+}
+
 .room-standings-admin-toolbar {
   display: flex;
   flex-wrap: wrap;

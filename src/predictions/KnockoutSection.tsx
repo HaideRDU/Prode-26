@@ -72,7 +72,8 @@ export function KnockoutSection({
     return m
   }, [])
 
-  const roundOrder = ['r32', 'r16', 'qf', 'sf', 'third', 'final'] as const
+  /** Final → semis → cuartos → octavos → dieciseisavos (tercer puesto tras la final). */
+  const roundOrder = ['final', 'third', 'sf', 'qf', 'r16', 'r32'] as const
 
   const hasOfficialBracketMismatch = useMemo(() => {
     for (const def of WC26_KO_MATCHES) {

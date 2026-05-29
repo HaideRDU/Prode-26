@@ -50,15 +50,26 @@ export function RoomStandingsPage() {
   }, [roomId, user])
 
   useEffect(() => {
-    if (!roomId || !user) return
-    try {
-      if (!sessionStorage.getItem(predictionPromptStorageKey(roomId))) {
-        setShowPredictionPrompt(true)
+    if (!roomId || !user) {
+      setShowPredictionPrompt(false)
+      return
+    }
+    if (predictionFinalized === null) return
+    if (predictionFinalized === true) {
+      setShowPredictionPrompt(false)
+      try {
+        sessionStorage.setItem(predictionPromptStorageKey(roomId), '1')
+      } catch {
+        /* ignore */
       }
+      return
+    }
+    try {
+      setShowPredictionPrompt(!sessionStorage.getItem(predictionPromptStorageKey(roomId)))
     } catch {
       setShowPredictionPrompt(true)
     }
-  }, [roomId, user])
+  }, [roomId, user, predictionFinalized])
 
   function dismissPredictionPrompt() {
     if (roomId) {
@@ -161,7 +172,8 @@ export function RoomStandingsPage() {
             </div>
             <div className="pred-rules-modal__body pred-rules-modal__body--compact">
               <p className="app-muted" style={{ marginTop: 0 }}>
-              Completa o revisa tu pronóstico en esta sala. Puedes volver a la clasificación cuando quieras.
+                Todavía no finalizaste tu pronóstico en esta sala. Entrá a predicciones, completá todo y usá{' '}
+                <strong>Guardar predicción</strong> para cerrarla. Después podés volver acá cuando quieras.
               </p>
             </div>
             <div className="button-group pred-save-modal-actions">

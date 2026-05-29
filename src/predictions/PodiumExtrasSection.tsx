@@ -47,7 +47,7 @@ export function PodiumExtrasSection({
 
   return (
     <section className="pred-podium-section">
-      <h2 className="pred-section-title">Podio</h2>
+      <h2 className="pred-section-title">1 · Podio</h2>
       <div className="pred-podium-grid pred-podium-grid--readonly">
         <div className="pred-podium-slot">
           <span className="pred-podium-rank">1º</span>

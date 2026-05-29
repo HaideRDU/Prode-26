@@ -174,7 +174,7 @@ export function BonusQuestionBank({
 
   return (
     <section className="pred-bonus-bank">
-      <h2 className="pred-section-title">3 · 5 preguntas especiales</h2>
+      <h2 className="pred-section-title">4 · Preguntas extra</h2>
       <p className="app-muted pred-bonus-optional">
         Completá las 5 preguntas para habilitar{' '}
         <strong>Guardar predicción</strong>.
