@@ -257,6 +257,367 @@ h2.standings-dashboard-card__label {
   color: var(--text-h);
 }
 
+.standings-participation-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+  height: 100%;
+}
+
+.standings-participation-column > .standings-dashboard-card {
+  flex: 1;
+}
+
+.standings-history-btn {
+  width: 100%;
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--standings-border, var(--border));
+  background: color-mix(in srgb, var(--wc26-accent, #38bdf8) 12%, var(--bg));
+  color: var(--text-h);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.app-shell--wc26 .standings-history-btn {
+  color: #a3e635;
+  background: color-mix(in srgb, #a3e635 10%, var(--bg));
+  border-color: color-mix(in srgb, #a3e635 32%, var(--standings-border, var(--border)));
+}
+
+.standings-history-btn:hover {
+  border-color: var(--wc26-accent, #38bdf8);
+}
+
+.app-shell--wc26 .standings-history-btn:hover {
+  border-color: #a3e635;
+  background: color-mix(in srgb, #a3e635 16%, var(--bg));
+}
+
+.standings-history-btn:focus-visible {
+  outline: 2px solid var(--wc26-accent, #38bdf8);
+  outline-offset: 2px;
+}
+
+.app-shell--wc26 .standings-history-btn:focus-visible {
+  outline-color: #a3e635;
+}
+
+.standings-history-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.points-history-modal {
+  width: min(560px, calc(100vw - 1.25rem));
+  max-width: calc(100vw - 1.25rem);
+  margin-inline: auto;
+}
+
+.prediction-review-modal {
+  width: min(920px, calc(100vw - 1.25rem));
+  max-width: calc(100vw - 1.25rem);
+  max-height: min(92vh, 900px);
+  display: flex;
+  flex-direction: column;
+}
+
+.prediction-review-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.prediction-review-modal__lead {
+  margin: 0 0 0.85rem;
+  font-size: 0.8125rem;
+}
+
+.prediction-review-modal__content {
+  padding-bottom: 0.5rem;
+}
+
+.prediction-review-modal__progress {
+  position: static;
+  margin-bottom: 1rem;
+}
+
+.prediction-review-modal__footer {
+  flex-shrink: 0;
+}
+
+.points-history-modal__body {
+  max-height: min(70vh, 640px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.points-history-modal__footer {
+  margin-top: 0.5rem;
+}
+
+.points-history-summary {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--wc26-accent, #38bdf8) 8%, transparent);
+}
+
+.points-history-summary__total {
+  margin: 0;
+  font-size: clamp(1rem, 3.5vw, 1.1rem);
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.points-history-summary__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.points-history-summary__chips li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1 1 calc(50% - 0.45rem);
+  padding: 0.4rem 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+}
+
+@media (min-width: 480px) {
+  .points-history-summary__chips li {
+    flex: 1 1 calc(33.333% - 0.45rem);
+  }
+}
+
+.points-history-chip__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, var(--text));
+  line-height: 1.2;
+}
+
+.points-history-chip__value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.points-history-summary__sum {
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+}
+
+.points-history-sync-note {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.points-history-section-sum {
+  margin: 0.35rem 0 0.25rem;
+  font-size: 0.8rem;
+}
+
+.points-history-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+}
+
+.points-history-tabs__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.35rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  text-align: center;
+}
+
+.points-history-tabs__btn.is-active {
+  border-color: var(--wc26-accent, #38bdf8);
+  background: color-mix(in srgb, var(--wc26-accent, #38bdf8) 18%, var(--bg));
+  color: var(--text-h);
+}
+
+.points-history-tabs__btn:focus-visible {
+  outline: 2px solid var(--wc26-accent, #38bdf8);
+  outline-offset: 2px;
+}
+
+.points-history-tabs__pts {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.points-history-panel__lead {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.points-history-subsection-title {
+  margin: 0.75rem 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.points-history-card__bracket-note {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.points-history-card__bracket-note strong {
+  color: var(--text-h);
+}
+
+@media (max-width: 420px) {
+  .points-history-tabs__btn {
+    font-size: 0.65rem;
+    padding: 0.4rem 0.25rem;
+  }
+}
+
+.points-history-section-title {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.points-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.35rem;
+}
+
+.points-history-card {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  min-width: 0;
+}
+
+.points-history-card__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.35rem 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.points-history-card__head--question {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.points-history-card__badge {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--wc26-accent, #38bdf8);
+  line-height: 1.3;
+}
+
+.points-history-card__title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.points-history-card__total {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--muted, var(--text));
+  white-space: nowrap;
+}
+
+.points-history-card__total strong {
+  font-size: 0.95rem;
+  color: #facc15;
+}
+
+.points-history-card__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 0.65rem;
+  margin: 0;
+}
+
+.points-history-card__grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.points-history-card__item {
+  margin: 0;
+  min-width: 0;
+}
+
+.points-history-card__item--scores {
+  grid-column: 1 / -1;
+}
+
+.points-history-card__item dt {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, var(--text));
+}
+
+.points-history-card__item dd {
+  margin: 0.12rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.points-history-card__item dd strong {
+  color: #facc15;
+}
+
 /* Mi estado */
 .standings-my-status__panel {
   margin-top: 0.5rem;

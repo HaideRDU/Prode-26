@@ -36,6 +36,8 @@
     "simulate:scoring:jpn-kor": "tsx scripts/simulate-random-scoring-data-jpn-kor.ts",
     "simulate:scoring:kor-jpn": "tsx scripts/simulate-random-scoring-data-jpn-kor.ts --champion=KOR --runner-up=JPN",
     "sync:tournament-results": "tsx scripts/sync-tournament-results-from-matches.ts",
+    "recalculate:standings": "tsx scripts/recalculate-standings.ts",
+    "refresh:scoring-db": "tsx scripts/sync-tournament-results-from-matches.ts && tsx scripts/recalculate-standings.ts",
     "clear:match-results": "tsx scripts/clear-match-results.ts",
     "seed:prediction-champion": "tsx scripts/seed-random-prediction-champion.ts",
     "seed:prediction-jpn-kor": "tsx scripts/seed-random-prediction-champion.ts --champion=JPN --runner-up=KOR",

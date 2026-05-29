@@ -89,6 +89,7 @@ export function BonusQuestionBank({
   onBonusDraftChange,
   incompleteQuestionIds,
   readOnly = false,
+  sectionIndex = 4,
 }: {
   questionMetas: QuestionMeta[]
   mergedBonusByQuestionId: Map<string, TournamentPredictionPayload>
@@ -97,6 +98,7 @@ export function BonusQuestionBank({
   onBonusDraftChange: (questionId: string, payload: TournamentPredictionPayload | null) => void
   incompleteQuestionIds?: ReadonlySet<string>
   readOnly?: boolean
+  sectionIndex?: number
 }) {
   const [teams, setTeams] = useState<(TeamDoc & { id: string })[]>([])
   const [colombiaPlayers, setColombiaPlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
@@ -174,7 +176,7 @@ export function BonusQuestionBank({
 
   return (
     <section className="pred-bonus-bank">
-      <h2 className="pred-section-title">4 · Preguntas extra</h2>
+      <h2 className="pred-section-title">{sectionIndex} · Preguntas extra</h2>
       <p className="app-muted pred-bonus-optional">
         Completá las 5 preguntas para habilitar{' '}
         <strong>Guardar predicción</strong>.

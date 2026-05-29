@@ -324,9 +324,15 @@
   margin-bottom: 1.25rem;
 }
 
+.landing-hero__title {
+  text-transform: uppercase;
+  font-size: clamp(2.15rem, 5.2vw, 3.65rem);
+  line-height: 1.02;
+}
+
 .landing-hero__lead {
-  font-size: 1.125rem;
-  color: var(--landing-slate-400);
+  font-size: 1.0625rem;
+  color: color-mix(in srgb, var(--landing-cream) 88%, var(--landing-slate-400));
   max-width: 32rem;
   margin: 1.25rem 0 2rem;
   line-height: 1.65;
@@ -339,22 +345,54 @@
   margin-bottom: 2.5rem;
 }
 
-.landing-hero__metrics {
+.landing-hero__features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 36rem;
+}
+
+.landing-hero__feature {
   display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.85rem 0.75rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.55);
 }
 
-.landing-hero__metric strong {
-  display: block;
-  font-size: 1.75rem;
-  font-weight: 900;
-  color: var(--landing-gold);
+.landing-hero__feature-icon {
+  font-size: 1.15rem;
+  line-height: 1;
 }
 
-.landing-hero__metric span {
-  font-size: 0.8125rem;
+.landing-hero__feature-text {
+  font-size: 0.75rem;
+  line-height: 1.35;
   color: var(--landing-slate-400);
+}
+
+.landing-hero__feature-text strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--landing-cream);
+}
+
+.landing-hero__feature-accent {
+  color: var(--landing-gold) !important;
+}
+
+@media (max-width: 640px) {
+  .landing-hero__features {
+    grid-template-columns: 1fr;
+    max-width: 14rem;
+  }
 }
 
 /* Glass card */
@@ -449,6 +487,21 @@
 .landing-badge--slate {
   background: rgba(148, 163, 184, 0.15);
   color: var(--landing-slate-400);
+}
+
+.landing-badge--live {
+  gap: 0.35rem;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+}
+
+.landing-badge--live__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
 }
 
 /* Progress */
@@ -745,42 +798,183 @@
 
 /* Product mock */
 .landing-mock {
-  padding: 1.5rem;
+  padding: 1.35rem 1.25rem 1.5rem;
+  box-shadow:
+    var(--landing-shadow),
+    0 24px 48px rgba(163, 230, 53, 0.08);
 }
 
 .landing-mock__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.25rem;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
 }
 
-.landing-mock__progress-label {
-  font-size: 0.75rem;
+.landing-mock__pts-total {
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--landing-gold);
+  white-space: nowrap;
+}
+
+.landing-mock__block + .landing-mock__block {
+  margin-top: 1.15rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-mock__section-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--landing-slate-400);
-  margin-bottom: 0.35rem;
 }
 
-.landing-mock__rank {
+.landing-mock-preds {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  margin-top: 1.25rem;
+  gap: 0.5rem;
 }
 
-.landing-mock__rank-row {
-  display: flex;
+.landing-mock-pred {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  font-size: 0.8125rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 12px;
+  gap: 0.35rem 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.65rem;
   background: rgba(255, 255, 255, 0.04);
+  font-size: 0.8125rem;
 }
 
-.landing-mock__rank-row--you {
-  border: 1px solid rgba(250, 204, 21, 0.35);
-  background: rgba(250, 204, 21, 0.08);
+.landing-mock-pred .team-flag-name {
+  min-width: 0;
+}
+
+.landing-mock-pred .team-flag-name:last-of-type {
+  justify-self: end;
+}
+
+.landing-mock-pred .team-flag-name__text {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.landing-mock-pred__score {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--landing-cream);
+  white-space: nowrap;
+}
+
+.landing-mock-pred__pts {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--landing-lime);
+  white-space: nowrap;
+}
+
+.landing-mock-pred__pending {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--landing-slate-400);
+  white-space: nowrap;
+}
+
+.landing-mock-rank-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.landing-mock-rank-table caption.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.landing-mock-rank-table th {
+  padding: 0 0.35rem 0.55rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--landing-slate-400);
+  text-align: left;
+}
+
+.landing-mock-rank-table td {
+  padding: 0.55rem 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--landing-cream);
+  vertical-align: middle;
+}
+
+.landing-mock-rank-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.landing-mock-rank-table__col-rank {
+  width: 2.25rem;
+  text-align: center;
+}
+
+.landing-mock-rank-table__col-pts {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.landing-mock-rank-table__col-mov {
+  width: 3.25rem;
+  text-align: center;
+}
+
+.landing-mock-rank-table__name {
+  font-weight: 700;
+}
+
+.landing-mock-rank-table__pts-suffix {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--landing-slate-400);
+}
+
+.landing-mock-rank-medal {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.landing-mock-rank-table__you td {
+  background: rgba(250, 204, 21, 0.1);
+  font-weight: 700;
+}
+
+.landing-mock-rank-table__you td:first-child {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.landing-mock-rank-table__you td:last-child {
+  border-radius: 0 0.5rem 0.5rem 0;
 }
 
 /* Fixture */

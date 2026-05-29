@@ -7,6 +7,7 @@ import {
   formatPodiumLog,
   syncTournamentResultsFromMatches,
 } from './lib/syncTournamentResultsFromMatches.ts'
+import { logRecalculateStandingsSummary } from './lib/runRecalculateStandings.ts'
 
 const dryRun = process.argv.includes('--dry-run')
 
@@ -38,8 +39,8 @@ async function main(): Promise<void> {
   console.log('[sync:tournament-results] OK', {
     podium: formatPodiumLog(podium),
     written,
-    note: 'onTournamentResultWrite recalcula standings de todas las salas.',
   })
+  await logRecalculateStandingsSummary(db, { label: 'sync:tournament-results' })
 }
 
 main().catch((e) => {

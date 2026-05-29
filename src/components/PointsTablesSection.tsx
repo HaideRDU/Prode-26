@@ -1,4 +1,5 @@
-import { DEFAULT_RULESET, maxMatchPoints, type KnockoutRoundId } from '../config/ruleset'
+import { BONUS_QUESTION_IDS } from '../data/questionIds'
+import { maxMatchPoints, type KnockoutRoundId } from '../config/ruleset'
 import {
   ADVANCEMENT_POINTS,
   KO_EXACT_SCORE_BY_ROUND,
@@ -101,37 +102,64 @@ export function PointsTablesSection() {
     ['A la final', ADVANCEMENT_POINTS.toFinal],
   ]
 
+  const bonusCount = BONUS_QUESTION_IDS.length
+
   return (
     <div className="rules-points-tables">
       <PointsTable
-        caption="1. Puntos por partido (aciertos independientes)"
+        caption="1. Puntos por partido"
         headers={matchHeaders}
         rows={matchRows}
       />
-      <PointsTable caption="2. Goleador del partido (puntos por gol)" headers={playerHeaders} rows={playerRows} />
+      <p className="rules-points-hint">
+        Cada acierto suma de forma independiente. La fila «Máximo posible» es el total si acertás ganador/empate
+        y ambos goles.
+      </p>
+
+      <h3>2. Bonus: goleador del partido</h3>
+      <p className="rules-points-hint">
+        Elegís un solo jugador por partido. Si anota, sumás puntos por cada gol en el encuentro (solo goles en los
+        90 minutos o en el tiempo suplementario del mismo partido).
+      </p>
+      <PointsTable caption="Puntos por gol según ronda" headers={playerHeaders} rows={playerRows} />
+
       <PointsTable
-        caption="3. Avance — por selección que clasifica a la fase"
-        headers={['Fase de destino', 'Pts']}
+        caption="3. Avance — equipos clasificados"
+        headers={['Ronda de destino', 'Pts por eq.']}
         rows={advRows}
       />
-      <h3>4. Podio y especiales</h3>
+      <p className="rules-points-hint">
+        Por cada selección que acertás que clasifica a esa fase, sumás los puntos indicados (acumulables).
+      </p>
+
+      <h3>4. Especiales — podio del torneo</h3>
       <ul>
         <li>
-          Campeón: <strong>{POINTS_CHAMPION}</strong> · Subcampeón: <strong>{POINTS_RUNNER_UP}</strong> · Tercer
-          puesto: <strong>{POINTS_THIRD_PLACE}</strong>
-        </li>
-        <li>
-          Goleador del torneo: <strong>{POINTS_TOP_SCORER}</strong> · Mejor arquero:{' '}
-          <strong>{POINTS_BEST_GOALKEEPER_AVERAGE}</strong>
-        </li>
-        <li>
-          Cada acierto en preguntas del banco: <strong>{POINTS_BONUS_QUESTION}</strong>
+          Campeón: <strong>+{POINTS_CHAMPION}</strong> · Subcampeón: <strong>+{POINTS_RUNNER_UP}</strong> · Tercer
+          puesto: <strong>+{POINTS_THIRD_PLACE}</strong>
         </li>
       </ul>
-      <p className="app-muted rules-points-note">
-        Cierre general: {DEFAULT_RULESET.lockWindows.generalPredictionsHoursBeforeTournament / 24} días antes del
-        inicio. Goleador por partido: 11:59 p. m. del día anterior (hora {DEFAULT_RULESET.timezone}).
+
+      <h3>5. Banco de preguntas extra</h3>
+      <p className="rules-points-hint">
+        Las <strong>{bonusCount}</strong> preguntas adicionales del banco, resueltas según publicaciones oficiales
+        del torneo, otorgan <strong>+{POINTS_BONUS_QUESTION}</strong> puntos cada una acertada.
       </p>
+
+      <h3>Premios individuales del torneo</h3>
+      <ul>
+        <li>
+          <strong>Goleador del torneo (+{POINTS_TOP_SCORER} pts):</strong> se asignan los puntos a quienes
+          eligieron a cualquiera de los ganadores del premio, incluso si hay empate en el liderato de goleo. No
+          cuentan goles en tanda de penales.
+        </li>
+        <li>
+          <strong>Mejor arquero (+{POINTS_BEST_GOALKEEPER_AVERAGE} pts):</strong> el guardameta debe haber jugado
+          al menos 4 partidos completos. No se consideran goles recibidos en tandas de penales. Si hay empate en el
+          promedio de goles recibidos, suman todos los que eligieron a cualquiera de los arqueros empatados en el
+          primer lugar.
+        </li>
+      </ul>
     </div>
   )
 }

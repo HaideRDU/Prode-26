@@ -17,7 +17,9 @@ const KO_ROUND_TO_ADVANCEMENT: Partial<Record<KnockoutRoundId, AdvancementRoundK
 
 const ADVANCEMENT_ORDER: AdvancementRoundKey[] = ['toR32', 'toR16', 'toQf', 'toSf', 'toFinal']
 
-function teamIdsFromMatch(m: Pick<MatchDoc, 'teamAId' | 'teamBId' | 'teamHomeId' | 'teamAwayId'>): string[] {
+function teamIdsFromMatch(
+  m: Pick<MatchDoc, 'teamAId' | 'teamBId' | 'teamHomeId' | 'teamAwayId'>,
+): string[] {
   const a = m.teamAId ?? m.teamHomeId
   const b = m.teamBId ?? m.teamAwayId
   return [a, b].filter((id): id is string => typeof id === 'string' && id.length > 0)
@@ -98,7 +100,13 @@ export function extractGroupAndKoPredMaps(
   for (const pr of predictions) {
     if (pr.scope !== 'match' || !pr.matchId) continue
     const p = pr.payload as MatchPredictionPayload
-    if (!p || typeof p.goalsHome !== 'number') continue
+    if (
+      !p ||
+      typeof p.goalsTeamA !== 'number' ||
+      typeof p.goalsTeamB !== 'number'
+    ) {
+      continue
+    }
     if (pr.matchId.startsWith('wc26-ko-')) {
       koPredByMatchId.set(pr.matchId, p)
     } else if (pr.matchId.startsWith('wc26-')) {

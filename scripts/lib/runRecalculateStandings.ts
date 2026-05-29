@@ -1,11 +1,28 @@
-import { FieldValue, type Firestore, type Timestamp } from 'firebase-admin/firestore'
-import type { MatchDoc, PredictionDoc, TournamentResultDoc } from './lib/types/predictions'
-import { assignRanks, computeScoresForRoom } from './lib/aggregateScores'
-import { filterPredictionsForStandings, loadFinalizedUserIds } from './lib/loadFinalizedUserIds'
+/**
+ * Recalcula standings con la misma lógica de puntuación que el cliente (src/services).
+ * La escritura en Firestore replica recalculateRoom de Cloud Functions.
+ */
+import { FieldValue, type Firestore } from 'firebase-admin/firestore'
+import { assignRanks, computeScoresForRoom } from '../../src/services/aggregateScores.ts'
+import { filterPredictionsForStandings, loadFinalizedUserIds } from './loadFinalizedUserIds.ts'
+import type { MatchDoc, PredictionDoc, TournamentResultDoc } from '../../src/types/predictions.ts'
+
+export type RecalculateStandingsSummary = {
+  roomId: string
+  ok: boolean
+  error?: string
+}
 
 type RoomMemberLite = { userId: string; displayName?: string }
 type RoomLite = { type?: 'private' | 'global'; enabledQuestionIds?: string[] }
 type UserProfileLite = { username?: string; email?: string }
+
+async function getAllRoomIds(db: Firestore): Promise<string[]> {
+  const snap = await db.collection('rooms').get()
+  const ids = snap.docs.map((d) => d.id)
+  if (!ids.includes('global')) ids.unshift('global')
+  return [...new Set(ids)]
+}
 
 function isUidPlaceholder(name: string | undefined, userId: string): boolean {
   const s = name?.trim()
@@ -42,18 +59,7 @@ async function loadUserProfiles(
   return map
 }
 
-type RecalculateStandingsOptions = {
-  /** Debe ser FieldValue del mismo paquete firebase-admin que `db` (evita error en scripts locales). */
-  updatedAt?: ReturnType<typeof FieldValue.serverTimestamp> | Timestamp | Date
-}
-
-/** Recalcula y escribe standings/{roomId}/users/{userId} para una sala. */
-export async function recalculateStandingsForRoom(
-  db: Firestore,
-  roomId: string,
-  options?: RecalculateStandingsOptions,
-): Promise<void> {
-  const updatedAt = options?.updatedAt ?? FieldValue.serverTimestamp()
+async function recalculateStandingsForRoom(db: Firestore, roomId: string): Promise<void> {
   const predsSnap = await db.collection('predictions').where('roomId', '==', roomId).get()
   const predictions: PredictionDoc[] = []
   predsSnap.forEach((d) => {
@@ -152,35 +158,54 @@ export async function recalculateStandingsForRoom(
       rankDelta,
       breakdown: row.breakdown,
       tieBreak: row.tieBreak,
-      updatedAt,
+      updatedAt: FieldValue.serverTimestamp(),
     })
   }
   for (const uid of existingUserIds) {
     if (!nextUserIds.has(uid)) {
-      const ref = db.collection('standings').doc(roomId).collection('users').doc(uid)
-      writer.delete(ref)
+      writer.delete(db.collection('standings').doc(roomId).collection('users').doc(uid))
     }
   }
   await writer.close()
 }
 
-export async function getRoomIdsForMatch(db: Firestore, matchId: string): Promise<string[]> {
-  const snap = await db
-    .collection('predictions')
-    .where('matchId', '==', matchId)
-    .where('scope', '==', 'match')
-    .get()
-  const set = new Set<string>()
-  snap.forEach((d) => {
-    const r = d.data().roomId
-    if (typeof r === 'string') set.add(r)
-  })
-  return [...set]
+export async function runRecalculateStandings(
+  db: Firestore,
+  options?: { roomIds?: string[] },
+): Promise<RecalculateStandingsSummary[]> {
+  const roomIds = options?.roomIds?.length ? options.roomIds : await getAllRoomIds(db)
+  const results: RecalculateStandingsSummary[] = []
+
+  for (const roomId of roomIds) {
+    try {
+      await recalculateStandingsForRoom(db, roomId)
+      results.push({ roomId, ok: true })
+    } catch (e) {
+      const error = e instanceof Error ? e.message : String(e)
+      results.push({ roomId, ok: false, error })
+    }
+  }
+
+  return results
 }
 
-export async function getAllRoomIds(db: Firestore): Promise<string[]> {
-  const snap = await db.collection('rooms').get()
-  const ids = snap.docs.map((d) => d.id)
-  if (!ids.includes('global')) ids.unshift('global')
-  return [...new Set(ids)]
+export async function logRecalculateStandingsSummary(
+  db: Firestore,
+  options?: { roomIds?: string[]; label?: string },
+): Promise<void> {
+  const label = options?.label ?? 'recalculate:standings'
+  const results = await runRecalculateStandings(db, options)
+  for (const row of results) {
+    if (row.ok) {
+      const snap = await db.collection('standings').doc(row.roomId).collection('users').get()
+      const top = snap.docs
+        .map((d) => d.data() as { userId?: string; points?: number; rank?: number; displayName?: string })
+        .sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999))
+        .slice(0, 3)
+        .map((r) => ({ name: r.displayName, points: r.points, rank: r.rank }))
+      console.log(`[${label}] ${row.roomId}: ${snap.size} usuarios`, top)
+    } else {
+      console.error(`[${label}] ${row.roomId} ERROR:`, row.error)
+    }
+  }
 }

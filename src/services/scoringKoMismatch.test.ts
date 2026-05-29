@@ -8,13 +8,12 @@ function main() {
   const matchQf = {
     phase: 'knockout' as const,
     status: 'finished' as const,
-    goalsHome: 2,
-    goalsAway: 1,
+    goalsTeamA: 2,
+    goalsTeamB: 1,
     wentToPenalties: false,
-    penaltiesWinnerHome: undefined as boolean | undefined,
     round: 'qf',
-    teamHomeId: 'BRA',
-    teamAwayId: 'BEL',
+    teamAId: 'BRA',
+    teamBId: 'BEL',
   }
 
   const wrongLineup = {
@@ -24,23 +23,23 @@ function main() {
 
   const detailsWrongPair = scoreMatchPredictionDetails(
     matchQf,
-    { goalsHome: 2, goalsAway: 1, wentToPenalties: false },
+    { goalsTeamA: 2, goalsTeamB: 1, wentToPenalties: false },
     wrongLineup,
   )
   assert.equal(detailsWrongPair.exactScoreHit, false)
-  assert.equal(detailsWrongPair.points, 6, 'Ganador QF (3) + goles Brasil (3)')
+  assert.equal(detailsWrongPair.points, 3, 'Solo ganador QF (3); sin goles si el rival predicho no coincide')
 
   const matchSwapped = {
     ...matchQf,
-    goalsHome: 1,
-    goalsAway: 2,
-    teamHomeId: 'CRO',
-    teamAwayId: 'BRA',
+    goalsTeamA: 1,
+    goalsTeamB: 2,
+    teamAId: 'CRO',
+    teamBId: 'BRA',
   }
 
   const detailsSwapped = scoreMatchPredictionDetails(
     matchSwapped,
-    { goalsHome: 2, goalsAway: 1, wentToPenalties: false },
+    { goalsTeamA: 2, goalsTeamB: 1, wentToPenalties: false },
     wrongLineup,
   )
   assert.equal(detailsSwapped.exactScoreHit, true)
@@ -49,13 +48,12 @@ function main() {
   const matchBase = {
     phase: 'knockout' as const,
     status: 'finished' as const,
-    goalsHome: 2,
-    goalsAway: 1,
+    goalsTeamA: 2,
+    goalsTeamB: 1,
     wentToPenalties: false,
-    penaltiesWinnerHome: undefined as boolean | undefined,
     round: 'r16',
-    teamHomeId: 'team_A',
-    teamAwayId: 'team_B',
+    teamAId: 'team_A',
+    teamBId: 'team_B',
   }
 
   const overlapLineup = {
@@ -65,30 +63,34 @@ function main() {
 
   const detailsOverlap = scoreMatchPredictionDetails(
     matchBase,
-    { goalsHome: 1, goalsAway: 2, wentToPenalties: false },
+    { goalsTeamA: 1, goalsTeamB: 2, wentToPenalties: false },
     overlapLineup,
   )
   assert.equal(detailsOverlap.exactScoreHit, false)
-  assert.equal(detailsOverlap.points, 3, 'Solo goles de team_B acertados en R16')
+  assert.equal(
+    detailsOverlap.points,
+    0,
+    'Un solo rival en común no alcanza: sin ganador acertado ni goles parciales',
+  )
 
   const matchFinal = {
     phase: 'knockout' as const,
     status: 'finished' as const,
-    goalsHome: 1,
-    goalsAway: 0,
+    goalsTeamA: 1,
+    goalsTeamB: 0,
     wentToPenalties: false,
     round: 'final',
-    teamHomeId: 'CIV',
-    teamAwayId: 'JOR',
+    teamAId: 'CIV',
+    teamBId: 'JOR',
   }
 
   const detailsPensWinner = scoreMatchPredictionDetails(
     matchFinal,
     {
-      goalsHome: 0,
-      goalsAway: 0,
+      goalsTeamA: 0,
+      goalsTeamB: 0,
       wentToPenalties: true,
-      penaltiesWinnerHome: true,
+      penaltiesWinnerTeamA: true,
     },
     { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
   )
@@ -98,16 +100,66 @@ function main() {
   const detailsPensAwayOnly = scoreMatchPredictionDetails(
     matchFinal,
     {
-      goalsHome: 0,
-      goalsAway: 0,
+      goalsTeamA: 0,
+      goalsTeamB: 0,
       wentToPenalties: true,
       penaltiesWinnerTeamB: true,
-      penaltiesWinnerAway: true,
     },
     { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
   )
   assert.equal(detailsPensAwayOnly.winnerOrDrawHit, false)
   assert.equal(detailsPensAwayOnly.points, 0, 'Ganador visitante en penales no cuenta como local')
+
+  const matchKorUzb = {
+    phase: 'knockout' as const,
+    status: 'finished' as const,
+    goalsTeamA: 3,
+    goalsTeamB: 0,
+    wentToPenalties: false,
+    round: 'r16',
+    teamAId: 'KOR',
+    teamBId: 'UZB',
+  }
+  const detailsKorPartial = scoreMatchPredictionDetails(
+    matchKorUzb,
+    { goalsTeamA: 1, goalsTeamB: 0, wentToPenalties: false },
+    { predictedTeamAId: 'KOR', predictedTeamBId: 'OTHER' },
+  )
+  assert.equal(detailsKorPartial.points, 2, 'R16: solo ganador (2), sin gol parcial si el rival no coincide')
+
+  const matchCivJpn = {
+    phase: 'knockout' as const,
+    status: 'finished' as const,
+    goalsTeamA: 0,
+    goalsTeamB: 3,
+    wentToPenalties: false,
+    round: 'qf',
+    teamAId: 'CIV',
+    teamBId: 'JPN',
+  }
+  const detailsCivPens = scoreMatchPredictionDetails(
+    matchCivJpn,
+    {
+      goalsTeamA: 0,
+      goalsTeamB: 0,
+      wentToPenalties: true,
+      penaltiesWinnerTeamB: true,
+    },
+    { predictedTeamAId: 'CIV', predictedTeamBId: 'JPN' },
+  )
+  assert.equal(detailsCivPens.points, 3, 'QF: solo ganador por penales (3), sin gol 0=0 si el oficial fue 0-3')
+
+  const detailsCivWrongRival = scoreMatchPredictionDetails(
+    matchCivJpn,
+    {
+      goalsTeamA: 0,
+      goalsTeamB: 0,
+      wentToPenalties: true,
+      penaltiesWinnerTeamB: true,
+    },
+    { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
+  )
+  assert.equal(detailsCivWrongRival.points, 0, 'Penales al rival predicho (CZE) no cuenta si ganó Japón')
 
   console.log('scoringKoMismatch.test.ts: OK')
 }

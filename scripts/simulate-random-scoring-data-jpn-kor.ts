@@ -24,6 +24,7 @@ import type {
 } from '../src/types/predictions.ts'
 import { cascadeKoMatches } from './lib/wc26BracketCascade.ts'
 import { formatPodiumLog, syncTournamentResultsFromMatches } from './lib/syncTournamentResultsFromMatches.ts'
+import { logRecalculateStandingsSummary } from './lib/runRecalculateStandings.ts'
 import { finishedMatchUpdate, koMatchTeamsUpdate } from './lib/matchFinishedUpdate.ts'
 import {
   buildGroupPredictionsForFavorites,
@@ -319,6 +320,10 @@ async function main(): Promise<void> {
     finalPrediction: finalPred,
     officialPodium: formatPodiumLog(podium),
     tournamentResultsWritten,
+  })
+
+  await logRecalculateStandingsSummary(db, {
+    label: 'simulate:scoring:jpn-kor',
   })
 }
 

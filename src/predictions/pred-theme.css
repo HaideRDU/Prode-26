@@ -1742,8 +1742,14 @@ html:not([data-theme='dark']) .app-shell--wc26 .standings-move--flat {
   text-align: center;
 }
 
-.room-standings-fab-predictions:hover {
+.room-standings-fab-predictions:hover:not(:disabled) {
   filter: brightness(1.06);
+}
+
+.room-standings-fab-predictions:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  filter: none;
 }
 
 .room-standings-fab-predictions:focus-visible {

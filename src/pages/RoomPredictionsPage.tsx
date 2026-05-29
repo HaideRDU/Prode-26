@@ -35,7 +35,7 @@ import { useMatchTimeFormatters } from '../hooks/useUserTimeZone'
 import { formatTimeZoneShort } from '../utils/formatMatchTime'
 import { GroupStageSection, type GroupDraftEntry } from '../predictions/GroupStageSection'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
-import { KnockoutSection } from '../predictions/KnockoutSection'
+import { KnockoutSection, type KnockoutLayoutMode } from '../predictions/KnockoutSection'
 import { BonusQuestionBank, type MatchPickOption } from '../predictions/BonusQuestionBank'
 import { PodiumExtrasSection } from '../predictions/PodiumExtrasSection'
 import { TournamentSpecialPlayersSection } from '../predictions/TournamentSpecialPlayersSection'
@@ -316,7 +316,20 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const finalizedResolved = predictionFinalized !== null
   const generalLockAt = useMemo(() => getGeneralPredictionsLockAt(DEFAULT_RULESET), [])
   const generalPredictionsLocked = nowMs >= generalLockAt.getTime() && predictionFinalized !== true
-  const readOnly = predictionFinalized === true || generalPredictionsLocked
+  const hasFinishedMatches = useMemo(
+    () => matches.some((m) => m.status === 'finished'),
+    [matches],
+  )
+  const lateEntryBlocked = hasFinishedMatches && predictionFinalized !== true
+  const readOnly = predictionFinalized === true || generalPredictionsLocked || lateEntryBlocked
+  /** Sin finalizar: cascada grupos → KO; finalizada: podio → KO (final abajo) → grupos. */
+  const isReviewLayout = predictionFinalized === true
+  const showMatchPoints = predictionFinalized === true
+  const knockoutLayoutMode: KnockoutLayoutMode = isReviewLayout ? 'review' : 'cascade'
+  const sectionGroups = isReviewLayout ? 3 : 1
+  const sectionKnockout = 2
+  const sectionPodium = isReviewLayout ? 1 : 3
+  const sectionExtras = 4
 
   const onDraftChange = useCallback((matchId: string, gh: number | null, ga: number | null) => {
     if (readOnly || !finalizedResolved) return
@@ -661,6 +674,12 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       )
       return out
     }
+    if (lateEntryBlocked) {
+      out.push(
+        'Ya hay partidos con resultado oficial. No podés crear ni modificar una predicción nueva en esta sala.',
+      )
+      return out
+    }
     if (!finalizedResolved) {
       return out
     }
@@ -676,6 +695,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   }, [
     predictionFinalized,
     generalPredictionsLocked,
+    lateEntryBlocked,
     generalLockAt,
     formatMatchTime,
     userTimeZone,
@@ -908,8 +928,17 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </button>
       </div>
       <p className="auth-lead" style={{ textAlign: 'left', marginBottom: 16 }}>
-        Orden: <strong>podio</strong>, <strong>eliminatorias</strong> (final, semis, cuartos, octavos y
-        dieciseisavos), <strong>grupos</strong>
+        {isReviewLayout ? (
+          <>
+            Orden de lectura: <strong>podio</strong>, <strong>eliminatorias</strong> (de la final hacia
+            dieciseisavos), <strong>grupos</strong>
+          </>
+        ) : (
+          <>
+            Orden sugerido (cascada): <strong>grupos</strong>, luego <strong>eliminatorias</strong> (dieciseisavos →
+            octavos → cuartos → semifinal → final), <strong>podio</strong>
+          </>
+        )}
         {hasActiveBonusQuestions ? (
           <>
             {' '}
@@ -928,7 +957,9 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         <p className="auth-info">
           {predictionFinalized === true
             ? 'Predicción finalizada. Esta vista es solo lectura. Podés volver a clasificación cuando quieras.'
-            : `Predicciones bloqueadas por ventana de cierre (${DEFAULT_RULESET.versionLabel}).`}
+            : lateEntryBlocked
+              ? 'Ya hay partidos con resultado en el torneo. No podés abrir ni cambiar una predicción en esta sala.'
+              : `Predicciones bloqueadas por ventana de cierre (${DEFAULT_RULESET.versionLabel}).`}
         </p>
       ) : null}
       {(loadingM || loadingP || loadingT) && <p className="user-email">Cargando…</p>}
@@ -978,40 +1009,91 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </div>
       ) : null}
 
-      <PodiumExtrasSection
-        user={user}
-        roomId={roomId}
-        teamLabel={teamLabel}
-        firstId={suggestedChampionId}
-        secondId={suggestedRunnerUpId}
-        thirdId={suggestedThirdId}
-        fourthId={suggestedFourthId}
-      />
-
-      <KnockoutSection
-        groupPredByMatchId={groupPredForBracket}
-        koPredByMatchId={mergedKoPredByMatchId}
-        matchesByKoId={matchesByKoId}
-        teamLabel={teamLabel}
-        onKoDraftChange={onKoDraftChange}
-        readOnly={readOnly}
-      />
-
-      {groupMatches.length > 0 ? (
-        <GroupStageSection
-          matchesByGroup={matchesByGroup}
-          draftByMatchId={draftGroup}
-          filledMatchIds={filledGroupMatchIds}
-          onDraftChange={onDraftChange}
-          teamLabel={teamLabel}
-          groupLocked={groupLocked || readOnly}
-        />
-      ) : !loadingM && matches.length === 0 ? (
-        <p className="app-muted">
-          No hay partidos en la base de datos. Un administrador debe volcar `teams` y `matches` (p. ej.{' '}
-          <code className="app-muted">npm run seed:wc2026-group-stage</code> con Firebase Admin).
-        </p>
-      ) : null}
+      {isReviewLayout ? (
+        <>
+          <PodiumExtrasSection
+            user={user}
+            roomId={roomId}
+            teamLabel={teamLabel}
+            firstId={suggestedChampionId}
+            secondId={suggestedRunnerUpId}
+            thirdId={suggestedThirdId}
+            fourthId={suggestedFourthId}
+            sectionIndex={sectionPodium}
+            readOnly={readOnly}
+          />
+          <KnockoutSection
+            groupPredByMatchId={groupPredForBracket}
+            koPredByMatchId={mergedKoPredByMatchId}
+            matchesByKoId={matchesByKoId}
+            teamLabel={teamLabel}
+            onKoDraftChange={onKoDraftChange}
+            readOnly={readOnly}
+            layoutMode={knockoutLayoutMode}
+            sectionIndex={sectionKnockout}
+            showPoints={showMatchPoints}
+          />
+          {groupMatches.length > 0 ? (
+            <GroupStageSection
+              matchesByGroup={matchesByGroup}
+              draftByMatchId={draftGroup}
+              filledMatchIds={filledGroupMatchIds}
+              onDraftChange={onDraftChange}
+              teamLabel={teamLabel}
+              groupLocked={groupLocked || readOnly}
+              sectionIndex={sectionGroups}
+              showPoints={showMatchPoints}
+            />
+          ) : !loadingM && matches.length === 0 ? (
+            <p className="app-muted">
+              No hay partidos en la base de datos. Un administrador debe volcar `teams` y `matches` (p. ej.{' '}
+              <code className="app-muted">npm run seed:wc2026-group-stage</code> con Firebase Admin).
+            </p>
+          ) : null}
+        </>
+      ) : (
+        <>
+          {groupMatches.length > 0 ? (
+            <GroupStageSection
+              matchesByGroup={matchesByGroup}
+              draftByMatchId={draftGroup}
+              filledMatchIds={filledGroupMatchIds}
+              onDraftChange={onDraftChange}
+              teamLabel={teamLabel}
+              groupLocked={groupLocked || readOnly}
+              sectionIndex={sectionGroups}
+              showPoints={showMatchPoints}
+            />
+          ) : !loadingM && matches.length === 0 ? (
+            <p className="app-muted">
+              No hay partidos en la base de datos. Un administrador debe volcar `teams` y `matches` (p. ej.{' '}
+              <code className="app-muted">npm run seed:wc2026-group-stage</code> con Firebase Admin).
+            </p>
+          ) : null}
+          <KnockoutSection
+            groupPredByMatchId={groupPredForBracket}
+            koPredByMatchId={mergedKoPredByMatchId}
+            matchesByKoId={matchesByKoId}
+            teamLabel={teamLabel}
+            onKoDraftChange={onKoDraftChange}
+            readOnly={readOnly}
+            layoutMode={knockoutLayoutMode}
+            sectionIndex={sectionKnockout}
+            showPoints={showMatchPoints}
+          />
+          <PodiumExtrasSection
+            user={user}
+            roomId={roomId}
+            teamLabel={teamLabel}
+            firstId={suggestedChampionId}
+            secondId={suggestedRunnerUpId}
+            thirdId={suggestedThirdId}
+            fourthId={suggestedFourthId}
+            sectionIndex={sectionPodium}
+            readOnly={readOnly}
+          />
+        </>
+      )}
 
       <TournamentSpecialPlayersSection
         roomId={roomId}
@@ -1029,6 +1111,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
           onBonusDraftChange={onBonusDraftChange}
           incompleteQuestionIds={missingBonusQuestionIds}
           readOnly={readOnly}
+          sectionIndex={sectionExtras}
         />
       ) : null}
 

@@ -7,13 +7,19 @@ export function LandingHero() {
     <section className="landing-hero" aria-labelledby="landing-hero-title">
       <div className="landing-container landing-hero__grid">
         <div>
-          <p className="landing-hero__badge">Mundial 2026 · Predicciones en vivo</p>
-          <h1 id="landing-hero-title" className="landing-display">
-            Tu quiniela premium del Mundial
+          <p className="landing-hero__badge">Mundial 2026 · Torneo de pronósticos</p>
+          <h1 id="landing-hero-title" className="landing-display landing-hero__title">
+            Vive el Mundial
+            <br />
+            partido a partido
+            <br />
+            pronostica y
+            <br />
+            gana premios
           </h1>
           <p className="landing-hero__lead">
-            Compite en salas privadas, suma puntos con marcadores exactos y escala el ranking en tiempo
-            real. Emoción de sportsbook, claridad de fantasy.
+            Crea salas privadas para competir con tus amigos, suma puntos con tus marcadores y escala
+            el ranking en tiempo real. La verdadera competencia mundialista está acá.
           </p>
           <div className="landing-hero__ctas">
             <ParticiparLink className="landing-btn landing-btn--gold landing-btn--lg" />
@@ -24,20 +30,32 @@ export function LandingHero() {
               Ver cómo funciona
             </LandingAnchorLink>
           </div>
-          <div className="landing-hero__metrics">
-            <div className="landing-hero__metric">
-              <strong>72</strong>
-              <span>partidos de grupos</span>
-            </div>
-            <div className="landing-hero__metric">
-              <strong>+22</strong>
-              <span>pts por campeón</span>
-            </div>
-            <div className="landing-hero__metric">
-              <strong>Live</strong>
-              <span>ranking automático</span>
-            </div>
-          </div>
+          <ul className="landing-hero__features" aria-label="Ventajas del torneo">
+            <li className="landing-hero__feature">
+              <span className="landing-hero__feature-icon" aria-hidden>
+                👥
+              </span>
+              <span className="landing-hero__feature-text">
+                <strong>3</strong> Ganadores
+              </span>
+            </li>
+            <li className="landing-hero__feature">
+              <span className="landing-hero__feature-icon" aria-hidden>
+                🎁
+              </span>
+              <span className="landing-hero__feature-text">
+                <strong className="landing-hero__feature-accent">Bonus</strong> En cada partido
+              </span>
+            </li>
+            <li className="landing-hero__feature">
+              <span className="landing-hero__feature-icon" aria-hidden>
+                ⚡
+              </span>
+              <span className="landing-hero__feature-text">
+                <strong className="landing-hero__feature-accent">Live</strong> ranking automático
+              </span>
+            </li>
+          </ul>
         </div>
         <LandingProductMock />
       </div>

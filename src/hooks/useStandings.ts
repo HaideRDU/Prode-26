@@ -27,15 +27,14 @@ export function useStandings(roomId: string | undefined, currentUserId?: string)
   useEffect(() => {
     setUserMetaById({})
     previousRanksRef.current = {}
+    setRawStandings([])
+    setLoading(!!roomId)
   }, [roomId])
 
   useEffect(() => {
     if (!roomId) {
-      setRawStandings([])
-      setLoading(false)
       return
     }
-    setLoading(true)
     setError(null)
     const unsub = subscribeStandingsForRoom(
       roomId,
@@ -45,7 +44,6 @@ export function useStandings(roomId: string | undefined, currentUserId?: string)
         setLoading(false)
       },
       (e) => {
-        setRawStandings([])
         setError(e.message)
         setLoading(false)
       },

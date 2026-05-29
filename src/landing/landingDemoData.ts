@@ -22,6 +22,38 @@ export const LANDING_RANKING = [
   { rank: 5, name: 'lucia_26', pts: 187, exact: 7, trend: '+3', rankDelta: -2 },
 ]
 
+export const LANDING_MOCK_PREDICTIONS = [
+  {
+    homeId: 'ARG',
+    awayId: 'MEX',
+    homeScore: 2,
+    awayScore: 1,
+    status: 'scored' as const,
+    points: 5,
+  },
+  {
+    homeId: 'ESP',
+    awayId: 'BRA',
+    homeScore: 1,
+    awayScore: 1,
+    status: 'scored' as const,
+    points: 1,
+  },
+  {
+    homeId: 'USA',
+    awayId: 'FRA',
+    homeScore: 0,
+    awayScore: 2,
+    status: 'pending' as const,
+  },
+]
+
+export const LANDING_MOCK_GROUP_RANKING = [
+  { rank: 1, name: 'Randy', pts: 248, medal: 'gold' as const },
+  { rank: 2, name: 'JP@23', pts: 231, medal: 'silver' as const },
+  { rank: 3, name: 'Paul', pts: 214, medal: 'bronze' as const, rankDelta: 2, highlight: true },
+]
+
 export type LandingBracketMatchData = {
   home: string
   away: string

@@ -727,6 +727,58 @@ html:not([data-theme='dark']) .app-shell--wc26 .app-topbar {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
+.rules-page-card .rules-lead {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.rules-page-card h2 {
+  margin: 1.5rem 0 0.6rem;
+  font-size: 1.15rem;
+}
+
+.rules-page-card h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.rules-detail-block {
+  margin-top: 1.25rem;
+}
+
+.rules-example {
+  margin: 0.75rem 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.rules-example p {
+  margin: 0 0 0.65rem;
+}
+
+.rules-example p:last-child {
+  margin-bottom: 0;
+}
+
+.rules-glossary {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.rules-points-hint {
+  margin: 0.35rem 0 0.85rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .rules-points-tables {
   margin: 16px 0;
 }

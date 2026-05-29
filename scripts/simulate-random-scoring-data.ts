@@ -15,6 +15,7 @@ import type {
 } from '../src/types/predictions.ts'
 import { penaltiesWinnerFlagsForTeamA } from '../src/domain/matchPenalties.ts'
 import { cascadeKoMatches } from './lib/wc26BracketCascade.ts'
+import { logRecalculateStandingsSummary } from './lib/runRecalculateStandings.ts'
 import { finishedMatchUpdate, koMatchTeamsUpdate } from './lib/matchFinishedUpdate.ts'
 import { formatPodiumLog, syncTournamentResultsFromMatches } from './lib/syncTournamentResultsFromMatches.ts'
 
@@ -328,9 +329,7 @@ async function main(): Promise<void> {
   console.log(
     '[simulate:scoring] Los cruces KO se rellenan en cascada (grupos → R32 → … → final), igual que en predicciones.',
   )
-  console.log(
-    '[simulate:scoring] Recálculo de standings: Cloud Functions onMatchWrite / onPredictionWrite.',
-  )
+  await logRecalculateStandingsSummary(db, { label: 'simulate:scoring' })
 }
 
 main().catch((e) => {

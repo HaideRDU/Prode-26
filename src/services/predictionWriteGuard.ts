@@ -22,6 +22,26 @@ export function assertGeneralPredictionsOpen(nowMs: number = Date.now()): void {
   }
 }
 
+/** Partidos que ya terminaron (o se cancelaron) no admiten cambios de marcador. */
+export function isMatchPredictionEditable(status: string | undefined): boolean {
+  return status === 'scheduled' || status === 'live'
+}
+
+export function assertMatchPredictionOpen(status: string | undefined): void {
+  if (isMatchPredictionEditable(status)) return
+  throw new PredictionWriteBlockedError(
+    'Este partido ya finalizó. No podés modificar tu predicción para ese encuentro.',
+  )
+}
+
+/** Si el torneo ya tiene resultados, no se abre una predicción nueva sin haber finalizado antes. */
+export function assertCanStartRoomPrediction(hasFinishedMatches: boolean, predictionFinalized: boolean): void {
+  if (!hasFinishedMatches || predictionFinalized) return
+  throw new PredictionWriteBlockedError(
+    'El torneo ya comenzó (hay partidos con resultado). No podés crear ni cambiar una predicción en esta sala.',
+  )
+}
+
 export function assertPlayerPickOpen(
   scheduledAt: unknown,
   nowMs: number = Date.now(),

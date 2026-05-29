@@ -2,6 +2,7 @@ import {
   collection,
   deleteField,
   doc,
+  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -12,8 +13,13 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { toTeamOnlyPredictionPayload } from '../domain/matchFields'
-import { assertGeneralPredictionsOpen, assertPlayerPickOpen } from './predictionWriteGuard'
+import {
+  assertGeneralPredictionsOpen,
+  assertMatchPredictionOpen,
+  assertPlayerPickOpen,
+} from './predictionWriteGuard'
 import type {
+  MatchDoc,
   MatchPredictionPayload,
   PlayerPerMatchPayload,
   PredictionDoc,
@@ -21,6 +27,20 @@ import type {
 } from '../types/predictions'
 
 const PREDICTIONS = 'predictions'
+
+async function assertMatchIdsOpenForWrite(matchIds: string[]): Promise<void> {
+  const firestore = db
+  if (!firestore) throw new Error('Firestore no inicializado')
+  assertGeneralPredictionsOpen()
+  const unique = [...new Set(matchIds)]
+  await Promise.all(
+    unique.map(async (matchId) => {
+      const snap = await getDoc(doc(firestore, 'matches', matchId))
+      if (!snap.exists()) return
+      assertMatchPredictionOpen((snap.data() as MatchDoc).status)
+    }),
+  )
+}
 
 function predictionDocId(roomId: string, userId: string, key: string): string {
   const safe = key.replace(/\//g, '_')
@@ -62,7 +82,7 @@ export async function saveMatchPrediction(
   payload: MatchPredictionPayload,
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
-  assertGeneralPredictionsOpen()
+  await assertMatchIdsOpenForWrite([matchId])
   const id = predictionDocId(roomId, userId, `m_${matchId}`)
   const ref = doc(db, PREDICTIONS, id)
   const teamPayload = toTeamOnlyPredictionPayload(payload)
@@ -91,7 +111,7 @@ export async function saveGroupPredictionsBatch(
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
   if (entries.length === 0) return
-  assertGeneralPredictionsOpen()
+  await assertMatchIdsOpenForWrite(entries.map((e) => e.matchId))
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
     const teamPayload = toTeamOnlyPredictionPayload(payload)
@@ -124,7 +144,7 @@ export async function saveKoPredictionsBatch(
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
   if (entries.length === 0) return
-  assertGeneralPredictionsOpen()
+  await assertMatchIdsOpenForWrite(entries.map((e) => e.matchId))
   const batch = writeBatch(db)
   for (const { matchId, payload } of entries) {
     const teamPayload = toTeamOnlyPredictionPayload(payload)

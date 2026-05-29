@@ -11,6 +11,8 @@ export function PodiumExtrasSection({
   secondId,
   thirdId,
   fourthId,
+  sectionIndex = 1,
+  readOnly = false,
 }: {
   user: User
   roomId: string
@@ -19,10 +21,14 @@ export function PodiumExtrasSection({
   secondId: string | null
   thirdId: string | null
   fourthId: string | null
+  sectionIndex?: number
+  /** Si true, solo muestra el podio sin escribir en Firestore (evita recalcular standings). */
+  readOnly?: boolean
 }) {
   const lastSyncedKey = useRef<string>('')
 
   useEffect(() => {
+    if (readOnly) return
     if (!firstId || !secondId || !thirdId || !fourthId) return
     const key = `${firstId}|${secondId}|${thirdId}|${fourthId}`
     if (lastSyncedKey.current === key) return
@@ -39,7 +45,7 @@ export function PodiumExtrasSection({
         lastSyncedKey.current = ''
       }
     })()
-  }, [roomId, user.uid, firstId, secondId, thirdId, fourthId])
+  }, [readOnly, roomId, user.uid, firstId, secondId, thirdId, fourthId])
 
   function name(id: string | null) {
     return id ? teamLabel(id) : '—'
@@ -47,7 +53,7 @@ export function PodiumExtrasSection({
 
   return (
     <section className="pred-podium-section">
-      <h2 className="pred-section-title">1 · Podio</h2>
+      <h2 className="pred-section-title">{sectionIndex} · Podio</h2>
       <div className="pred-podium-grid pred-podium-grid--readonly">
         <div className="pred-podium-slot">
           <span className="pred-podium-rank">1º</span>

@@ -1,32 +1,108 @@
-import { LandingBadge } from './LandingBadge'
-import { LandingProgressBar } from './LandingProgressBar'
+import { LANDING_MOCK_GROUP_RANKING, LANDING_MOCK_PREDICTIONS } from '../landingDemoData'
+import { TeamFlagName } from '../../predictions/TeamFlagName'
+import { LandingRankMovement } from './LandingRankMovement'
+
+const MEDAL_LABEL: Record<string, string> = {
+  gold: '1.er puesto',
+  silver: '2.º puesto',
+  bronze: '3.er puesto',
+}
+
+const MEDAL_ICON: Record<string, string> = {
+  gold: '🏆',
+  silver: '🥈',
+  bronze: '🥉',
+}
 
 export function LandingProductMock() {
   return (
     <aside className="landing-glass landing-mock" aria-label="Vista previa del panel de juego">
       <div className="landing-mock__header">
-        <LandingBadge variant="lime">En vivo</LandingBadge>
-        <span className="landing-badge landing-badge--gold">+124 pts posibles</span>
+        <span className="landing-badge landing-badge--live">
+          <span className="landing-badge--live__dot" aria-hidden />
+          En vivo
+        </span>
+        <span className="landing-mock__pts-total">+124 pts acumulados</span>
       </div>
-      <p className="landing-mock__progress-label">Progreso de predicciones</p>
-      <LandingProgressBar value={68} />
-      <p className="landing-muted" style={{ fontSize: '0.8125rem', marginTop: '0.5rem' }}>
-        34 de 50 partidos listos · 3 especiales pendientes
-      </p>
-      <div className="landing-mock__rank">
-        <div className="landing-mock__rank-row landing-mock__rank-row--you">
-          <span>#3 tú</span>
-          <strong>214 pts</strong>
-        </div>
-        <div className="landing-mock__rank-row">
-          <span>#1 carlos_mx</span>
-          <span>248</span>
-        </div>
-        <div className="landing-mock__rank-row">
-          <span>#2 ana_prode</span>
-          <span>231</span>
-        </div>
-      </div>
+
+      <section className="landing-mock__block" aria-labelledby="landing-mock-preds-title">
+        <h3 id="landing-mock-preds-title" className="landing-mock__section-title">
+          Tus pronósticos
+        </h3>
+        <ul className="landing-mock-preds">
+          {LANDING_MOCK_PREDICTIONS.map((row) => (
+            <li key={`${row.homeId}-${row.awayId}`} className="landing-mock-pred">
+              <TeamFlagName teamId={row.homeId} name={row.homeId} size={24} compact />
+              <span className="landing-mock-pred__score" aria-label="Marcador predicho">
+                {row.homeScore} - {row.awayScore}
+              </span>
+              <TeamFlagName teamId={row.awayId} name={row.awayId} size={24} compact />
+              {row.status === 'scored' ? (
+                <span className="landing-mock-pred__pts">+{row.points} pts</span>
+              ) : (
+                <span className="landing-mock-pred__pending">Pendiente</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="landing-mock__block" aria-labelledby="landing-mock-rank-title">
+        <h3 id="landing-mock-rank-title" className="landing-mock__section-title">
+          Ranking del grupo
+        </h3>
+        <table className="landing-mock-rank-table">
+          <caption className="visually-hidden">Clasificación de ejemplo en la sala</caption>
+          <thead>
+            <tr>
+              <th scope="col" className="landing-mock-rank-table__col-rank">
+                #
+              </th>
+              <th scope="col">Jugador</th>
+              <th scope="col" className="landing-mock-rank-table__col-pts">
+                Pts
+              </th>
+              <th scope="col" className="landing-mock-rank-table__col-mov">
+                Mov.
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {LANDING_MOCK_GROUP_RANKING.map((row) => (
+              <tr
+                key={row.name}
+                className={row.highlight ? 'landing-mock-rank-table__you' : undefined}
+              >
+                <td className="landing-mock-rank-table__col-rank">
+                  <span
+                    className="landing-mock-rank-medal"
+                    aria-label={MEDAL_LABEL[row.medal]}
+                    title={MEDAL_LABEL[row.medal]}
+                  >
+                    {MEDAL_ICON[row.medal]}
+                  </span>
+                </td>
+                <td>
+                  <span className="landing-mock-rank-table__name">{row.name}</span>
+                </td>
+                <td className="landing-mock-rank-table__col-pts">
+                  <strong>{row.pts}</strong>
+                  <span className="landing-mock-rank-table__pts-suffix"> pts</span>
+                </td>
+                <td className="landing-mock-rank-table__col-mov">
+                  {row.rankDelta != null ? (
+                    <LandingRankMovement delta={row.rankDelta} />
+                  ) : (
+                    <span className="landing-rank-move landing-rank-move--flat" aria-hidden>
+                      —
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
     </aside>
   )
 }

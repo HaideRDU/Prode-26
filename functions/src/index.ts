@@ -12,7 +12,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler'
 import * as logger from 'firebase-functions/logger'
 import { linkTsdbFixtures } from './theSportsDb/linkFixtures'
 import { syncMatchesFromTsdb as runTsdbSync } from './theSportsDb/syncMatches'
-import { getAllRoomIds, getRoomIdsForMatch, recalculateStandingsForRoom } from './recalculateRoom'
+import { getAllRoomIds, recalculateStandingsForRoom } from './recalculateRoom'
 
 initializeApp()
 const db = getFirestore()
@@ -21,8 +21,9 @@ const GLOBAL_ROOM_ID = 'global'
 export const onMatchWrite = onDocumentWritten('matches/{matchId}', async (event) => {
   const matchId = event.params.matchId as string
   try {
-    const roomIds = await getRoomIdsForMatch(db, matchId)
-    logger.info(`onMatchWrite: matchId=${matchId} rooms=${roomIds.join(',')}`)
+    // Un partido terminado afecta puntos de partido, avance en llave y podio en todas las salas.
+    const roomIds = await getAllRoomIds(db)
+    logger.info(`onMatchWrite: matchId=${matchId} recalculating ${roomIds.length} room(s)`)
     for (const roomId of roomIds) {
       await recalculateStandingsForRoom(db, roomId)
     }

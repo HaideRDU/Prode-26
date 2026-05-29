@@ -42,6 +42,11 @@ const ROUND_TITLE: Record<string, string> = {
   final: 'Final',
 }
 
+const KO_ROUND_ORDER_REVIEW = ['final', 'third', 'sf', 'qf', 'r16', 'r32'] as const
+const KO_ROUND_ORDER_CASCADE = ['r32', 'r16', 'qf', 'sf', 'third', 'final'] as const
+
+export type KnockoutLayoutMode = 'cascade' | 'review'
+
 export function KnockoutSection({
   groupPredByMatchId,
   koPredByMatchId,
@@ -49,6 +54,9 @@ export function KnockoutSection({
   teamLabel,
   onKoDraftChange,
   readOnly = false,
+  layoutMode = 'review',
+  sectionIndex = 2,
+  showPoints = false,
 }: {
   groupPredByMatchId: Map<string, MatchPredictionPayload>
   koPredByMatchId: Map<string, MatchPredictionPayload>
@@ -56,6 +64,10 @@ export function KnockoutSection({
   teamLabel: (id: string) => string
   onKoDraftChange: (matchId: string, payload: MatchPredictionPayload | null) => void
   readOnly?: boolean
+  /** cascade: dieciseisavos → final; review: final → dieciseisavos (predicción ya hecha). */
+  layoutMode?: KnockoutLayoutMode
+  sectionIndex?: number
+  showPoints?: boolean
 }) {
   const ctx = useMemo(
     () => buildKoPredictionsContext(groupPredByMatchId, koPredByMatchId),
@@ -72,8 +84,7 @@ export function KnockoutSection({
     return m
   }, [])
 
-  /** Final → semis → cuartos → octavos → dieciseisavos (tercer puesto tras la final). */
-  const roundOrder = ['final', 'third', 'sf', 'qf', 'r16', 'r32'] as const
+  const roundOrder = layoutMode === 'cascade' ? KO_ROUND_ORDER_CASCADE : KO_ROUND_ORDER_REVIEW
 
   const hasOfficialBracketMismatch = useMemo(() => {
     for (const def of WC26_KO_MATCHES) {
@@ -97,12 +108,19 @@ export function KnockoutSection({
 
   return (
     <section className="pred-knockout-stage">
-      <h2 className="pred-section-title">2 · Eliminatorias</h2>
+      <h2 className="pred-section-title">{sectionIndex} · Eliminatorias</h2>
       <p className="app-muted pred-knockout-note">
-        Los cruces se rellenan con tus clasificados predichos. Marcador en dos campos (Equipo A y Equipo B). Si
-        empatas en goles, elegí ganador en penales. Los campos KO nunca quedan vacíos: si borrás un valor vuelve
-        a 0 automáticamente. Cuando grupos, eliminatorias y extras estén completos,
-        usá <strong>Guardar predicción</strong> abajo para persistir todo de una vez.
+        {layoutMode === 'cascade' ? (
+          <>
+            Completá primero la fase de grupos; después avanzá ronda a ronda desde dieciseisavos hasta la final.
+            Los cruces se arman con tus clasificados predichos.
+          </>
+        ) : (
+          <>Los cruces se rellenan con tus clasificados predichos.</>
+        )}{' '}
+        Marcador en dos campos (Equipo A y Equipo B). Si empatas en goles, elegí ganador en penales. Los campos KO
+        nunca quedan vacíos: si borrás un valor vuelve a 0 automáticamente. Cuando grupos, eliminatorias y extras
+        estén completos, usá <strong>Guardar predicción</strong> abajo para persistir todo de una vez.
       </p>
       {hasOfficialBracketMismatch ? (
         <p className="pred-ko-bracket-mismatch-note app-muted">
@@ -138,6 +156,7 @@ export function KnockoutSection({
                     teamLabel={teamLabel}
                     onKoDraftChange={onKoDraftChange}
                     readOnly={readOnly}
+                    showPoints={showPoints}
                   />
                 )
               })}
@@ -159,6 +178,7 @@ function KoMatchRow({
   teamLabel,
   onKoDraftChange,
   readOnly,
+  showPoints,
 }: {
   matchNum: number
   matchId: string
@@ -169,6 +189,7 @@ function KoMatchRow({
   teamLabel: (id: string) => string
   onKoDraftChange: (matchId: string, payload: MatchPredictionPayload | null) => void
   readOnly: boolean
+  showPoints: boolean
 }) {
   const [goalsA, setGoalsA] = useState<number>(initial.goalsTeamA ?? 0)
   const [goalsB, setGoalsB] = useState<number>(initial.goalsTeamB ?? 0)
@@ -184,17 +205,16 @@ function KoMatchRow({
 
   const incomplete = !teamAId || !teamBId
 
-  // Las predicciones se bloquean solo por readOnly (cierre general), no por el estado oficial del partido.
-  const disabled = readOnly || incomplete
-
-  const draw = goalsA === goalsB
-  const pensIncomplete =
-    Boolean(teamAId && teamBId) && draw && pensTeamAWins === null && !disabled
-
   const locked =
     Boolean(firestoreMatch) &&
     firestoreMatch!.status !== 'scheduled' &&
     firestoreMatch!.status !== 'live'
+
+  const disabled = readOnly || incomplete || locked
+
+  const draw = goalsA === goalsB
+  const pensIncomplete =
+    Boolean(teamAId && teamBId) && draw && pensTeamAWins === null && !disabled
 
   const predictionForScore: MatchPredictionPayload = toTeamOnlyPredictionPayload({
     goalsTeamA: goalsA,
@@ -205,6 +225,7 @@ function KoMatchRow({
   })
 
   const scoreDetails =
+    showPoints &&
     locked &&
     firestoreMatch?.status === 'finished' &&
     matchGoalsTeamA(firestoreMatch) != null &&

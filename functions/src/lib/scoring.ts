@@ -243,16 +243,26 @@ function scoreAdditiveMatch(
     winnerOrDrawHit = true
   }
 
+  const predSign = matchResultSign(predTeamA, predTeamB)
+  const actualSign = matchResultSign(actualA, actualB)
+  const allowGoalLines =
+    !koContext ||
+    predSign === actualSign ||
+    (predSign !== 0 &&
+      actualSign !== 0 &&
+      predWinner !== 'draw' &&
+      predWinner === actualWinner)
+
   const actualGoalsForPredA =
     predSlotAId === actualSlotAId ? actualA : predSlotAId === actualSlotBId ? actualB : null
   const actualGoalsForPredB =
     predSlotBId === actualSlotAId ? actualA : predSlotBId === actualSlotBId ? actualB : null
 
-  if (actualGoalsForPredA !== null && predTeamA === actualGoalsForPredA) {
+  if (allowGoalLines && actualGoalsForPredA !== null && predTeamA === actualGoalsForPredA) {
     points += row.goalsTeamA
     goalsAHit = true
   }
-  if (actualGoalsForPredB !== null && predTeamB === actualGoalsForPredB) {
+  if (allowGoalLines && actualGoalsForPredB !== null && predTeamB === actualGoalsForPredB) {
     points += row.goalsTeamB
     goalsBHit = true
   }
@@ -268,6 +278,7 @@ function scoreAdditiveMatch(
   }
 }
 
+/** Rivales distintos al cruce oficial: solo puntos por acertar el ganador (por ID de selección). */
 function scoreKnockoutWrongOpponents(
   prediction: MatchPredictionPayload,
   match: MatchForScore,
@@ -275,22 +286,25 @@ function scoreKnockoutWrongOpponents(
   actualAwayId: string,
   predHomeId: string,
   predAwayId: string,
-  actualH: number,
-  actualA: number,
+  _actualH: number,
+  _actualA: number,
   row: MatchPointsRow,
 ): MatchScoreDetails {
-  return scoreAdditiveMatch(
-    row,
-    predictionGoalsTeamA(prediction),
-    predictionGoalsTeamB(prediction),
-    actualH,
-    actualA,
-    predHomeId,
-    predAwayId,
-    actualHomeId,
-    actualAwayId,
-    { prediction, match },
-  )
+  const empty: MatchScoreDetails = {
+    points: 0,
+    exactScoreHit: false,
+    oneScoreHit: false,
+    winnerOrDrawHit: false,
+  }
+  const predWinner = koPredictedWinnerTeamId(prediction, predHomeId, predAwayId)
+  const actualWinner = koActualWinnerTeamId(match, actualHomeId, actualAwayId)
+  if (predWinner === 'draw' || predWinner !== actualWinner) return empty
+  return {
+    points: row.winnerOrDraw,
+    exactScoreHit: false,
+    oneScoreHit: false,
+    winnerOrDrawHit: true,
+  }
 }
 
 export interface MatchScoreDetails {

@@ -14,6 +14,8 @@ export function GroupStageSection({
   onDraftChange,
   teamLabel,
   groupLocked,
+  sectionIndex = 3,
+  showPoints = false,
 }: {
   matchesByGroup: Map<string, (MatchDoc & { id: string })[]>
   draftByMatchId: Map<string, GroupDraftEntry>
@@ -21,13 +23,16 @@ export function GroupStageSection({
   onDraftChange: (matchId: string, goalsHome: number | null, goalsAway: number | null) => void
   teamLabel: (id: string | null | undefined) => string
   groupLocked: boolean
+  sectionIndex?: number
+  /** Solo si la predicción cuenta para clasificación (finalizada). */
+  showPoints?: boolean
 }) {
   const groups = orderedGroupIds().filter((g) => matchesByGroup.has(g))
   if (groups.length === 0) return null
 
   return (
     <section className="pred-group-stage">
-      <h2 className="pred-section-title">3 · Fase de grupos</h2>
+      <h2 className="pred-section-title">{sectionIndex} · Fase de grupos</h2>
       <p className="app-muted pred-group-intro">
         Marcador en dos campos (goles Equipo A y Equipo B). Se guarda junto con eliminatorias y extras con el
         botón inferior cuando todo esté completo.
@@ -55,6 +60,7 @@ export function GroupStageSection({
                   isFilled={filledMatchIds.has(m.id)}
                   teamLabel={teamLabel}
                   disabled={groupLocked || (m.status !== 'scheduled' && m.status !== 'live')}
+                  showPoints={showPoints}
                   onChange={(h, a) => onDraftChange(m.id, h, a)}
                 />
               ))}
@@ -72,6 +78,7 @@ function GroupMatchRow({
   isFilled,
   teamLabel,
   disabled,
+  showPoints,
   onChange,
 }: {
   match: MatchDoc & { id: string; status: MatchStatus }
@@ -79,6 +86,7 @@ function GroupMatchRow({
   isFilled: boolean
   teamLabel: (id: string | null | undefined) => string
   disabled: boolean
+  showPoints: boolean
   onChange: (goalsHome: number | null, goalsAway: number | null) => void
 }) {
   const teamAId = matchTeamAId(match)
@@ -86,6 +94,7 @@ function GroupMatchRow({
   const homeStr = String(draft.goalsHome ?? 0)
   const awayStr = String(draft.goalsAway ?? 0)
   const earnedPoints =
+    showPoints &&
     disabled &&
     match.status === 'finished' &&
     matchGoalsTeamA(match) != null &&
