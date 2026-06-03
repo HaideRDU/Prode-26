@@ -44,6 +44,7 @@ export function PlayerPickFixtureCard({
   roomId,
   userId,
   timeZone,
+  groupStageEarlyPick = false,
 }: {
   match: MatchDoc & { id: string }
   teamLabel: (id: string) => string
@@ -52,6 +53,8 @@ export function PlayerPickFixtureCard({
   roomId: string
   userId: string
   timeZone: string
+  /** Fase de grupos: elegir jugador desde ya; cierre 23:59 del día anterior al partido. */
+  groupStageEarlyPick?: boolean
 }) {
   const { options, loading: rosterLoading, hasRoster } = useMatchPlayerOptions(match)
   const [localKey, setLocalKey] = useState(savedPlayerKey ?? '')
@@ -64,7 +67,11 @@ export function PlayerPickFixtureCard({
   }, [savedPlayerKey, match.id])
 
   const timeState =
-    mode === 'pick' ? getPlayerPickCardState(match, Date.now(), hasRoster && !rosterLoading) : 'blocked'
+    mode === 'pick'
+      ? getPlayerPickCardState(match, Date.now(), hasRoster && !rosterLoading, DEFAULT_RULESET, {
+          allowGroupStageEarlyPick: groupStageEarlyPick,
+        })
+      : 'blocked'
   const effectiveState: PlayerPickCardState =
     mode === 'pick' && (!hasRoster || rosterLoading) ? 'blocked' : timeState
 
@@ -97,7 +104,8 @@ export function PlayerPickFixtureCard({
   const tzShort = formatTimeZoneShort(timeZone)
   const opensAt = getPlayerPerMatchOpensAt(match.scheduledAt)
   const opensLabel = opensAt ? formatMatchTime(opensAt, timeZone) : null
-  const showOpensHint = mode === 'pick' && effectiveState === 'blocked' && opensLabel
+  const showOpensHint =
+    mode === 'pick' && effectiveState === 'blocked' && opensLabel && !groupStageEarlyPick
   const ptsPerGoal = playerGoalsPerGoal(match)
   const pickedName = allOptions.find((o) => o.playerKey === localKey)?.name
 

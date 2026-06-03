@@ -8,6 +8,19 @@ import {
 import { sortByTournamentCatalog } from '../domain/matchCatalogOrder'
 import type { MatchDoc } from '../types/predictions'
 
+export function filterGroupStageMatches(
+  matches: (MatchDoc & { id: string })[],
+): (MatchDoc & { id: string })[] {
+  return sortByTournamentCatalog(matches.filter((m) => m.phase === 'group'))
+}
+
+/** Fase de grupos en curso: queda al menos un partido programado o en juego. */
+export function isGroupStagePhaseActive(matches: (MatchDoc & { id: string })[]): boolean {
+  const groupMatches = matches.filter((m) => m.phase === 'group')
+  if (groupMatches.length === 0) return false
+  return groupMatches.some((m) => m.status === 'scheduled' || m.status === 'live')
+}
+
 export type PlayerPickCardState = 'enabled' | 'blocked'
 
 /** Partidos con ventana de jugador abierta antes de las 24 h (p. ej. apertura del torneo). */
@@ -75,14 +88,19 @@ export function getPlayerPickCardState(
   nowMs: number,
   hasRoster: boolean,
   config: RulesetConfig = DEFAULT_RULESET,
+  options?: { allowGroupStageEarlyPick?: boolean },
 ): PlayerPickCardState {
   if (!hasRoster || match.status !== 'scheduled') return 'blocked'
   const lock = pickLockMs(match, config)
   if (lock === null) return 'blocked'
+  if (nowMs > lock) return 'blocked'
+
+  if (options?.allowGroupStageEarlyPick && match.phase === 'group') return 'enabled'
+
   if (isPlayerPickEarlyAccessOpen(match, nowMs, config)) return 'enabled'
   const opens = getPlayerPerMatchOpensAt(match.scheduledAt, config)?.getTime()
   if (opens === undefined || !Number.isFinite(opens)) return 'blocked'
-  if (nowMs >= opens && nowMs < lock) return 'enabled'
+  if (nowMs >= opens) return 'enabled'
   return 'blocked'
 }
 

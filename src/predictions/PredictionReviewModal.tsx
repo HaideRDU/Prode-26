@@ -38,7 +38,11 @@ export function PredictionReviewModal({
   const hasActiveBonusQuestions = review.activeQuestionMetas.length > 0
 
   return (
-    <div className="modal-overlay pred-rules-modal-overlay" role="presentation" onClick={onClose}>
+    <div
+      className="modal-overlay pred-rules-modal-overlay prediction-review-modal-overlay"
+      role="presentation"
+      onClick={onClose}
+    >
       <div
         className="modal-card pred-rules-modal prediction-review-modal"
         role="dialog"

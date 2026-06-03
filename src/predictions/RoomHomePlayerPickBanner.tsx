@@ -2,7 +2,7 @@
  * Jugador por partido: partidos en juego + predicción en ventana (24 h antes → 1 h antes del pitazo).
  */
 
-import { useId, useMemo, type ReactNode } from 'react'
+import { useId, useMemo, useState, type ReactNode } from 'react'
 import { useMatchList } from '../hooks/useMatchList'
 import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
 import { useTeamLabels } from '../hooks/useTeamLabels'
@@ -13,7 +13,8 @@ import {
 } from '../config/ruleset'
 import { useMatchTimeFormatters } from '../hooks/useUserTimeZone'
 import { formatTimeZoneShort } from '../utils/formatMatchTime'
-import { classifyPlayerPickMatches } from '../utils/playerPerMatchWindows'
+import { classifyPlayerPickMatches, isGroupStagePhaseActive } from '../utils/playerPerMatchWindows'
+import { GroupStagePlayerPickModal } from './GroupStagePlayerPickModal'
 import { PlayerPickFixtureCard } from './PlayerPickFixtureCard'
 
 type BannerVariant = 'private' | 'global'
@@ -85,6 +86,7 @@ export function RoomHomePlayerPickBanner({
   titleTrailing?: ReactNode
 }) {
   const isPrivate = variant === 'private'
+  const [showGroupStageModal, setShowGroupStageModal] = useState(false)
   const { matches } = useMatchList()
   const { label: teamLabel } = useTeamLabels()
   const { picksByMatchId } = usePlayerPerMatchPicks(roomId, userId)
@@ -101,6 +103,7 @@ export function RoomHomePlayerPickBanner({
   const hasLive = classified.live.length > 0
   const predictCards = [...classified.prediction, ...classified.preview]
   const hasPredictBlock = predictCards.length > 0
+  const groupStageActive = useMemo(() => isGroupStagePhaseActive(matches), [matches])
 
   const previewMatch = classified.preview[0]
   const previewOpensAt = previewMatch
@@ -173,6 +176,17 @@ export function RoomHomePlayerPickBanner({
             <strong>11:59 p. m. del día anterior</strong> al partido; podés elegir desde{' '}
             <strong>{openH} h antes</strong> del pitazo.
           </p>
+          {groupStageActive ? (
+            <div className="room-home-player-banner__group-stage-btn-wrap">
+              <button
+                type="button"
+                className="room-home-player-banner__group-stage-btn"
+                onClick={() => setShowGroupStageModal(true)}
+              >
+                Ver partidos de fase de grupos
+              </button>
+            </div>
+          ) : null}
           <div className="player-pick-fixture-grid player-pick-fixture-grid--predict">
             {predictCards.map((m) => (
               <PlayerPickFixtureCard
@@ -188,6 +202,36 @@ export function RoomHomePlayerPickBanner({
             ))}
           </div>
         </div>
+      ) : groupStageActive ? (
+        <div className="room-home-player-banner__block room-home-player-banner__block--predict">
+          <h3 className="room-home-player-banner__hero-title">Predicción partido a disputar</h3>
+          <p className="room-home-player-banner__hero-lead">
+            Escogé un jugador por partido: puntos por gol según fase (1–5). Cierre{' '}
+            <strong>11:59 p. m. del día anterior</strong> al partido; podés elegir desde{' '}
+            <strong>{openH} h antes</strong> del pitazo.
+          </p>
+          <div className="room-home-player-banner__group-stage-btn-wrap">
+            <button
+              type="button"
+              className="room-home-player-banner__group-stage-btn"
+              onClick={() => setShowGroupStageModal(true)}
+            >
+              Ver partidos de fase de grupos
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {showGroupStageModal && roomId ? (
+        <GroupStagePlayerPickModal
+          matches={matches}
+          teamLabel={teamLabel}
+          picksByMatchId={picksByMatchId}
+          roomId={roomId}
+          userId={userId ?? ''}
+          timeZone={timeZone}
+          onClose={() => setShowGroupStageModal(false)}
+        />
       ) : null}
 
       {classified.live.length > 0 || classified.prediction.length > 0 ? (
