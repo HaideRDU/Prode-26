@@ -959,11 +959,6 @@
   color: var(--landing-slate-400);
 }
 
-.landing-mock-rank-medal {
-  font-size: 1rem;
-  line-height: 1;
-}
-
 .landing-mock-rank-table__you td {
   background: rgba(250, 204, 21, 0.1);
   font-weight: 700;
@@ -1167,6 +1162,18 @@
 .landing-rank-pos--3 {
   background: #e2e8f0;
   color: var(--landing-navy);
+}
+
+.landing-rank-pos--plain {
+  background: transparent;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  border-radius: 0;
+  font-size: 0.8125rem;
 }
 
 .landing-rank-move {

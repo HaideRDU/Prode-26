@@ -20,6 +20,7 @@ import { DEFAULT_RULESET } from '../config/ruleset'
 import { ADVANCEMENT_POINTS, KO_EXACT_SCORE_BY_ROUND, MATCH_POINTS_BY_PHASE } from '../services/scoring'
 import { LandingBracketBoard } from './components/LandingBracketBoard'
 import { LandingRankMovement } from './components/LandingRankMovement'
+import { RankPositionBadge } from '../components/RankPositionBadge'
 import { TeamFlagName } from '../predictions/TeamFlagName'
 
 const POINT_TABS = [
@@ -310,11 +311,10 @@ export function LandingPage({ uiControl }: { uiControl?: UiControl }) {
                 {LANDING_RANKING.map((row) => (
                   <tr key={row.rank} className={row.highlight ? 'highlight' : undefined}>
                     <td className="landing-rank-table__center landing-rank-table__col-rank">
-                      <span
-                        className={`landing-rank-pos${row.rank <= 3 ? ` landing-rank-pos--${row.rank}` : ''}`}
-                      >
-                        {row.rank}
-                      </span>
+                      <RankPositionBadge
+                        rank={row.rank}
+                        numberClassName="landing-rank-pos landing-rank-pos--plain"
+                      />
                     </td>
                     <td className="landing-rank-table__player">{row.name}</td>
                     <td className="landing-rank-table__center">

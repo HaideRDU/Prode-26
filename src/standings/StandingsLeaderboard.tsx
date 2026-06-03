@@ -1,3 +1,4 @@
+import { RankPositionBadge } from '../components/RankPositionBadge'
 import type { StandingRow } from '../services/standingsService'
 import { RankMovementBadge } from './RankMovementBadge'
 
@@ -5,10 +6,6 @@ type Props = {
   standings: StandingRow[]
   subtitle: string
   showSpecialsColumn?: boolean
-}
-
-function RankBadge({ rank }: { rank: number }) {
-  return <span className="standings-rank-pos">{rank}</span>
 }
 
 export function StandingsLeaderboard({ standings, subtitle, showSpecialsColumn = false }: Props) {
@@ -47,8 +44,8 @@ export function StandingsLeaderboard({ standings, subtitle, showSpecialsColumn =
                 .filter(Boolean)
                 .join(' ')}
             >
-              <td>
-                <RankBadge rank={row.rank} />
+              <td className="standings-rank-table__col-rank">
+                <RankPositionBadge rank={row.rank} />
               </td>
               <td>
                 <span className="standings-rank-table__name">

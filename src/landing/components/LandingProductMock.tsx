@@ -1,18 +1,7 @@
+import { RankPositionBadge } from '../../components/RankPositionBadge'
 import { LANDING_MOCK_GROUP_RANKING, LANDING_MOCK_PREDICTIONS } from '../landingDemoData'
 import { TeamFlagName } from '../../predictions/TeamFlagName'
 import { LandingRankMovement } from './LandingRankMovement'
-
-const MEDAL_LABEL: Record<string, string> = {
-  gold: '1.er puesto',
-  silver: '2.º puesto',
-  bronze: '3.er puesto',
-}
-
-const MEDAL_ICON: Record<string, string> = {
-  gold: '🏆',
-  silver: '🥈',
-  bronze: '🥉',
-}
 
 export function LandingProductMock() {
   return (
@@ -74,13 +63,7 @@ export function LandingProductMock() {
                 className={row.highlight ? 'landing-mock-rank-table__you' : undefined}
               >
                 <td className="landing-mock-rank-table__col-rank">
-                  <span
-                    className="landing-mock-rank-medal"
-                    aria-label={MEDAL_LABEL[row.medal]}
-                    title={MEDAL_LABEL[row.medal]}
-                  >
-                    {MEDAL_ICON[row.medal]}
-                  </span>
+                  <RankPositionBadge rank={row.rank} />
                 </td>
                 <td>
                   <span className="landing-mock-rank-table__name">{row.name}</span>
