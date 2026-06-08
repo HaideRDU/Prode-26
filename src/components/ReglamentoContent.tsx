@@ -8,8 +8,12 @@ type ReglamentoContentProps = {
 /** Reglamento oficial WC2026 — misma fuente en `/reglamento` (público) y menú Reglamento (app). */
 export function ReglamentoContent({ showPageTitle = true }: ReglamentoContentProps) {
   const openH = DEFAULT_RULESET.lockWindows.playerPerMatchOpensHoursBeforeKickoff
-  const generalLockDays = DEFAULT_RULESET.lockWindows.generalPredictionsHoursBeforeTournament / 24
   const lockAt = getGeneralPredictionsLockAt()
+  const generalLockLabel = lockAt.toLocaleString('es-CO', {
+    timeZone: DEFAULT_RULESET.timezone,
+    dateStyle: 'long',
+    timeStyle: 'short',
+  })
   return (
     <>
       {showPageTitle ? <h1 className="app-page-title">Reglamento</h1> : null}
@@ -23,9 +27,8 @@ export function ReglamentoContent({ showPageTitle = true }: ReglamentoContentPro
       <ul>
         <li>
           <strong>Plazo general:</strong> predicciones principales (grupos, llaves, podio, especiales) se cierran
-          de forma irrevocable <strong>{generalLockDays} días</strong> antes del pitido inicial del primer partido (
-          {lockAt.toLocaleString('es-CO', { timeZone: DEFAULT_RULESET.timezone })}). Pasado ese momento no podés
-          modificarlas.
+          de forma irrevocable el <strong>{generalLockLabel}</strong> (zona {DEFAULT_RULESET.timezone}). Pasado ese
+          momento no podés modificarlas.
         </li>
         <li>
           Los puntos se cargan automáticamente al finalizar cada encuentro según el resultado oficial de los{' '}

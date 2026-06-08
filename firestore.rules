@@ -86,9 +86,9 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Cierre general: 4 días antes del 11-jun-2026 00:00 America/Bogota (~7-jun-2026 05:00 UTC).
+    // Cierre general: 10-jun-2026 17:00 America/Bogota (= 10-jun-2026 22:00 UTC).
     function generalPredictionsOpen() {
-      return request.time < timestamp.date(2026, 6, 7);
+      return request.time < timestamp(2026, 6, 10, 22, 0, 0);
     }
 
     match /predictions/{predictionId} {

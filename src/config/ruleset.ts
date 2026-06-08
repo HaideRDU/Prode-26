@@ -13,7 +13,10 @@ export function maxMatchPoints(row: MatchPointsRow): number {
   return row.winnerOrDraw + row.goalsTeamA + row.goalsTeamB
 }
 
-/** Cierre de predicciones generales: 4 días antes del pitazo inicial (reglamento oficial). */
+/** Cierre de predicciones generales (zona del torneo). */
+export const GENERAL_PREDICTIONS_LOCK_AT_ISO = '2026-06-10T17:00:00-05:00'
+
+/** Respaldo si no hay `generalPredictionsLockAtIso`: horas antes del pitazo inicial. */
 export const GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT = 24 * 4
 
 export interface RulesetConfig {
@@ -21,6 +24,8 @@ export interface RulesetConfig {
   versionLabel: string
   timezone: string
   tournamentStartsAtIso: string
+  /** Si está definido, tiene prioridad sobre `lockWindows.generalPredictionsHoursBeforeTournament`. */
+  generalPredictionsLockAtIso?: string
   lockWindows: {
     generalPredictionsHoursBeforeTournament: number
     playerPerMatchOpensHoursBeforeKickoff: number
@@ -68,6 +73,7 @@ export const DEFAULT_RULESET: RulesetConfig = {
   versionLabel: 'WC2026 v1 · reglamento oficial (jun 2026)',
   timezone: 'America/Bogota',
   tournamentStartsAtIso: '2026-06-11T00:00:00-05:00',
+  generalPredictionsLockAtIso: GENERAL_PREDICTIONS_LOCK_AT_ISO,
   lockWindows: {
     generalPredictionsHoursBeforeTournament: GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT,
     playerPerMatchOpensHoursBeforeKickoff: 24,
@@ -144,6 +150,9 @@ export function toDate(value: unknown): Date | null {
 }
 
 export function getGeneralPredictionsLockAt(config: RulesetConfig = DEFAULT_RULESET): Date {
+  if (config.generalPredictionsLockAtIso) {
+    return new Date(config.generalPredictionsLockAtIso)
+  }
   const start = new Date(config.tournamentStartsAtIso)
   return new Date(
     start.getTime() - config.lockWindows.generalPredictionsHoursBeforeTournament * 60 * 60 * 1000,
