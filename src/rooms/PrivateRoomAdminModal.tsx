@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactElement } from 'react'
+import { ModalPortal } from '../components/ModalPortal'
 import '../predictions/pred-theme.css'
 import {
   deletePrivateRoom,
@@ -315,13 +316,14 @@ export function PrivateRoomAdminModal({
   }
 
   return (
-    <div className="modal-overlay" role="presentation">
-      <div
-        className="modal-card room-admin-modal-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="room-admin-title"
-      >
+    <ModalPortal>
+      <div className="pred-wc26 modal-overlay app-modal-portal-overlay" role="presentation">
+        <div
+          className="modal-card room-admin-modal-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="room-admin-title"
+        >
         <div className="modal-header">
           <h2 id="room-admin-title">Configurar sala privada</h2>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Cerrar">
@@ -362,7 +364,8 @@ export function PrivateRoomAdminModal({
             Cerrar
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   )
 }

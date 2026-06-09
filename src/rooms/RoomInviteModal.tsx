@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ModalPortal } from '../components/ModalPortal'
 import '../predictions/pred-theme.css'
 import { approveJoinRequest, listPendingJoinRequests, rejectJoinRequest } from '../services/roomInviteService'
 import { InviteCodeQuickStrip } from './InviteCodeQuickStrip'
@@ -68,13 +69,14 @@ export function RoomInviteModal({
   }
 
   return (
-    <div className="modal-overlay" role="presentation">
-      <div
-        className="modal-card room-admin-modal-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="room-invite-title"
-      >
+    <ModalPortal>
+      <div className="pred-wc26 modal-overlay app-modal-portal-overlay" role="presentation">
+        <div
+          className="modal-card room-admin-modal-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="room-invite-title"
+        >
         <div className="modal-header">
           <h2 id="room-invite-title">Invitaciones</h2>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Cerrar">
@@ -145,7 +147,8 @@ export function RoomInviteModal({
             Cerrar
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   )
 }

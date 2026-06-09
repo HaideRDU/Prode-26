@@ -23,6 +23,7 @@ import { StandingsLeaderboard } from '../standings/StandingsLeaderboard'
 import { StandingsMyStatusCard } from '../standings/StandingsMyStatusCard'
 import { StandingsPageHeader } from '../standings/StandingsPageHeader'
 import { PointsHistoryModal } from '../standings/PointsHistoryModal'
+import { ModalPortal } from '../components/ModalPortal'
 import { PredictionReviewModal } from '../predictions/PredictionReviewModal'
 import { StandingsParticipationCard } from '../standings/StandingsParticipationCard'
 import { StandingsClosurePdfButton } from '../standings/StandingsClosurePdfButton'
@@ -247,11 +248,12 @@ export function RoomStandingsPage() {
         {fabPredictionsLabel}
       </button>
       {showPredictionPrompt && roomId ? (
-        <div
-          className="modal-overlay pred-rules-modal-overlay"
-          role="presentation"
-          onClick={dismissPredictionPrompt}
-        >
+        <ModalPortal>
+          <div
+            className="pred-wc26 modal-overlay pred-rules-modal-overlay app-modal-portal-overlay"
+            role="presentation"
+            onClick={dismissPredictionPrompt}
+          >
           <div
             className="modal-card pred-rules-modal"
             role="dialog"
@@ -293,7 +295,8 @@ export function RoomStandingsPage() {
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       ) : null}
       <RoomHomePlayerPickBanner
         variant={isGlobalRoom ? 'global' : 'private'}
@@ -366,7 +369,11 @@ export function RoomStandingsPage() {
         }
       />
       {showScoringHelpModal ? (
-        <div className="modal-overlay pred-rules-modal-overlay" role="presentation">
+        <ModalPortal>
+          <div
+            className="pred-wc26 modal-overlay pred-rules-modal-overlay app-modal-portal-overlay"
+            role="presentation"
+          >
           <div
             className="modal-card pred-rules-modal"
             role="dialog"
@@ -398,7 +405,8 @@ export function RoomStandingsPage() {
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       ) : null}
       <div className="standings-dashboard">
         <StandingsPageHeader

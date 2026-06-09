@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ModalPortal } from '../components/ModalPortal'
 import type {
   PointsHistory,
   PointsHistoryBracketRow,
@@ -124,7 +125,12 @@ export function PointsHistoryModal({ history, loading, error, subjectDisplayName
     ) ?? []
 
   return (
-    <div className="modal-overlay pred-rules-modal-overlay" role="presentation" onClick={onClose}>
+    <ModalPortal>
+      <div
+        className="pred-wc26 modal-overlay pred-rules-modal-overlay app-modal-portal-overlay"
+        role="presentation"
+        onClick={onClose}
+      >
       <div
         className="modal-card pred-rules-modal points-history-modal"
         role="dialog"
@@ -360,6 +366,7 @@ export function PointsHistoryModal({ history, loading, error, subjectDisplayName
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   )
 }

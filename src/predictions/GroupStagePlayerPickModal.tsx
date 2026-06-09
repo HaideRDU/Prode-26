@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { ModalPortal } from '../components/ModalPortal'
 import { orderedGroupIds } from '../domain/groupStandings'
 import type { MatchDoc } from '../types/predictions'
 import { filterGroupStageMatches } from '../utils/playerPerMatchWindows'
@@ -39,11 +40,12 @@ export function GroupStagePlayerPickModal({
   const groupsWithMatches = orderedGroupIds().filter((g) => (matchesByGroup.get(g)?.length ?? 0) > 0)
 
   return (
-    <div
-      className="modal-overlay pred-rules-modal-overlay group-stage-player-pick-modal-overlay"
-      role="presentation"
-      onClick={onClose}
-    >
+    <ModalPortal>
+      <div
+        className="pred-wc26 modal-overlay pred-rules-modal-overlay group-stage-player-pick-modal-overlay app-modal-portal-overlay"
+        role="presentation"
+        onClick={onClose}
+      >
       <div
         className="modal-card pred-rules-modal group-stage-player-pick-modal"
         role="dialog"
@@ -106,6 +108,7 @@ export function GroupStagePlayerPickModal({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   )
 }

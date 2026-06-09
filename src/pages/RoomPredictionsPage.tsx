@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { FirebaseError } from 'firebase/app'
 import type { User } from 'firebase/auth'
 import { useMatchList } from '../hooks/useMatchList'
 import { usePredictions } from '../hooks/usePredictions'
@@ -40,6 +41,7 @@ import { BonusQuestionBank, type MatchPickOption } from '../predictions/BonusQue
 import { PodiumExtrasSection } from '../predictions/PodiumExtrasSection'
 import { TournamentSpecialPlayersSection } from '../predictions/TournamentSpecialPlayersSection'
 import { PlayerPerMatchStrip } from '../predictions/PlayerPerMatchStrip'
+import { ModalPortal } from '../components/ModalPortal'
 import '../predictions/pred-theme.css'
 
 
@@ -109,6 +111,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   >(() => new Map())
   const [savingAll, setSavingAll] = useState(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [saveModalError, setSaveModalError] = useState<string | null>(null)
   const [showRulesIntroModal, setShowRulesIntroModal] = useState(false)
   const [showScoringHelpModal, setShowScoringHelpModal] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
@@ -315,13 +318,12 @@ export function RoomPredictionsPage({ user }: { user: User }) {
 
   const finalizedResolved = predictionFinalized !== null
   const generalLockAt = useMemo(() => getGeneralPredictionsLockAt(DEFAULT_RULESET), [])
-  const generalPredictionsLocked = nowMs >= generalLockAt.getTime() && predictionFinalized !== true
   const hasFinishedMatches = useMemo(
     () => matches.some((m) => m.status === 'finished'),
     [matches],
   )
   const lateEntryBlocked = hasFinishedMatches && predictionFinalized !== true
-  const readOnly = predictionFinalized === true || generalPredictionsLocked || lateEntryBlocked
+  const readOnly = predictionFinalized === true || lateEntryBlocked
   /** Sin finalizar: cascada grupos → KO; finalizada: podio → KO (final abajo) → grupos. */
   const isReviewLayout = predictionFinalized === true
   const showMatchPoints = predictionFinalized === true
@@ -347,6 +349,24 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     }
     return ids
   }, [groupMatchIds, draftGroup])
+
+  const hasPredictionDraft = useMemo(
+    () =>
+      predictions.length > 0 ||
+      groupLocked ||
+      filledGroupMatchIds.size > 0 ||
+      koDraftOverrides.size > 0 ||
+      bonusOverrides.size > 0,
+    [
+      predictions.length,
+      groupLocked,
+      filledGroupMatchIds.size,
+      koDraftOverrides.size,
+      bonusOverrides.size,
+    ],
+  )
+  const generalPredictionsLocked =
+    nowMs >= generalLockAt.getTime() && predictionFinalized !== true && !hasPredictionDraft
 
   const { incompleteGroupLabels, canSaveBatch } = useMemo(() => {
     const total = groupMatchIds.size
@@ -657,10 +677,17 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const canClickSave =
     finalizedResolved &&
     !readOnly &&
+    !generalPredictionsLocked &&
     canSaveBatch &&
     canSaveKoBatch &&
     allBonusComplete &&
     koResolvableCount > 0
+
+  const canOpenSaveModal = canClickSave && !savingAll
+
+  useEffect(() => {
+    if (!canOpenSaveModal) setShowSaveModal(false)
+  }, [canOpenSaveModal])
 
   const saveBlockers = useMemo(() => {
     const out: string[] = []
@@ -706,10 +733,48 @@ export function RoomPredictionsPage({ user }: { user: User }) {
     missingBonusLabels,
   ])
 
+  function normalizeSaveError(err: unknown, fallback: string, step?: string): string {
+    if (err instanceof FirebaseError && err.code === 'permission-denied') {
+      const finalizedHint =
+        predictionFinalized === true
+          ? ' Tu predicción ya figura como finalizada en el servidor.'
+          : ''
+      return (
+        `${step ? `${step}: ` : ''}Firestore rechazó el guardado (permisos).` +
+        `${finalizedHint} El administrador debe ejecutar \`npm run deploy:firestore-rules\` ` +
+        `en el proyecto polla-mundialist. Si el error persiste, cerrá sesión y volvé a entrar.`
+      )
+    }
+    const msg = err instanceof Error ? err.message : fallback
+    return step ? `${step}: ${msg}` : msg
+  }
+
+  function reportSaveFailure(message: string) {
+    setLocalError(message)
+    setSaveModalError(message)
+  }
+
+  function openSaveModal() {
+    if (!canOpenSaveModal) return
+    setSaveModalError(null)
+    setLocalError(null)
+    setShowSaveModal(true)
+  }
+
+  function closeSaveModal() {
+    setShowSaveModal(false)
+    setSaveModalError(null)
+  }
+
   async function handleSaveAll(): Promise<boolean> {
-    if (!roomId || !canClickSave || savingAll) return false
+    if (!roomId || savingAll) return false
+    if (!canClickSave) {
+      reportSaveFailure(saveBlockers[0] ?? 'Completá tu predicción antes de finalizar.')
+      return false
+    }
     setSavingAll(true)
     setLocalError(null)
+    setSaveModalError(null)
     try {
       if (!groupLocked) {
         const groupEntries: { matchId: string; payload: MatchPredictionPayload }[] = []
@@ -721,9 +786,14 @@ export function RoomPredictionsPage({ user }: { user: User }) {
             payload: { goalsTeamA: d!.goalsHome!, goalsTeamB: d!.goalsAway! },
           })
         }
-        await saveGroupPredictionsBatch(roomId, user.uid, groupEntries)
-        await setGroupStageLocked(user.uid, roomId, true)
-        setGroupLocked(true)
+        try {
+          await saveGroupPredictionsBatch(roomId, user.uid, groupEntries)
+          await setGroupStageLocked(user.uid, roomId, true)
+          setGroupLocked(true)
+        } catch (e) {
+          reportSaveFailure(normalizeSaveError(e, 'Error al guardar grupos', 'Fase de grupos'))
+          return false
+        }
       }
 
       const koEntries: { matchId: string; payload: MatchPredictionPayload }[] = []
@@ -739,7 +809,7 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         const id = koMatchDocId(def.matchNum)
         const pred = mergedKoPredByMatchId.get(id)
         if (!isCompleteMatchPredictionForPicker(pred, 'knockout')) {
-          setLocalError('Completá todos los partidos eliminatorios con equipos definidos.')
+          reportSaveFailure('Completá todos los partidos eliminatorios con equipos definidos.')
           return false
         }
         const gate = canSaveKoMatch({
@@ -748,16 +818,21 @@ export function RoomPredictionsPage({ user }: { user: User }) {
           koPredByMatchId: mergedKoPredByMatchId,
         })
         if (!gate.ok) {
-          setLocalError(gate.message)
+          reportSaveFailure(gate.message)
           return false
         }
         koEntries.push({ matchId: id, payload: pred! })
       }
       if (koEntries.length === 0) {
-        setLocalError('No hay partidos KO con equipos definidos para guardar.')
+        reportSaveFailure('No hay partidos KO con equipos definidos para guardar.')
         return false
       }
-      await saveKoPredictionsBatch(roomId, user.uid, koEntries)
+      try {
+        await saveKoPredictionsBatch(roomId, user.uid, koEntries)
+      } catch (e) {
+        reportSaveFailure(normalizeSaveError(e, 'Error al guardar eliminatorias', 'Eliminatorias'))
+        return false
+      }
 
       const bonusEntries: { questionId: string; payload: TournamentPredictionPayload }[] = []
       for (const meta of activeQuestionMetas) {
@@ -766,16 +841,21 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         bonusEntries.push({ questionId: meta.id, payload: p! })
       }
       if (bonusEntries.length !== activeQuestionMetas.length) {
-        setLocalError(`Faltan preguntas extra: ${formatMissingBonusLabels(missingBonusLabels)}.`)
+        reportSaveFailure(`Faltan preguntas extra: ${formatMissingBonusLabels(missingBonusLabels)}.`)
         return false
       }
-      await saveTournamentPredictionsBatch(roomId, user.uid, bonusEntries)
+      try {
+        await saveTournamentPredictionsBatch(roomId, user.uid, bonusEntries)
+      } catch (e) {
+        reportSaveFailure(normalizeSaveError(e, 'Error al guardar preguntas extra', 'Preguntas extra'))
+        return false
+      }
 
       setKoDraftOverrides(new Map())
       setBonusOverrides(new Map())
       return true
     } catch (e) {
-      setLocalError(e instanceof Error ? e.message : 'Error al guardar la predicción')
+      reportSaveFailure(normalizeSaveError(e, 'Error al guardar la predicción'))
       return false
     } finally {
       setSavingAll(false)
@@ -785,24 +865,36 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   async function handleConfirmSaveAndFinalize() {
     if (!roomId || readOnly || !finalizedResolved) return
     if (!canClickSave) {
-      setLocalError(saveBlockers[0] ?? 'Completá tu predicción antes de finalizar.')
+      reportSaveFailure(saveBlockers[0] ?? 'Completá tu predicción antes de finalizar.')
       return
     }
     setLocalError(null)
+    setSaveModalError(null)
     try {
       const ok = await handleSaveAll()
       if (!ok) return
-      await setPredictionFinalized(user.uid, roomId, true)
+      try {
+        await setPredictionFinalized(user.uid, roomId, true)
+      } catch (e) {
+        reportSaveFailure(normalizeSaveError(e, 'No se pudo finalizar la predicción.', 'Finalizar'))
+        return
+      }
       setPredictionFinalizedState(true)
-      setShowSaveModal(false)
+      closeSaveModal()
       navigate(`/room/${roomId}/standings`, { replace: true })
     } catch (e) {
-      setLocalError(e instanceof Error ? e.message : 'No se pudo finalizar la predicción.')
+      reportSaveFailure(normalizeSaveError(e, 'No se pudo finalizar la predicción.'))
     }
   }
 
   const showGlobalSaveBar =
-    Boolean(roomId) && !loadingM && !loadingP && matches.length > 0 && finalizedResolved && !readOnly
+    Boolean(roomId) &&
+    !loadingM &&
+    !loadingP &&
+    matches.length > 0 &&
+    finalizedResolved &&
+    !readOnly &&
+    !generalPredictionsLocked
 
   const showStandingsFab =
     Boolean(roomId) && finalizedResolved && !loadingM && !loadingP && matches.length > 0
@@ -843,7 +935,11 @@ export function RoomPredictionsPage({ user }: { user: User }) {
       ) : null}
       <div className="pred-page pred-page-card">
       {showRulesIntroModal ? (
-        <div className="modal-overlay pred-rules-modal-overlay" role="presentation">
+        <ModalPortal>
+          <div
+            className="pred-wc26 modal-overlay pred-rules-modal-overlay app-modal-portal-overlay"
+            role="presentation"
+          >
           <div
             className="modal-card pred-rules-modal"
             role="dialog"
@@ -878,10 +974,15 @@ export function RoomPredictionsPage({ user }: { user: User }) {
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       ) : null}
       {showScoringHelpModal ? (
-        <div className="modal-overlay pred-rules-modal-overlay" role="presentation">
+        <ModalPortal>
+          <div
+            className="pred-wc26 modal-overlay pred-rules-modal-overlay app-modal-portal-overlay"
+            role="presentation"
+          >
           <div
             className="modal-card pred-rules-modal"
             role="dialog"
@@ -913,7 +1014,8 @@ export function RoomPredictionsPage({ user }: { user: User }) {
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       ) : null}
       <div className="page-title-with-help">
         <h1 className="app-page-title">Predicciones</h1>
@@ -1121,8 +1223,12 @@ export function RoomPredictionsPage({ user }: { user: User }) {
             <button
               type="button"
               className="pred-group-save-btn"
-              disabled={!canClickSave || savingAll}
-              onClick={() => setShowSaveModal(true)}
+              disabled={!canOpenSaveModal}
+              aria-disabled={!canOpenSaveModal}
+              title={
+                !canClickSave && saveBlockers[0] ? saveBlockers[0] : undefined
+              }
+              onClick={openSaveModal}
             >
               {savingAll ? 'Guardando…' : 'Guardar predicción'}
             </button>
@@ -1130,42 +1236,53 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </div>
       ) : null}
       {showSaveModal ? (
-        <div className="modal-overlay" role="presentation">
-          <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="save-pred-title">
-            <div className="modal-header">
-              <h2 id="save-pred-title">Guardar predicción</h2>
-              <button
-                type="button"
-                className="modal-close"
-                aria-label="Cerrar"
-                onClick={() => setShowSaveModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            <p className="auth-lead small">
-              ¿Quieres guardar tu predicción? Una vez guardada no podrás editarla, solo previsualizar tus
-              respuestas.
-            </p>
-            <div className="button-group pred-save-modal-actions">
-              <button
-                type="button"
-                className="btn-secondary pred-save-modal-btn pred-save-modal-btn--confirm"
-                onClick={() => void handleConfirmSaveAndFinalize()}
-                disabled={savingAll}
-              >
-                {savingAll ? 'Guardando…' : 'Guardar'}
-              </button>
-              <button
-                type="button"
-                className="btn-secondary pred-save-modal-btn pred-save-modal-btn--cancel"
-                onClick={() => setShowSaveModal(false)}
-              >
-                Volver
-              </button>
+        <ModalPortal>
+          <div
+            className="pred-wc26 modal-overlay pred-rules-modal-overlay save-prediction-modal-overlay app-modal-portal-overlay"
+            role="presentation"
+            onClick={closeSaveModal}
+          >
+            <div
+              className="modal-card pred-rules-modal save-prediction-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="save-pred-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2 id="save-pred-title">Guardar predicción</h2>
+                <button type="button" className="modal-close" aria-label="Cerrar" onClick={closeSaveModal}>
+                  ×
+                </button>
+              </div>
+              <div className="pred-rules-modal__body save-prediction-modal__body">
+                <p className="auth-lead small">
+                  ¿Quieres guardar tu predicción? Una vez guardada no podrás editarla, solo previsualizar tus
+                  respuestas.
+                </p>
+                {saveModalError ? <p className="auth-error">{saveModalError}</p> : null}
+              </div>
+              <div className="button-group pred-save-modal-actions save-prediction-modal__footer">
+                <button
+                  type="button"
+                  className="btn-secondary pred-save-modal-btn pred-save-modal-btn--confirm"
+                  onClick={() => void handleConfirmSaveAndFinalize()}
+                  disabled={!canOpenSaveModal}
+                >
+                  {savingAll ? 'Guardando…' : 'Guardar'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary pred-save-modal-btn pred-save-modal-btn--cancel"
+                  onClick={closeSaveModal}
+                  disabled={savingAll}
+                >
+                  Volver
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       ) : null}
       </div>
     </main>

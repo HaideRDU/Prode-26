@@ -69,8 +69,6 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // Tras cambiar reglas: npm run deploy:firestore-rules (índices: npm run deploy:firestore-indexes)
-
     match /teams/{teamId} {
       allow read: if request.auth != null;
       allow write: if false;
@@ -86,35 +84,42 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Cierre general: 10-jun-2026 17:00 America/Bogota (= 10-jun-2026 22:00 UTC).
-    function generalPredictionsOpen() {
-      return request.time < timestamp(2026, 6, 10, 22, 0, 0);
+    // Predicciones generales: el usuario puede escribir las suyas hasta finalizar en esa sala.
+    // player_per_match sigue permitido tras finalizar (ventana propia por partido).
+    function predictionStatePath(roomId) {
+      return /databases/$(database)/documents/users/$(request.auth.uid)/predictionState/$(roomId);
+    }
+
+    function isPredictionFinalizedInRoom(roomId) {
+      return exists(predictionStatePath(roomId))
+        && get(predictionStatePath(roomId)).data.get('predictionFinalized', false) == true;
+    }
+
+    function canWritePredictionDoc(roomId) {
+      return request.resource.data.scope == 'player_per_match'
+        || !isPredictionFinalizedInRoom(roomId);
     }
 
     match /predictions/{predictionId} {
       allow read: if request.auth != null
         && (
           resource.data.roomId == 'global'
-          ||
-          resource.data.userId == request.auth.uid
+          || resource.data.userId == request.auth.uid
           || exists(
             /databases/$(database)/documents/roomMembers/$(resource.data.roomId + '_' + request.auth.uid)
           )
         );
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid
-        && (
-          request.resource.data.scope == 'player_per_match'
-          || generalPredictionsOpen()
-        );
-      allow update, delete: if request.auth != null
+        && canWritePredictionDoc(request.resource.data.roomId);
+      allow update: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && resource.data.userId == request.auth.uid
+        && canWritePredictionDoc(request.resource.data.roomId);
+      allow delete: if request.auth != null
         && (
           resource.data.userId == request.auth.uid
           || isPrivateRoomOwner(resource.data.roomId)
-        )
-        && (
-          resource.data.scope == 'player_per_match'
-          || generalPredictionsOpen()
         );
     }
 

@@ -334,7 +334,9 @@ h2.standings-dashboard-card__label {
   max-height: min(94vh, 960px);
 }
 
-.pred-wc26 .prediction-review-modal-overlay {
+.pred-wc26 .prediction-review-modal-overlay,
+.pred-wc26.prediction-review-modal-overlay,
+.app-modal-portal-overlay.prediction-review-modal-overlay {
   padding: max(12px, env(safe-area-inset-top, 0px)) clamp(10px, 2.5vw, 28px)
     max(12px, env(safe-area-inset-bottom, 0px));
 }
@@ -424,7 +426,9 @@ h2.standings-dashboard-card__label {
     max-height: min(96vh, 100dvh);
   }
 
-  .pred-wc26 .prediction-review-modal-overlay {
+  .pred-wc26 .prediction-review-modal-overlay,
+  .pred-wc26.prediction-review-modal-overlay,
+  .app-modal-portal-overlay.prediction-review-modal-overlay {
     padding: max(8px, env(safe-area-inset-top, 0px)) 8px max(8px, env(safe-area-inset-bottom, 0px));
   }
 }

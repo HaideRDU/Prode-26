@@ -15,7 +15,6 @@ import {
 import { db } from '../firebase'
 import { toTeamOnlyPredictionPayload } from '../domain/matchFields'
 import {
-  assertGeneralPredictionsOpen,
   assertMatchPredictionOpen,
   assertPlayerPickOpen,
 } from './predictionWriteGuard'
@@ -32,7 +31,6 @@ const PREDICTIONS = 'predictions'
 async function assertMatchIdsOpenForWrite(matchIds: string[]): Promise<void> {
   const firestore = db
   if (!firestore) throw new Error('Firestore no inicializado')
-  assertGeneralPredictionsOpen()
   const unique = [...new Set(matchIds)]
   await Promise.all(
     unique.map(async (matchId) => {
@@ -188,7 +186,6 @@ export async function saveTournamentPrediction(
   payload: TournamentPredictionPayload,
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
-  assertGeneralPredictionsOpen()
   const id = predictionDocId(roomId, userId, `t_${questionId}`)
   const ref = doc(db, PREDICTIONS, id)
   const data: PredictionDoc = {
@@ -210,7 +207,6 @@ export async function saveTournamentPredictionsBatch(
 ): Promise<void> {
   if (!db) throw new Error('Firestore no inicializado')
   if (entries.length === 0) return
-  assertGeneralPredictionsOpen()
   const batch = writeBatch(db)
   for (const { questionId, payload } of entries) {
     const id = predictionDocId(roomId, userId, `t_${questionId}`)

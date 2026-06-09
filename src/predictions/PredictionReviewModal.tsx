@@ -1,3 +1,4 @@
+import { ModalPortal } from '../components/ModalPortal'
 import type { MatchDoc, PredictionDoc } from '../types/predictions'
 import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
 import { usePlayerPickDisplayLabels } from '../hooks/usePlayerPickDisplayLabels'
@@ -48,11 +49,12 @@ export function PredictionReviewModal({
   const title = isOwnPrediction ? 'Mi predicción' : `Predicción de ${subjectDisplayName}`
 
   return (
-    <div
-      className="modal-overlay pred-rules-modal-overlay prediction-review-modal-overlay"
-      role="presentation"
-      onClick={onClose}
-    >
+    <ModalPortal>
+      <div
+        className="pred-wc26 modal-overlay pred-rules-modal-overlay prediction-review-modal-overlay app-modal-portal-overlay"
+        role="presentation"
+        onClick={onClose}
+      >
       <div
         className="modal-card pred-rules-modal prediction-review-modal"
         role="dialog"
@@ -166,6 +168,7 @@ export function PredictionReviewModal({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   )
 }

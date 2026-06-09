@@ -1156,7 +1156,9 @@
   max-height: min(94vh, 960px);
 }
 
-.pred-wc26 .group-stage-player-pick-modal-overlay {
+.pred-wc26 .group-stage-player-pick-modal-overlay,
+.pred-wc26.group-stage-player-pick-modal-overlay,
+.app-modal-portal-overlay.group-stage-player-pick-modal-overlay {
   padding: max(12px, env(safe-area-inset-top, 0px)) clamp(10px, 2.5vw, 28px)
     max(12px, env(safe-area-inset-bottom, 0px));
 }
@@ -1229,7 +1231,9 @@
     max-height: min(96vh, 100dvh);
   }
 
-  .pred-wc26 .group-stage-player-pick-modal-overlay {
+  .pred-wc26 .group-stage-player-pick-modal-overlay,
+  .pred-wc26.group-stage-player-pick-modal-overlay,
+  .app-modal-portal-overlay.group-stage-player-pick-modal-overlay {
     padding: max(8px, env(safe-area-inset-top, 0px)) 8px max(8px, env(safe-area-inset-bottom, 0px));
   }
 }
@@ -2479,12 +2483,35 @@ html:not([data-theme='dark']) .app-shell--wc26 .standings-move--flat {
   background: color-mix(in srgb, var(--wc26-surface-field) 80%, var(--wc26-text) 20%);
 }
 
-/* Modal informativo de reglas / puntos (centrado en viewport) */
-.pred-wc26 .pred-rules-modal-overlay {
-  z-index: 1200;
+/* Modal informativo de reglas / puntos (centrado en viewport; portaled a body) */
+.pred-wc26 .pred-rules-modal-overlay,
+.pred-wc26.pred-rules-modal-overlay,
+.app-modal-portal-overlay.pred-rules-modal-overlay,
+.save-prediction-modal-overlay {
   align-items: center;
   justify-content: center;
   padding: max(16px, env(safe-area-inset-top, 0px)) 20px max(16px, env(safe-area-inset-bottom, 0px));
+}
+
+.pred-wc26 .pred-rules-modal.save-prediction-modal {
+  max-width: min(480px, 100%);
+  max-height: min(85vh, 560px);
+}
+
+.save-prediction-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.save-prediction-modal__blockers {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+}
+
+.save-prediction-modal__footer {
+  flex-shrink: 0;
+  padding: 0 18px 18px;
 }
 
 .pred-wc26 .pred-rules-modal {
