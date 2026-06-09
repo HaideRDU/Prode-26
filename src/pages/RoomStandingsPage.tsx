@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { useMatchList } from '../hooks/useMatchList'
+import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
+import { usePlayerPickDisplayLabels } from '../hooks/usePlayerPickDisplayLabels'
 import { usePredictions } from '../hooks/usePredictions'
 import { useStandings } from '../hooks/useStandings'
 import { useTeamLabels } from '../hooks/useTeamLabels'
 import { useTournamentResults } from '../hooks/useTournamentResults'
+import { DEFAULT_RULESET, getGeneralPredictionsLockAt } from '../config/ruleset'
 import { buildPointsHistory } from '../domain/pointsHistory'
 import { PredictionScoringHelpBody } from '../predictions/PredictionScoringHelpBody'
 import type { AccountOutletContext } from '../types/outletContext'
@@ -22,8 +25,16 @@ import { StandingsPageHeader } from '../standings/StandingsPageHeader'
 import { PointsHistoryModal } from '../standings/PointsHistoryModal'
 import { PredictionReviewModal } from '../predictions/PredictionReviewModal'
 import { StandingsParticipationCard } from '../standings/StandingsParticipationCard'
+import { StandingsClosurePdfButton } from '../standings/StandingsClosurePdfButton'
 import { StandingsPrizePoolCard } from '../standings/StandingsPrizePoolCard'
+import type { StandingRow } from '../services/standingsService'
 import { roomHasBonusQuestions } from '../utils/roomBonusQuestions'
+
+type InspectedMember = {
+  userId: string
+  displayName: string
+  standing: StandingRow
+}
 import '../predictions/pred-theme.css'
 import '../standings/standings-dashboard.css'
 
@@ -40,11 +51,18 @@ export function RoomStandingsPage() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showPredictionPrompt, setShowPredictionPrompt] = useState(false)
-  const [showPointsHistory, setShowPointsHistory] = useState(false)
-  const [showPredictionReview, setShowPredictionReview] = useState(false)
+  const [historyMember, setHistoryMember] = useState<InspectedMember | null>(null)
+  const [predictionMember, setPredictionMember] = useState<InspectedMember | null>(null)
   const [predictionFinalized, setPredictionFinalized] = useState<boolean | null>(null)
   const { matches } = useMatchList()
-  const { predictions, loading: loadingPredictions } = usePredictions(roomId, user?.uid)
+  const inspectedUserId = predictionMember?.userId ?? historyMember?.userId
+  const {
+    predictions: inspectedPredictions,
+    loading: inspectedPredictionsLoading,
+    error: inspectedPredictionsError,
+  } = usePredictions(roomId, inspectedUserId)
+  const { picksByMatchId: historyPicksByMatchId } = usePlayerPerMatchPicks(roomId, historyMember?.userId)
+  const { nameByPlayerKey: historyPlayerNames } = usePlayerPickDisplayLabels(matches, historyPicksByMatchId)
   const { label: teamLabel } = useTeamLabels()
   const {
     tournamentResultsByQuestionId,
@@ -131,36 +149,42 @@ export function RoomStandingsPage() {
   }, [isGlobalRoom, room?.enabledQuestionIds])
 
   const pointsHistory = useMemo(() => {
-    if (!user?.uid) return null
+    if (!historyMember) return null
+    const countsForStandings =
+      historyMember.userId === user?.uid ? predictionFinalized === true : true
     return buildPointsHistory({
-      predictions,
+      predictions: inspectedPredictions,
       matches,
       tournamentResultsByQuestionId,
       teamLabel,
       enabledQuestionIds,
-      standingPoints: myStandingRow?.points,
-      standingBreakdown: myStandingRow?.breakdown,
-      countsForStandings: predictionFinalized === true,
+      standingPoints: historyMember.standing.points,
+      standingBreakdown: historyMember.standing.breakdown,
+      countsForStandings,
+      resolvePlayerName: (key) => historyPlayerNames[key] ?? key,
     })
   }, [
-    predictions,
+    historyMember,
+    inspectedPredictions,
     matches,
     tournamentResultsByQuestionId,
     teamLabel,
     enabledQuestionIds,
     user?.uid,
-    myStandingRow?.points,
-    myStandingRow?.breakdown,
     predictionFinalized,
+    historyPlayerNames,
   ])
 
-  const pointsHistoryLoading = loadingPredictions || loadingTournamentResults
-  const pointsHistoryError = tournamentResultsError
+  const pointsHistoryLoading = inspectedPredictionsLoading || loadingTournamentResults
+  const pointsHistoryError = tournamentResultsError ?? inspectedPredictionsError
   const standingsSubtitle = isGlobalRoom
     ? 'Sala global · Top 50'
     : room?.name
       ? `Sala «${room.name}»`
       : 'Miembros de la sala privada'
+
+  const generalPredictionsLocked =
+    Date.now() >= getGeneralPredictionsLockAt(DEFAULT_RULESET).getTime()
 
   async function refreshRoomDoc() {
     if (!roomId) return
@@ -174,10 +198,28 @@ export function RoomStandingsPage() {
 
   if (!roomId) return <p className="auth-error">Sala no válida</p>
 
+  function openPredictionForRow(row: StandingRow) {
+    setHistoryMember(null)
+    setPredictionMember({
+      userId: row.userId,
+      displayName: row.displayName?.trim() || row.userId || row.id,
+      standing: row,
+    })
+  }
+
+  function openHistoryForRow(row: StandingRow) {
+    setPredictionMember(null)
+    setHistoryMember({
+      userId: row.userId,
+      displayName: row.displayName?.trim() || row.userId || row.id,
+      standing: row,
+    })
+  }
+
   function handleFabPredictions() {
     if (predictionFinalized === null) return
-    if (predictionFinalized === true) {
-      setShowPredictionReview(true)
+    if (predictionFinalized === true && myStandingRow) {
+      openPredictionForRow(myStandingRow)
       return
     }
     if (roomId) navigate(`/room/${roomId}/predictions`)
@@ -379,10 +421,10 @@ export function RoomStandingsPage() {
             <button
               type="button"
               className="standings-history-btn"
-              onClick={() => setShowPointsHistory(true)}
-              disabled={!user}
+              onClick={() => myStandingRow && openHistoryForRow(myStandingRow)}
+              disabled={!user || !myStandingRow}
             >
-              Historial de puntuaciones
+              Mi historial de puntos
             </button>
           </div>
           <StandingsMyStatusCard row={myStandingRow} />
@@ -394,6 +436,19 @@ export function RoomStandingsPage() {
             standings={standings}
             showSpecialsColumn={showSpecialsColumn}
             subtitle={standingsSubtitle}
+            onViewPredictions={openPredictionForRow}
+            onViewHistory={openHistoryForRow}
+          />
+        ) : null}
+        {generalPredictionsLocked && standings.length > 0 && room ? (
+          <StandingsClosurePdfButton
+            roomId={roomId}
+            room={room}
+            standings={standings}
+            matches={matches}
+            participantsRegistered={meta.participantsCount}
+            teamLabel={teamLabel}
+            enabledQuestionIds={enabledQuestionIds}
           />
         ) : null}
       </div>
@@ -426,25 +481,28 @@ export function RoomStandingsPage() {
           onClose={() => setShowInviteModal(false)}
         />
       ) : null}
-      {showPointsHistory ? (
+      {historyMember ? (
         <PointsHistoryModal
           history={pointsHistory}
           loading={pointsHistoryLoading}
           error={pointsHistoryError}
-          onClose={() => setShowPointsHistory(false)}
+          subjectDisplayName={historyMember.displayName}
+          onClose={() => setHistoryMember(null)}
         />
       ) : null}
-      {showPredictionReview && user ? (
+      {predictionMember ? (
         <PredictionReviewModal
-          user={user}
           roomId={roomId}
-          predictions={predictions}
+          subjectUserId={predictionMember.userId}
+          subjectDisplayName={predictionMember.displayName}
+          isOwnPrediction={predictionMember.userId === user?.uid}
+          predictions={inspectedPredictions}
           matches={matches}
           teamLabel={teamLabel}
           enabledQuestionIds={enabledQuestionIds}
-          loading={loadingPredictions}
-          error={null}
-          onClose={() => setShowPredictionReview(false)}
+          loading={inspectedPredictionsLoading}
+          error={inspectedPredictionsError}
+          onClose={() => setPredictionMember(null)}
         />
       ) : null}
     </div>

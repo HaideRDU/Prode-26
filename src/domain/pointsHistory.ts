@@ -214,10 +214,12 @@ export function buildPointsHistory(args: {
   /** Total y desglose desde standings/{room}/users (fuente de verdad del ranking). */
   standingPoints?: number
   standingBreakdown?: PointsBreakdown
+  resolvePlayerName?: (playerKey: string) => string
   /** Si false, no hay filas de detalle (predicción no finalizada / fuera del ranking). */
   countsForStandings?: boolean
 }): PointsHistory {
-  const { predictions, matches, tournamentResultsByQuestionId, teamLabel, enabledQuestionIds } = args
+  const { predictions, matches, tournamentResultsByQuestionId, teamLabel, enabledQuestionIds, resolvePlayerName } =
+    args
   const countsForStandings = args.countsForStandings !== false
   const emptyBreakdown: PointsBreakdown = {
     matchPoints: 0,
@@ -332,7 +334,9 @@ export function buildPointsHistory(args: {
       matchupLabel,
       officialScore: formatOfficialMatchScore(fullMatch),
       predictionScore: formatPredictionMatchScore(mp.prediction),
-      playerLabel: playerKey?.trim() || '—',
+      playerLabel: playerKey?.trim()
+        ? resolvePlayerName?.(playerKey) ?? playerKey
+        : '—',
       matchPoints,
       playerBonusPoints,
       total,

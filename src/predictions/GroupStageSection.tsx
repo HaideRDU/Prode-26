@@ -2,6 +2,7 @@ import type { MatchDoc, MatchStatus } from '../types/predictions'
 import { orderedGroupIds } from '../domain/groupStandings'
 import { matchGoalsTeamA, matchGoalsTeamB, matchTeamAId, matchTeamBId } from '../domain/matchFields'
 import { TeamFlagName } from './TeamFlagName'
+import { MatchBonusPlayerLine } from './MatchBonusPlayerLine'
 import { scoreMatchPrediction } from '../services/scoring'
 import { parseGoalField } from '../domain/parseScoreText'
 
@@ -16,6 +17,7 @@ export function GroupStageSection({
   groupLocked,
   sectionIndex = 3,
   showPoints = false,
+  bonusPlayerLabelByMatchId,
 }: {
   matchesByGroup: Map<string, (MatchDoc & { id: string })[]>
   draftByMatchId: Map<string, GroupDraftEntry>
@@ -26,6 +28,7 @@ export function GroupStageSection({
   sectionIndex?: number
   /** Solo si la predicción cuenta para clasificación (finalizada). */
   showPoints?: boolean
+  bonusPlayerLabelByMatchId?: ReadonlyMap<string, string>
 }) {
   const groups = orderedGroupIds().filter((g) => matchesByGroup.has(g))
   if (groups.length === 0) return null
@@ -61,6 +64,7 @@ export function GroupStageSection({
                   teamLabel={teamLabel}
                   disabled={groupLocked || (m.status !== 'scheduled' && m.status !== 'live')}
                   showPoints={showPoints}
+                  bonusPlayerLabel={bonusPlayerLabelByMatchId?.get(m.id)}
                   onChange={(h, a) => onDraftChange(m.id, h, a)}
                 />
               ))}
@@ -79,6 +83,7 @@ function GroupMatchRow({
   teamLabel,
   disabled,
   showPoints,
+  bonusPlayerLabel,
   onChange,
 }: {
   match: MatchDoc & { id: string; status: MatchStatus }
@@ -87,6 +92,7 @@ function GroupMatchRow({
   teamLabel: (id: string | null | undefined) => string
   disabled: boolean
   showPoints: boolean
+  bonusPlayerLabel?: string
   onChange: (goalsHome: number | null, goalsAway: number | null) => void
 }) {
   const teamAId = matchTeamAId(match)
@@ -177,7 +183,7 @@ function GroupMatchRow({
           aria-label="Goles Equipo B"
         />
       </div>
-
+      <MatchBonusPlayerLine playerLabel={bonusPlayerLabel} />
     </div>
   )
 }

@@ -11,6 +11,7 @@ type Props = {
   history: PointsHistory | null
   loading: boolean
   error: string | null
+  subjectDisplayName?: string
   onClose: () => void
 }
 
@@ -95,7 +96,7 @@ function QuestionHistoryCard({ row }: { row: PointsHistoryQuestionRow }) {
           <dd>{row.officialAnswer}</dd>
         </div>
         <div className="points-history-card__item">
-          <dt>Mi predicción</dt>
+          <dt>Predicción</dt>
           <dd>{row.predictionAnswer}</dd>
         </div>
       </dl>
@@ -103,7 +104,10 @@ function QuestionHistoryCard({ row }: { row: PointsHistoryQuestionRow }) {
   )
 }
 
-export function PointsHistoryModal({ history, loading, error, onClose }: Props) {
+export function PointsHistoryModal({ history, loading, error, subjectDisplayName, onClose }: Props) {
+  const title = subjectDisplayName
+    ? `Historial de ${subjectDisplayName}`
+    : 'Historial de puntuaciones'
   const [tab, setTab] = useState<HistoryTab>('matches')
 
   const podiumRows =
@@ -129,7 +133,7 @@ export function PointsHistoryModal({ history, loading, error, onClose }: Props) 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h2 id="points-history-title">Historial de puntuaciones</h2>
+          <h2 id="points-history-title">{title}</h2>
           <button type="button" className="modal-close" aria-label="Cerrar" onClick={onClose}>
             ×
           </button>

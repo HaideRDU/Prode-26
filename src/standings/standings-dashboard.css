@@ -848,3 +848,114 @@ html:not([data-theme='dark']) .app-shell--wc26 .standings-my-status__summary {
   background: #b45309;
   color: #fffbeb;
 }
+
+.standings-rank-table__col-actions {
+  min-width: 11.5rem;
+  white-space: nowrap;
+}
+
+.standings-rank-table__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.standings-rank-table__action-btn {
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--wc26-accent, #2563eb) 45%, var(--border));
+  background: color-mix(in srgb, var(--wc26-accent, #2563eb) 12%, var(--bg));
+  color: var(--accent, var(--wc26-accent));
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.standings-rank-table__action-btn:hover {
+  border-color: color-mix(in srgb, var(--wc26-accent, #2563eb) 55%, var(--border));
+  background: color-mix(in srgb, var(--wc26-accent, #2563eb) 18%, var(--bg));
+}
+
+.standings-rank-table__action-btn:focus-visible {
+  outline: 2px solid var(--accent, var(--wc26-accent));
+  outline-offset: 2px;
+}
+
+.standings-rank-table__action-btn--secondary {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--bg) 88%, var(--border));
+  color: var(--text-h);
+}
+
+.standings-rank-table__action-btn--secondary:hover {
+  border-color: color-mix(in srgb, var(--text) 35%, var(--border));
+  background: var(--bg);
+}
+
+@media (max-width: 640px) {
+  .standings-rank-table__actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .standings-rank-table__action-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.standings-closure-pdf {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--wc26-accent, #2563eb) 28%, var(--border));
+  background: color-mix(in srgb, var(--wc26-accent, #2563eb) 6%, var(--bg));
+}
+
+.standings-closure-pdf__lead {
+  margin: 0 0 0.85rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  max-width: 52rem;
+}
+
+.standings-closure-pdf__btn {
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--wc26-accent, #2563eb) 45%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--wc26-accent, #2563eb) 88%, #fff) 0%,
+    var(--wc26-accent, #2563eb) 100%
+  );
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--wc26-accent, #2563eb) 28%, transparent);
+}
+
+.standings-closure-pdf__btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.standings-closure-pdf__btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.standings-closure-pdf__btn:focus-visible {
+  outline: 2px solid var(--accent, var(--wc26-accent));
+  outline-offset: 2px;
+}
+
+.standings-closure-pdf__error {
+  margin: 0.75rem 0 0;
+}

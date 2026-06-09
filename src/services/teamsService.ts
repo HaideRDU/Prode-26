@@ -1,4 +1,4 @@
-import { collection, onSnapshot, query, type Unsubscribe } from 'firebase/firestore'
+import { collection, getDocs, onSnapshot, query, type Unsubscribe } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { TeamDoc, TeamPlayerDoc } from '../types/predictions'
 
@@ -47,6 +47,16 @@ export function subscribeTeamPlayers(
     },
     (err) => onError?.(err instanceof Error ? err : new Error(String(err))),
   )
+}
+
+export async function fetchTeamPlayers(teamId: string): Promise<(TeamPlayerDoc & { id: string })[]> {
+  if (!db) return []
+  const snap = await getDocs(query(collection(db, TEAMS, teamId, 'players')))
+  const list: (TeamPlayerDoc & { id: string })[] = []
+  snap.forEach((d) => {
+    list.push({ ...(d.data() as TeamPlayerDoc), id: d.id })
+  })
+  return list
 }
 
 /** Clave estable para predicciones: sticker Panini o id del documento. */

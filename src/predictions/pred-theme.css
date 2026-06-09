@@ -1723,7 +1723,7 @@ html[data-theme='dark'] .app-shell--wc26 .player-pick-fixture-card__status--slat
 
 .standings-rank-table {
   width: 100%;
-  min-width: 520px;
+  min-width: 640px;
   border-collapse: collapse;
   font-size: 0.9375rem;
   table-layout: auto;
@@ -2361,6 +2361,17 @@ html:not([data-theme='dark']) .app-shell--wc26 .standings-move--flat {
   background: color-mix(in srgb, var(--wc26-accent) 14%, var(--wc26-surface));
   border: 1px solid color-mix(in srgb, var(--wc26-accent) 35%, var(--wc26-border));
   white-space: nowrap;
+}
+
+.pred-wc26 .pred-match-card__bonus-player {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.pred-wc26 .pred-match-card__bonus-player strong {
+  color: var(--wc26-text);
+  font-weight: 700;
 }
 
 .pred-wc26 .pred-match-card--ko {

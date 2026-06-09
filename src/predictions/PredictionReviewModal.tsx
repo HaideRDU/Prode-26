@@ -1,5 +1,6 @@
-import type { User } from 'firebase/auth'
 import type { MatchDoc, PredictionDoc } from '../types/predictions'
+import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
+import { usePlayerPickDisplayLabels } from '../hooks/usePlayerPickDisplayLabels'
 import { KnockoutSection } from './KnockoutSection'
 import { GroupStageSection } from './GroupStageSection'
 import { PodiumReadOnlyDisplay } from './PodiumReadOnlyDisplay'
@@ -8,8 +9,10 @@ import { BonusQuestionBank } from './BonusQuestionBank'
 import { usePredictionReviewData } from './usePredictionReviewData'
 
 type Props = {
-  user: User
   roomId: string
+  subjectUserId: string
+  subjectDisplayName: string
+  isOwnPrediction?: boolean
   predictions: PredictionDoc[]
   matches: (MatchDoc & { id: string })[]
   teamLabel: (id: string | null | undefined) => string
@@ -24,8 +27,10 @@ const noopGroup = () => {}
 const noopBonus = () => {}
 
 export function PredictionReviewModal({
-  user,
   roomId,
+  subjectUserId,
+  subjectDisplayName,
+  isOwnPrediction = false,
   predictions,
   matches,
   teamLabel,
@@ -36,6 +41,11 @@ export function PredictionReviewModal({
 }: Props) {
   const review = usePredictionReviewData(predictions, matches, enabledQuestionIds)
   const hasActiveBonusQuestions = review.activeQuestionMetas.length > 0
+  const { picksByMatchId } = usePlayerPerMatchPicks(roomId, subjectUserId)
+  const { labelByMatchId } = usePlayerPickDisplayLabels(matches, picksByMatchId)
+  const bonusPlayerLabelByMatchId = new Map(Object.entries(labelByMatchId))
+
+  const title = isOwnPrediction ? 'Mi predicción' : `Predicción de ${subjectDisplayName}`
 
   return (
     <div
@@ -51,7 +61,7 @@ export function PredictionReviewModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h2 id="prediction-review-title">Mi predicción</h2>
+          <h2 id="prediction-review-title">{title}</h2>
           <button type="button" className="modal-close" aria-label="Cerrar" onClick={onClose}>
             ×
           </button>
@@ -59,7 +69,9 @@ export function PredictionReviewModal({
 
         <div className="pred-rules-modal__body prediction-review-modal__body">
           <p className="prediction-review-modal__lead app-muted">
-            Vista de solo lectura. No se modifican tus respuestas ni la clasificación.
+            {isOwnPrediction
+              ? 'Vista de solo lectura. No se modifican tus respuestas ni la clasificación.'
+              : 'Vista pública de solo lectura para verificar pronósticos y jugadores bonus por partido.'}
           </p>
 
           {loading ? <p className="user-email">Cargando predicción…</p> : null}
@@ -107,6 +119,7 @@ export function PredictionReviewModal({
                 layoutMode="review"
                 sectionIndex={2}
                 showPoints
+                bonusPlayerLabelByMatchId={bonusPlayerLabelByMatchId}
               />
               {review.groupMatches.length > 0 ? (
                 <GroupStageSection
@@ -118,11 +131,12 @@ export function PredictionReviewModal({
                   groupLocked
                   sectionIndex={3}
                   showPoints
+                  bonusPlayerLabelByMatchId={bonusPlayerLabelByMatchId}
                 />
               ) : null}
               <TournamentSpecialPlayersSection
                 roomId={roomId}
-                userId={user.uid}
+                userId={subjectUserId}
                 predByQuestionId={review.predByQuestionId}
                 readOnly
               />

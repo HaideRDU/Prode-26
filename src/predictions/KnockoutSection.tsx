@@ -20,6 +20,7 @@ import {
   scoreMatchPredictionDetails,
 } from '../services/scoring'
 import { parseGoalField } from '../domain/parseScoreText'
+import { MatchBonusPlayerLine } from './MatchBonusPlayerLine'
 
 function koLineupMatchesOfficial(
   predTeamAId: string,
@@ -57,6 +58,7 @@ export function KnockoutSection({
   layoutMode = 'review',
   sectionIndex = 2,
   showPoints = false,
+  bonusPlayerLabelByMatchId,
 }: {
   groupPredByMatchId: Map<string, MatchPredictionPayload>
   koPredByMatchId: Map<string, MatchPredictionPayload>
@@ -68,6 +70,7 @@ export function KnockoutSection({
   layoutMode?: KnockoutLayoutMode
   sectionIndex?: number
   showPoints?: boolean
+  bonusPlayerLabelByMatchId?: ReadonlyMap<string, string>
 }) {
   const ctx = useMemo(
     () => buildKoPredictionsContext(groupPredByMatchId, koPredByMatchId),
@@ -157,6 +160,7 @@ export function KnockoutSection({
                     onKoDraftChange={onKoDraftChange}
                     readOnly={readOnly}
                     showPoints={showPoints}
+                    bonusPlayerLabel={bonusPlayerLabelByMatchId?.get(matchId)}
                   />
                 )
               })}
@@ -179,6 +183,7 @@ function KoMatchRow({
   onKoDraftChange,
   readOnly,
   showPoints,
+  bonusPlayerLabel,
 }: {
   matchNum: number
   matchId: string
@@ -190,6 +195,7 @@ function KoMatchRow({
   onKoDraftChange: (matchId: string, payload: MatchPredictionPayload | null) => void
   readOnly: boolean
   showPoints: boolean
+  bonusPlayerLabel?: string
 }) {
   const [goalsA, setGoalsA] = useState<number>(initial.goalsTeamA ?? 0)
   const [goalsB, setGoalsB] = useState<number>(initial.goalsTeamB ?? 0)
@@ -408,6 +414,7 @@ function KoMatchRow({
           )}
         </div>
       </div>
+      <MatchBonusPlayerLine playerLabel={bonusPlayerLabel} />
     </div>
   )
 }

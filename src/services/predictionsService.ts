@@ -3,6 +3,7 @@ import {
   deleteField,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   serverTimestamp,
@@ -45,6 +46,17 @@ async function assertMatchIdsOpenForWrite(matchIds: string[]): Promise<void> {
 function predictionDocId(roomId: string, userId: string, key: string): string {
   const safe = key.replace(/\//g, '_')
   return `${roomId}_${userId}_${safe}`.slice(0, 700)
+}
+
+export async function fetchAllPredictionsForRoom(roomId: string): Promise<PredictionDoc[]> {
+  if (!db) return []
+  const q = query(collection(db, PREDICTIONS), where('roomId', '==', roomId))
+  const snap = await getDocs(q)
+  const list: PredictionDoc[] = []
+  snap.forEach((d) => {
+    list.push({ ...(d.data() as PredictionDoc), id: d.id })
+  })
+  return list
 }
 
 export function subscribePredictionsForRoom(
