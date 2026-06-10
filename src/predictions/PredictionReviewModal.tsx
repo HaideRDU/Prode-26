@@ -1,5 +1,5 @@
 import { ModalPortal } from '../components/ModalPortal'
-import { areSpecialPlayersOpen } from '../config/ruleset'
+import { areSpecialPlayersOpen, formatGeneralPredictionsLockLabel } from '../config/ruleset'
 import type { MatchDoc, PredictionDoc } from '../types/predictions'
 import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
 import { usePlayerPickDisplayLabels } from '../hooks/usePlayerPickDisplayLabels'
@@ -79,8 +79,8 @@ export function PredictionReviewModal({
             {isOwnPrediction ? (
               specialPlayersEditable ? (
                 <>
-                  Podés actualizar <strong>goleador del torneo</strong> y <strong>mejor arquero</strong> hasta el
-                  16 de junio. El resto de la predicción es solo lectura.
+                  Podés actualizar <strong>goleador del torneo</strong> y <strong>mejor arquero</strong> hasta el{' '}
+                  <strong>{formatGeneralPredictionsLockLabel()}</strong>. El resto de la predicción es solo lectura.
                 </>
               ) : (
                 'Vista de solo lectura. No se modifican tus respuestas ni la clasificación.'
@@ -132,6 +132,7 @@ export function PredictionReviewModal({
                 predByQuestionId={review.predByQuestionId}
                 readOnly={!specialPlayersEditable}
                 sectionIndex={2}
+                showEditWindowHint={isOwnPrediction}
               />
               <KnockoutSection
                 groupPredByMatchId={review.groupPredForBracket}

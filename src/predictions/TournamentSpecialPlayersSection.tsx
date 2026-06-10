@@ -4,7 +4,7 @@ import type { TournamentPredictionPayload } from '../types/predictions'
 import { subscribeTeams, subscribeTeamPlayers, playerDocToKey } from '../services/teamsService'
 import { saveTournamentPrediction } from '../services/predictionsService'
 import { invalidatePredictionsCache } from '../hooks/usePredictions'
-import { DEFAULT_RULESET } from '../config/ruleset'
+import { DEFAULT_RULESET, formatGeneralPredictionsLockLabel } from '../config/ruleset'
 import { EXTRA_IDS } from '../data/questionIds'
 
 type PlayerOpt = {
@@ -240,6 +240,7 @@ export function TournamentSpecialPlayersSection({
   predByQuestionId,
   readOnly,
   sectionIndex,
+  showEditWindowHint = true,
 }: {
   roomId: string
   userId: string
@@ -247,15 +248,33 @@ export function TournamentSpecialPlayersSection({
   predByQuestionId: Map<string, TournamentPredictionPayload>
   readOnly: boolean
   sectionIndex?: number
+  /** Muestra el plazo de edición (p. ej. en «Mi predicción» o página de predicciones). */
+  showEditWindowHint?: boolean
 }) {
   const currentTop = predByQuestionId.get(EXTRA_IDS.topScorer)
   const currentGkAvg = predByQuestionId.get(EXTRA_IDS.bestGoalkeeperAverage)
   const sectionTitle =
     sectionIndex != null ? `${sectionIndex} · Predicciones especiales` : 'Predicciones especiales'
+  const lockLabel = formatGeneralPredictionsLockLabel()
 
   return (
     <section className="pred-bonus-bank pred-special-players-section" style={{ marginTop: 18 }}>
       <h2 className="pred-section-title">{sectionTitle}</h2>
+      {showEditWindowHint ? (
+        <p className="pred-special-players-section__lead app-muted">
+          {readOnly ? (
+            <>
+              El plazo para editar goleador del torneo y mejor arquero finalizó el{' '}
+              <strong>{lockLabel}</strong> ({DEFAULT_RULESET.timezone}).
+            </>
+          ) : (
+            <>
+              Podés editar estos campos hasta el cierre del plazo general de predicciones:{' '}
+              <strong>{lockLabel}</strong> ({DEFAULT_RULESET.timezone}). Después de esa fecha quedan bloqueados.
+            </>
+          )}
+        </p>
+      ) : null}
       <SpecialPlayerRow
         title="Goleador del Torneo"
         questionId={EXTRA_IDS.topScorer}

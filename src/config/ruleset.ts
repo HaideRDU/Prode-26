@@ -16,9 +16,6 @@ export function maxMatchPoints(row: MatchPointsRow): number {
 /** Cierre de predicciones generales (zona del torneo). */
 export const GENERAL_PREDICTIONS_LOCK_AT_ISO = '2026-06-10T17:00:00-05:00'
 
-/** Cierre de goleador del torneo y mejor arquero (inclusive hasta el 16-jun-2026, hora Bogotá). */
-export const SPECIAL_PLAYERS_LOCK_AT_ISO = '2026-06-17T00:00:00-05:00'
-
 /** Respaldo si no hay `generalPredictionsLockAtIso`: horas antes del pitazo inicial. */
 export const GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT = 24 * 4
 
@@ -162,12 +159,17 @@ export function getGeneralPredictionsLockAt(config: RulesetConfig = DEFAULT_RULE
   )
 }
 
-export function getSpecialPlayersLockAt(): Date {
-  return new Date(SPECIAL_PLAYERS_LOCK_AT_ISO)
+/** Goleador y arquero siguen el mismo cierre que el plazo general de predicciones. */
+export function areSpecialPlayersOpen(nowMs = Date.now(), config: RulesetConfig = DEFAULT_RULESET): boolean {
+  return nowMs < getGeneralPredictionsLockAt(config).getTime()
 }
 
-export function areSpecialPlayersOpen(nowMs = Date.now()): boolean {
-  return nowMs < getSpecialPlayersLockAt().getTime()
+export function formatGeneralPredictionsLockLabel(config: RulesetConfig = DEFAULT_RULESET): string {
+  return getGeneralPredictionsLockAt(config).toLocaleString('es-CO', {
+    timeZone: config.timezone,
+    dateStyle: 'long',
+    timeStyle: 'short',
+  })
 }
 
 function localDateKeyInZone(ms: number, timeZone: string): string {

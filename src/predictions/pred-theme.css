@@ -2603,6 +2603,13 @@ html:not([data-theme='dark']) .app-shell--wc26 .standings-move--flat {
   border-top: 1px solid var(--wc26-border);
 }
 
+.pred-wc26 .pred-special-players-section__lead {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  max-width: 72ch;
+}
+
 .pred-wc26 .pred-special-player-row__hint {
   margin: 0 0 0.5rem;
 }
