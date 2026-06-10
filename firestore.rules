@@ -100,10 +100,10 @@ service cloud.firestore {
         || questionId == 'special_best_goalkeeper_average';
     }
 
-    // Goleador y arquero: mismo cierre que predicciones generales (10-jun-2026 17:00 Bogotá).
-    // 10-jun-2026 17:00 America/Bogota (UTC-5) = 10-jun-2026 22:00 UTC.
+    // Goleador y arquero: mismo cierre que predicciones generales (11-jun-2026 12:00 Bogotá).
+    // 11-jun-2026 12:00 America/Bogota (UTC-5) = 11-jun-2026 17:00 UTC.
     function specialPlayersLockAt() {
-      return timestamp.date(2026, 6, 10) + duration.value(22, 'h');
+      return timestamp.date(2026, 6, 11) + duration.value(17, 'h');
     }
 
     function canWriteSpecialPlayersAfterFinalize() {

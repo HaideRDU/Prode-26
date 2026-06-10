@@ -12,7 +12,7 @@ export function maxMatchPoints(row: MatchPointsRow): number {
   return row.winnerOrDraw + row.goalsTeamA + row.goalsTeamB
 }
 
-export const GENERAL_PREDICTIONS_LOCK_AT_ISO = '2026-06-10T17:00:00-05:00'
+export const GENERAL_PREDICTIONS_LOCK_AT_ISO = '2026-06-11T12:00:00-05:00'
 
 export const GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT = 24 * 4
 

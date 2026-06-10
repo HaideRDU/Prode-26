@@ -14,7 +14,7 @@ export function maxMatchPoints(row: MatchPointsRow): number {
 }
 
 /** Cierre de predicciones generales (zona del torneo). */
-export const GENERAL_PREDICTIONS_LOCK_AT_ISO = '2026-06-10T17:00:00-05:00'
+export const GENERAL_PREDICTIONS_LOCK_AT_ISO = '2026-06-11T12:00:00-05:00'
 
 /** Respaldo si no hay `generalPredictionsLockAtIso`: horas antes del pitazo inicial. */
 export const GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT = 24 * 4
