@@ -95,9 +95,27 @@ service cloud.firestore {
         && get(predictionStatePath(roomId)).data.get('predictionFinalized', false) == true;
     }
 
+    function isSpecialPlayerQuestionId(questionId) {
+      return questionId == 'extra_top_scorer'
+        || questionId == 'special_best_goalkeeper_average';
+    }
+
+    // Goleador y arquero editables hasta el 16-jun-2026 (inclusive), hora Bogotá.
+    // 17-jun-2026 00:00 America/Bogota (UTC-5) = 17-jun-2026 05:00 UTC.
+    function specialPlayersLockAt() {
+      return timestamp.date(2026, 6, 17) + duration.value(5, 'h');
+    }
+
+    function canWriteSpecialPlayersAfterFinalize() {
+      return request.resource.data.scope == 'tournament'
+        && isSpecialPlayerQuestionId(request.resource.data.questionId)
+        && request.time < specialPlayersLockAt();
+    }
+
     function canWritePredictionDoc(roomId) {
       return request.resource.data.scope == 'player_per_match'
-        || !isPredictionFinalizedInRoom(roomId);
+        || !isPredictionFinalizedInRoom(roomId)
+        || canWriteSpecialPlayersAfterFinalize();
     }
 
     match /predictions/{predictionId} {

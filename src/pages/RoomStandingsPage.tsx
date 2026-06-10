@@ -502,6 +502,7 @@ export function RoomStandingsPage() {
         <PredictionReviewModal
           roomId={roomId}
           subjectUserId={predictionMember.userId}
+          authUserId={user?.uid}
           subjectDisplayName={predictionMember.displayName}
           isOwnPrediction={predictionMember.userId === user?.uid}
           predictions={inspectedPredictions}

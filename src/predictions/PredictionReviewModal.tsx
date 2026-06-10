@@ -1,4 +1,5 @@
 import { ModalPortal } from '../components/ModalPortal'
+import { areSpecialPlayersOpen } from '../config/ruleset'
 import type { MatchDoc, PredictionDoc } from '../types/predictions'
 import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
 import { usePlayerPickDisplayLabels } from '../hooks/usePlayerPickDisplayLabels'
@@ -12,6 +13,8 @@ import { usePredictionReviewData } from './usePredictionReviewData'
 type Props = {
   roomId: string
   subjectUserId: string
+  /** Usuario autenticado; se usa para persistir ediciones propias. */
+  authUserId?: string
   subjectDisplayName: string
   isOwnPrediction?: boolean
   predictions: PredictionDoc[]
@@ -30,6 +33,7 @@ const noopBonus = () => {}
 export function PredictionReviewModal({
   roomId,
   subjectUserId,
+  authUserId,
   subjectDisplayName,
   isOwnPrediction = false,
   predictions,
@@ -47,6 +51,7 @@ export function PredictionReviewModal({
   const bonusPlayerLabelByMatchId = new Map(Object.entries(labelByMatchId))
 
   const title = isOwnPrediction ? 'Mi predicción' : `Predicción de ${subjectDisplayName}`
+  const specialPlayersEditable = isOwnPrediction && areSpecialPlayersOpen()
 
   return (
     <ModalPortal>
@@ -71,9 +76,18 @@ export function PredictionReviewModal({
 
         <div className="pred-rules-modal__body prediction-review-modal__body">
           <p className="prediction-review-modal__lead app-muted">
-            {isOwnPrediction
-              ? 'Vista de solo lectura. No se modifican tus respuestas ni la clasificación.'
-              : 'Vista pública de solo lectura para verificar pronósticos y jugadores bonus por partido.'}
+            {isOwnPrediction ? (
+              specialPlayersEditable ? (
+                <>
+                  Podés actualizar <strong>goleador del torneo</strong> y <strong>mejor arquero</strong> hasta el
+                  16 de junio. El resto de la predicción es solo lectura.
+                </>
+              ) : (
+                'Vista de solo lectura. No se modifican tus respuestas ni la clasificación.'
+              )
+            ) : (
+              'Vista pública de solo lectura para verificar pronósticos y jugadores bonus por partido.'
+            )}
           </p>
 
           {loading ? <p className="user-email">Cargando predicción…</p> : null}
@@ -111,6 +125,14 @@ export function PredictionReviewModal({
                 fourthId={review.podiumIds.fourthId}
                 sectionIndex={1}
               />
+              <TournamentSpecialPlayersSection
+                roomId={roomId}
+                userId={subjectUserId}
+                saveUserId={specialPlayersEditable ? authUserId : undefined}
+                predByQuestionId={review.predByQuestionId}
+                readOnly={!specialPlayersEditable}
+                sectionIndex={2}
+              />
               <KnockoutSection
                 groupPredByMatchId={review.groupPredForBracket}
                 koPredByMatchId={review.koPredByMatchId}
@@ -119,7 +141,7 @@ export function PredictionReviewModal({
                 onKoDraftChange={noopKo}
                 readOnly
                 layoutMode="review"
-                sectionIndex={2}
+                sectionIndex={3}
                 showPoints
                 bonusPlayerLabelByMatchId={bonusPlayerLabelByMatchId}
               />
@@ -131,17 +153,11 @@ export function PredictionReviewModal({
                   onDraftChange={noopGroup}
                   teamLabel={teamLabel}
                   groupLocked
-                  sectionIndex={3}
+                  sectionIndex={4}
                   showPoints
                   bonusPlayerLabelByMatchId={bonusPlayerLabelByMatchId}
                 />
               ) : null}
-              <TournamentSpecialPlayersSection
-                roomId={roomId}
-                userId={subjectUserId}
-                predByQuestionId={review.predByQuestionId}
-                readOnly
-              />
               {hasActiveBonusQuestions ? (
                 <BonusQuestionBank
                   questionMetas={review.activeQuestionMetas}
@@ -151,7 +167,7 @@ export function PredictionReviewModal({
                   onBonusDraftChange={noopBonus}
                   incompleteQuestionIds={new Set()}
                   readOnly
-                  sectionIndex={4}
+                  sectionIndex={5}
                 />
               ) : null}
             </div>

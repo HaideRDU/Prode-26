@@ -5,6 +5,10 @@ import { subscribePredictionsForRoom } from '../services/predictionsService'
 const predictionsCacheKey = (roomId: string, userId: string) => `${roomId}:${userId}`
 const predictionsCache = new Map<string, PredictionDoc[]>()
 
+export function invalidatePredictionsCache(roomId: string, userId: string): void {
+  predictionsCache.delete(predictionsCacheKey(roomId, userId))
+}
+
 export function usePredictions(
   roomId: string | undefined,
   userId: string | undefined,

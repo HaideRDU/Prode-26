@@ -31,7 +31,7 @@ import { isCompleteMatchPredictionForPicker } from '../domain/matchPredictionCom
 import { isBonusPayloadComplete } from '../domain/bonusAnswerComplete'
 import { ALL_QUESTION_METAS, type QuestionMeta } from '../data/bonusQuestionsMeta'
 import { getRoom } from '../services/roomsService'
-import { DEFAULT_RULESET, getGeneralPredictionsLockAt } from '../config/ruleset'
+import { areSpecialPlayersOpen, DEFAULT_RULESET, getGeneralPredictionsLockAt } from '../config/ruleset'
 import { useMatchTimeFormatters } from '../hooks/useUserTimeZone'
 import { formatTimeZoneShort } from '../utils/formatMatchTime'
 import { GroupStageSection, type GroupDraftEntry } from '../predictions/GroupStageSection'
@@ -328,10 +328,12 @@ export function RoomPredictionsPage({ user }: { user: User }) {
   const isReviewLayout = predictionFinalized === true
   const showMatchPoints = predictionFinalized === true
   const knockoutLayoutMode: KnockoutLayoutMode = isReviewLayout ? 'review' : 'cascade'
-  const sectionGroups = isReviewLayout ? 3 : 1
-  const sectionKnockout = 2
+  const sectionGroups = isReviewLayout ? 4 : 1
+  const sectionKnockout = isReviewLayout ? 3 : 2
   const sectionPodium = isReviewLayout ? 1 : 3
-  const sectionExtras = 4
+  const sectionSpecials = isReviewLayout ? 2 : undefined
+  const sectionExtras = isReviewLayout ? 5 : 4
+  const specialPlayersReadOnly = !areSpecialPlayersOpen(nowMs)
 
   const onDraftChange = useCallback((matchId: string, gh: number | null, ga: number | null) => {
     if (readOnly || !finalizedResolved) return
@@ -1124,6 +1126,13 @@ export function RoomPredictionsPage({ user }: { user: User }) {
             sectionIndex={sectionPodium}
             readOnly={readOnly}
           />
+          <TournamentSpecialPlayersSection
+            roomId={roomId}
+            userId={user.uid}
+            predByQuestionId={predByQuestionId}
+            readOnly={specialPlayersReadOnly}
+            sectionIndex={sectionSpecials}
+          />
           <KnockoutSection
             groupPredByMatchId={groupPredForBracket}
             koPredByMatchId={mergedKoPredByMatchId}
@@ -1197,12 +1206,14 @@ export function RoomPredictionsPage({ user }: { user: User }) {
         </>
       )}
 
-      <TournamentSpecialPlayersSection
-        roomId={roomId}
-        userId={user.uid}
-        predByQuestionId={predByQuestionId}
-        readOnly={readOnly}
-      />
+      {!isReviewLayout ? (
+        <TournamentSpecialPlayersSection
+          roomId={roomId}
+          userId={user.uid}
+          predByQuestionId={predByQuestionId}
+          readOnly={specialPlayersReadOnly}
+        />
+      ) : null}
 
       {hasActiveBonusQuestions ? (
         <BonusQuestionBank
