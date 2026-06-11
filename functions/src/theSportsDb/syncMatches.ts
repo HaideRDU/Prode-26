@@ -3,7 +3,7 @@ import * as logger from 'firebase-functions/logger'
 import type { MatchDoc } from '../lib/types/predictions'
 import { TSDB_FREE_KEY } from './constants'
 import { tsdbGet, eventsOrEmpty } from './client'
-import { linkTsdbFixtures } from './linkFixtures'
+import { quickLinkTsdbFixtures } from './linkFixtures'
 import { isMatchInPollingWindow, shouldRunScheduledSync } from '../apiSports/matchWindow'
 import { mapEventToMatchUpdate, matchUpdateChanged } from './mapEventToUpdate'
 
@@ -35,7 +35,7 @@ export async function syncMatchesFromTsdb(
   const missingId = inWindow.some((d) => !d.data.theSportsDbEventId)
   let linked: number | undefined
   if (missingId) {
-    const linkResult = await linkTsdbFixtures(db, apiKey)
+    const linkResult = await quickLinkTsdbFixtures(db, apiKey)
     linked = linkResult.linked
     const refreshed = await db.collection('matches').get()
     for (const d of inWindow) {

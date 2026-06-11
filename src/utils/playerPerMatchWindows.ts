@@ -139,6 +139,15 @@ export function classifyPlayerPickMatches(
       live.push(m)
       continue
     }
+    // Firestore puede estar retrasado: si el kickoff ya pasó pero aún dice 'scheduled',
+    // tratar el partido como en juego hasta que la Cloud Function lo actualice.
+    if (m.status === 'scheduled') {
+      const kMs = kickoffMs(m)
+      if (kMs !== null && nowMs >= kMs) {
+        live.push(m)
+        continue
+      }
+    }
     if (isMatchVisibleForPlayerPrediction(m, nowMs, config)) {
       prediction.push(m)
       continue

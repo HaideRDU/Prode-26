@@ -61,7 +61,7 @@ export function predictedTeamsByAdvancementRound(
   for (const m of WC26_KO_MATCHES) {
     const adv = KO_ROUND_TO_ADVANCEMENT[m.round]
     if (!adv) continue
-    const { homeId, awayId } = resolveKoMatchTeams(
+    const { teamAId: homeId, teamBId: awayId } = resolveKoMatchTeams(
       m.matchNum,
       tablesByGroup,
       thirdByMatchNum,

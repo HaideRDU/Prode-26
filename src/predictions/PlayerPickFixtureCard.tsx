@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { DEFAULT_RULESET, getPlayerPerMatchOpensAt, type KnockoutRoundId } from '../config/ruleset'
+import { DEFAULT_RULESET, getPlayerPerMatchOpensAt, toDate, type KnockoutRoundId } from '../config/ruleset'
 import { useMatchPlayerOptions } from '../hooks/useMatchPlayerOptions'
 import { savePlayerPerMatchPrediction } from '../services/predictionsService'
 import type { MatchDoc } from '../types/predictions'
@@ -104,15 +104,17 @@ export function PlayerPickFixtureCard({
   const tzShort = formatTimeZoneShort(timeZone)
   const opensAt = getPlayerPerMatchOpensAt(match.scheduledAt)
   const opensLabel = opensAt ? formatMatchTime(opensAt, timeZone) : null
+  const kickoffMsVal = toDate(match.scheduledAt)?.getTime() ?? null
+  const pastKickoff = kickoffMsVal !== null && Date.now() >= kickoffMsVal
   const showOpensHint =
-    mode === 'pick' && effectiveState === 'blocked' && opensLabel && !groupStageEarlyPick
+    mode === 'pick' && effectiveState === 'blocked' && opensLabel && !groupStageEarlyPick && !pastKickoff
   const ptsPerGoal = playerGoalsPerGoal(match)
   const pickedName = allOptions.find((o) => o.playerKey === localKey)?.name
 
-  const h =
-    match.goalsHome !== null && match.goalsHome !== undefined ? String(match.goalsHome) : '—'
-  const a =
-    match.goalsAway !== null && match.goalsAway !== undefined ? String(match.goalsAway) : '—'
+  const rawH = match.goalsTeamA ?? match.goalsHome
+  const rawA = match.goalsTeamB ?? match.goalsAway
+  const h = rawH !== null && rawH !== undefined ? String(rawH) : '—'
+  const a = rawA !== null && rawA !== undefined ? String(rawA) : '—'
 
   const cardClass = [
     'player-pick-fixture-card',

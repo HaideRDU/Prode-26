@@ -23,6 +23,13 @@ export async function buildApiTeamIdToIso3(apiKey: string): Promise<Map<number, 
   return map
 }
 
+function matchHomeAwayIds(d: MatchDoc): { homeId: string | undefined; awayId: string | undefined } {
+  return {
+    homeId: d.teamHomeId ?? d.teamAId,
+    awayId: d.teamAwayId ?? d.teamBId,
+  }
+}
+
 function findFirestoreMatchId(
   matches: { id: string; data: MatchDoc }[],
   homeIso: string,
@@ -32,7 +39,8 @@ function findFirestoreMatchId(
   let best: { id: string; delta: number } | null = null
   for (const m of matches) {
     const d = m.data
-    if (d.teamHomeId !== homeIso || d.teamAwayId !== awayIso) continue
+    const { homeId, awayId } = matchHomeAwayIds(d)
+    if (homeId !== homeIso || awayId !== awayIso) continue
     const scheduled = kickoffMs(d.scheduledAt)
     if (scheduled == null) continue
     const delta = Math.abs(scheduled - fixtureKickoffMs)

@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin'
+import { Timestamp } from 'firebase-admin/firestore'
 import { penaltiesWinnerFlagsForTeamA } from '../lib/matchPenalties'
 import type { MatchDoc, MatchStatus } from '../lib/types/predictions'
 import type { TsdbEventItem } from './types'
@@ -13,6 +14,7 @@ export interface MatchFirestoreUpdate {
   penaltiesWinnerTeamB: boolean | null
   finishedAt?: admin.firestore.FieldValue
   theSportsDbEventId: string
+  scheduledAt?: Timestamp
   goalsHome?: admin.firestore.FieldValue
   goalsAway?: admin.firestore.FieldValue
   penaltiesWinnerHome?: admin.firestore.FieldValue
@@ -92,6 +94,12 @@ export function mapEventToMatchUpdate(item: TsdbEventItem): MatchFirestoreUpdate
     penaltiesWinnerAway: admin.firestore.FieldValue.delete(),
   }
 
+  if (item.strTimestamp) {
+    const normalized = item.strTimestamp.endsWith('Z') ? item.strTimestamp : `${item.strTimestamp}Z`
+    const ms = Date.parse(normalized)
+    if (Number.isFinite(ms)) update.scheduledAt = Timestamp.fromMillis(ms)
+  }
+
   if (status === 'finished') {
     update.finishedAt = admin.firestore.FieldValue.serverTimestamp()
   }
@@ -107,5 +115,14 @@ export function matchUpdateChanged(current: MatchDoc, next: MatchFirestoreUpdate
   if ((current.wentToPenalties ?? null) !== next.wentToPenalties) return true
   if ((current.penaltiesWinnerTeamA ?? current.penaltiesWinnerHome ?? null) !== next.penaltiesWinnerTeamA) return true
   if ((current.penaltiesWinnerTeamB ?? current.penaltiesWinnerAway ?? null) !== next.penaltiesWinnerTeamB) return true
+  // Detectar corrección de horario
+  if (next.scheduledAt) {
+    const curMs = typeof current.scheduledAt === 'object' && current.scheduledAt !== null && 'toDate' in current.scheduledAt
+      ? (current.scheduledAt as { toDate(): Date }).toDate().getTime()
+      : typeof current.scheduledAt === 'string'
+        ? Date.parse(current.scheduledAt)
+        : null
+    if (curMs !== null && Math.abs(curMs - next.scheduledAt.toMillis()) > 60_000) return true
+  }
   return false
 }

@@ -19,6 +19,13 @@ function tsdbTimestampToMs(strTimestamp: string): number | null {
   return Number.isFinite(ms) ? ms : null
 }
 
+function matchHomeAwayIds(d: MatchDoc): { homeId: string | undefined; awayId: string | undefined } {
+  return {
+    homeId: d.teamHomeId ?? d.teamAId,
+    awayId: d.teamAwayId ?? d.teamBId,
+  }
+}
+
 function findFirestoreMatchId(
   matches: { id: string; data: MatchDoc }[],
   homeIso: string,
@@ -28,7 +35,8 @@ function findFirestoreMatchId(
   let best: { id: string; delta: number } | null = null
   for (const m of matches) {
     const d = m.data
-    if (d.teamHomeId !== homeIso || d.teamAwayId !== awayIso) continue
+    const { homeId, awayId } = matchHomeAwayIds(d)
+    if (homeId !== homeIso || awayId !== awayIso) continue
     const scheduled = kickoffMs(d.scheduledAt)
     if (scheduled == null) continue
     const delta = Math.abs(scheduled - fixtureKickoffMs)
@@ -54,6 +62,46 @@ function dateRange(startIso: string, endIso: string): string[] {
   return dates
 }
 
+async function fetchDays(apiKey: string, days: string[], all: Map<string, TsdbEventItem>): Promise<void> {
+  for (const day of days) {
+    await sleep(2000)
+    try {
+      const dayResp = await tsdbGet(apiKey, 'eventsday.php', {
+        d: day,
+        l: TSDB_WC_LEAGUE_ID,
+      })
+      const dayEvents = eventsOrEmpty(dayResp).filter((e) => String(e.idLeague) === String(TSDB_WC_LEAGUE_ID))
+      for (const ev of dayEvents) all.set(ev.idEvent, ev)
+    } catch (e) {
+      logger.warn(`[tsdb:link] eventsday ${day} omitido (rate limit u otro error)`, e)
+    }
+  }
+}
+
+/**
+ * Modo rápido: solo hoy ± 3 días. Usado durante el sync para no bloquear el cron.
+ * Tiempo máximo: ~5 llamadas × 2 s ≈ 10 s.
+ */
+async function fetchRecentTsdbEvents(apiKey: string): Promise<TsdbEventItem[]> {
+  const all = new Map<string, TsdbEventItem>()
+
+  const seasonResp = await tsdbGet(apiKey, 'eventsseason.php', {
+    id: TSDB_WC_LEAGUE_ID,
+    s: TSDB_SEASON,
+  })
+  for (const ev of eventsOrEmpty(seasonResp)) all.set(ev.idEvent, ev)
+  logger.info(`[tsdb:link:quick] eventsseason: ${all.size} eventos`)
+
+  // Hoy y los próximos 3 días (ventana de polling relevante)
+  const today = new Date()
+  const todayStr = today.toISOString().slice(0, 10)
+  const plus3 = new Date(today.getTime() + 3 * 86_400_000).toISOString().slice(0, 10)
+  await fetchDays(apiKey, dateRange(todayStr, plus3), all)
+
+  logger.info(`[tsdb:link:quick] total: ${all.size}`)
+  return Array.from(all.values())
+}
+
 async function fetchAllTsdbEvents(apiKey: string): Promise<TsdbEventItem[]> {
   const all = new Map<string, TsdbEventItem>()
 
@@ -65,27 +113,19 @@ async function fetchAllTsdbEvents(apiKey: string): Promise<TsdbEventItem[]> {
   for (const ev of eventsOrEmpty(seasonResp)) all.set(ev.idEvent, ev)
   logger.info(`[tsdb:link] eventsseason: ${all.size} eventos`)
 
-  // 2) Por día: June 11 → July 19, 100 ms de delay entre llamadas
+  // 2) Por día: June 11 → July 19 (pausa entre llamadas; Free ~30 req/min)
   const days = dateRange('2026-06-11', '2026-07-19')
-  for (const day of days) {
-    await sleep(100)
-    const dayResp = await tsdbGet(apiKey, 'eventsday.php', {
-      d: day,
-      l: TSDB_WC_LEAGUE_ID,
-    })
-    const dayEvents = eventsOrEmpty(dayResp).filter((e) => String(e.idLeague) === String(TSDB_WC_LEAGUE_ID))
-    for (const ev of dayEvents) all.set(ev.idEvent, ev)
-  }
+  await fetchDays(apiKey, days, all)
 
   logger.info(`[tsdb:link] total eventos únicos: ${all.size}`)
   return Array.from(all.values())
 }
 
-export async function linkTsdbFixtures(
+async function doLink(
   db: Firestore,
-  apiKey = TSDB_FREE_KEY,
+  apiKey: string,
+  events: TsdbEventItem[],
 ): Promise<{ linked: number; skipped: number; updated: number }> {
-  const events = await fetchAllTsdbEvents(apiKey)
 
   const snap = await db.collection('matches').get()
   const firestoreMatches = snap.docs.map((d) => ({ id: d.id, data: d.data() as MatchDoc }))
@@ -133,6 +173,8 @@ export async function linkTsdbFixtures(
     // Actualizar el objeto en memoria para que el corrected scheduledAt no afecte búsquedas futuras
     const entry = firestoreMatches.find((m) => m.id === matchId)
     if (entry) {
+      entry.data.theSportsDbEventId = item.idEvent
+      entry.data.scheduledAt = Timestamp.fromDate(new Date(`${item.strTimestamp}Z`))
       updated += 1
     }
   }
@@ -140,6 +182,24 @@ export async function linkTsdbFixtures(
   await writer.close()
   logger.info(`[tsdb:link] linked=${linked} skipped=${skipped} total_events=${events.length}`)
   return { linked, skipped, updated }
+}
+
+/** Enlaza todos los partidos — escanea la temporada completa (lento; para script manual). */
+export async function linkTsdbFixtures(
+  db: Firestore,
+  apiKey = TSDB_FREE_KEY,
+): Promise<{ linked: number; skipped: number; updated: number }> {
+  const events = await fetchAllTsdbEvents(apiKey)
+  return doLink(db, apiKey, events)
+}
+
+/** Enlace rápido: solo hoy + 3 días. Usado desde syncMatchesFromTsdb para no bloquear el cron. */
+export async function quickLinkTsdbFixtures(
+  db: Firestore,
+  apiKey = TSDB_FREE_KEY,
+): Promise<{ linked: number; skipped: number; updated: number }> {
+  const events = await fetchRecentTsdbEvents(apiKey)
+  return doLink(db, apiKey, events)
 }
 
 /** Ping de conectividad: pide el próximo partido del Mundial 2026 */
