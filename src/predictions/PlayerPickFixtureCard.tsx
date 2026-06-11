@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_RULESET, getPlayerPerMatchOpensAt, toDate, type KnockoutRoundId } from '../config/ruleset'
 import { useMatchPlayerOptions } from '../hooks/useMatchPlayerOptions'
 import { scorePlayerPerMatchPick } from '../services/scoring'
+import { scorerMatchesPick, type PlayerRef } from '../utils/playerKeyMatch'
 import { savePlayerPerMatchPrediction } from '../services/predictionsService'
 import type { MatchDoc, MatchScorerEntry } from '../types/predictions'
 import { formatMatchHour, formatMatchTime, formatTimeZoneShort } from '../utils/formatMatchTime'
@@ -32,7 +33,7 @@ type GoalDisplay = {
 function mapScorersToDisplay(
   rows: MatchScorerEntry[],
   nameByKey: Map<string, string>,
-  localKey: string,
+  pickRef: PlayerRef | null,
 ): { teamA: GoalDisplay[]; teamB: GoalDisplay[] } {
   const teamA: GoalDisplay[] = []
   const teamB: GoalDisplay[] = []
@@ -40,7 +41,7 @@ function mapScorersToDisplay(
     .filter((s) => !s.includesPenalties && s.goals > 0)
     .forEach((s, i) => {
       const name = nameByKey.get(s.playerKey) ?? s.playerName ?? s.playerKey
-      const isPick = Boolean(localKey && s.playerKey === localKey)
+      const isPick = pickRef ? scorerMatchesPick(pickRef, s) : false
       const entry: GoalDisplay = {
         key: `${s.playerKey}-${s.minute ?? 'x'}-${i}`,
         name,
@@ -172,14 +173,22 @@ export function PlayerPickFixtureCard({
   const showOpensHint =
     mode === 'pick' && effectiveState === 'blocked' && opensLabel && !groupStageEarlyPick && !pastKickoff
   const ptsPerGoal = playerGoalsPerGoal(match)
-  const pickedName = allOptions.find((o) => o.playerKey === localKey)?.name
+  const pickedOption = allOptions.find((o) => o.playerKey === localKey)
+  const pickedName = pickedOption?.name
+  const pickRef: PlayerRef | null = localKey
+    ? {
+        playerKey: localKey,
+        name: pickedName,
+        theSportsDbPlayerId: pickedOption?.theSportsDbPlayerId,
+      }
+    : null
   const nameByKey = useMemo(() => new Map(allOptions.map((o) => [o.playerKey, o.name])), [allOptions])
   const goalsBySide = useMemo(
-    () => mapScorersToDisplay(match.scorers ?? [], nameByKey, localKey),
-    [match.scorers, nameByKey, localKey],
+    () => mapScorersToDisplay(match.scorers ?? [], nameByKey, pickRef),
+    [match.scorers, nameByKey, pickRef],
   )
   const livePickPoints =
-    mode === 'live' && localKey ? scorePlayerPerMatchPick(match, localKey) : 0
+    mode === 'live' && pickRef ? scorePlayerPerMatchPick(match, localKey, pickRef) : 0
 
   const rawH = match.goalsTeamA ?? match.goalsHome
   const rawA = match.goalsTeamB ?? match.goalsAway

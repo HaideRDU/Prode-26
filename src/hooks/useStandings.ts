@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { StandingRow } from '../services/standingsService'
@@ -6,7 +6,7 @@ import { subscribeStandingsForRoom } from '../services/standingsService'
 import { GLOBAL_ROOM_ID } from '../constants/rooms'
 import type { RoomMemberDoc } from '../types/predictions'
 import { isUidPlaceholder, resolvePlayerLabel } from '../utils/memberDisplayName'
-import { applyDisplayRanks, applyRankMovementFromPrevious } from '../utils/rankMovement'
+import { applyDisplayRanks } from '../utils/rankMovement'
 
 type UserLabelMeta = { username?: string; email?: string }
 
@@ -22,11 +22,8 @@ export function useStandings(roomId: string | undefined, currentUserId?: string)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(!!roomId)
   const isGlobalRoom = roomId === GLOBAL_ROOM_ID
-  const previousRanksRef = useRef<Record<string, number>>({})
-
   useEffect(() => {
     setUserMetaById({})
-    previousRanksRef.current = {}
     setRawStandings([])
     setLoading(!!roomId)
   }, [roomId])
@@ -138,15 +135,25 @@ export function useStandings(roomId: string | undefined, currentUserId?: string)
       if (a.points !== b.points) return b.points - a.points
       return a.userId.localeCompare(b.userId)
     })
-    const withMovement = applyRankMovementFromPrevious(withRanks, previousRanksRef.current)
-
-    const nextRanks: Record<string, number> = {}
-    for (const row of withRanks) {
-      if (Number.isFinite(row.rank)) nextRanks[row.userId] = row.rank
-    }
-    previousRanksRef.current = nextRanks
-
-    return withMovement
+    const rawByUserId = new Map(rawStandings.map((r) => [r.userId, r]))
+    // rankDelta viene de Firestore (recalculateRoom: puesto anterior − puesto nuevo).
+    return withRanks.map((row) => {
+      const raw = rawByUserId.get(row.userId)
+      const storedDelta =
+        typeof raw?.rankDelta === 'number' && Number.isFinite(raw.rankDelta) ? raw.rankDelta : 0
+      const firestoreRank = raw?.rank
+      let rankDelta = storedDelta
+      if (
+        typeof firestoreRank === 'number' &&
+        Number.isFinite(firestoreRank) &&
+        Number.isFinite(row.rank) &&
+        firestoreRank !== row.rank
+      ) {
+        const prevRank = firestoreRank + storedDelta
+        rankDelta = prevRank - row.rank
+      }
+      return { ...row, rankDelta }
+    })
   }, [rawStandings, memberNames, userMetaById, roomId])
 
   return { standings, error, loading, isGlobalRoom }

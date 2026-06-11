@@ -16,6 +16,7 @@ import {
   predictedTeamsByAdvancementRound,
   scoreBracketAdvancement,
 } from './bracketAdvancement'
+import { resolvePickPlayer, type PlayerRosterIndex } from './loadPlayerRosterIndex'
 import {
   totalPointsFromParts,
   type MatchScoreInput,
@@ -53,6 +54,7 @@ export function computeScoresForRoom(
   matchesById: Map<string, MatchDoc>,
   tournamentResultsByQuestionId: Map<string, TournamentResultDoc>,
   enabledQuestionIds?: ReadonlySet<string> | null,
+  playerRosterIndex?: PlayerRosterIndex,
 ): Map<
   string,
   {
@@ -112,10 +114,12 @@ export function computeScoresForRoom(
     } else if (pr.scope === 'player_per_match' && pr.matchId) {
       const m = matchesById.get(pr.matchId)
       if (!m || !isPlayerPerMatchPayload(pr.payload)) continue
+      const playerKey = pr.payload.playerKey
       bucket.playerPickParts.push({
         matchId: pr.matchId,
         match: m,
-        playerKey: pr.payload.playerKey,
+        playerKey,
+        pickPlayer: resolvePickPlayer(playerKey, playerRosterIndex),
       })
     }
   }

@@ -40,6 +40,7 @@ export interface MatchScorerEntry {
   goals: number
   includesPenalties?: boolean
   playerName?: string
+  theSportsDbPlayerId?: string
   minute?: number
   teamSide?: 'teamA' | 'teamB'
 }

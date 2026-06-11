@@ -39,6 +39,8 @@ export interface MatchScorerEntry {
   includesPenalties?: boolean
   /** Nombre legible desde timeline TSDB o plantilla; evita mostrar solo el id. */
   playerName?: string
+  /** idPlayer en TheSportsDB (para cruzar con plantilla Panini / TSDB). */
+  theSportsDbPlayerId?: string
   /** Minuto del gol (90'+prórroga). */
   minute?: number
   /** Equipo que anotó: A = local / teamAId. */

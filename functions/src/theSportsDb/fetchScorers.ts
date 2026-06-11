@@ -1,4 +1,5 @@
 import type { Firestore } from 'firebase-admin/firestore'
+import { normalizePlayerName, playerRefFromDoc } from '../lib/playerKeyMatch'
 import type { MatchDoc, MatchScorerEntry, TeamPlayerDoc } from '../lib/types/predictions'
 import { TSDB_FREE_KEY } from './constants'
 import { tsdbGetJson } from './client'
@@ -59,18 +60,55 @@ export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] 
   return goals
 }
 
-function playerKeyFromDoc(docId: string, data: TeamPlayerDoc): string {
-  return data.paniniStickerCode?.trim() || docId
+type ResolvedPlayer = { playerKey: string; rosterName?: string }
+
+function lastNameToken(name: string): string | null {
+  const n = normalizePlayerName(name)
+  const parts = n.split(' ').filter(Boolean)
+  return parts.length ? parts[parts.length - 1]! : null
 }
 
-/** Resuelve idPlayer de TSDB → playerKey y nombre en plantilla (si existe). */
+async function findPlayerByNormalizedName(
+  db: Firestore,
+  teamAId: string,
+  teamBId: string,
+  timelineName: string,
+): Promise<ResolvedPlayer | null> {
+  const target = normalizePlayerName(timelineName)
+  if (!target) return null
+  const targetLast = lastNameToken(timelineName)
+  const lastNameMatches: ResolvedPlayer[] = []
+
+  for (const teamId of [teamAId, teamBId]) {
+    const snap = await db.collection('teams').doc(teamId).collection('players').get()
+    for (const doc of snap.docs) {
+      const data = doc.data() as TeamPlayerDoc
+      const name = data.name?.trim()
+      if (!name) continue
+      if (normalizePlayerName(name) === target) {
+        const ref = playerRefFromDoc(doc.id, data)
+        return { playerKey: ref.playerKey, rosterName: name }
+      }
+      if (targetLast && lastNameToken(name) === targetLast) {
+        const ref = playerRefFromDoc(doc.id, data)
+        lastNameMatches.push({ playerKey: ref.playerKey, rosterName: name })
+      }
+    }
+  }
+
+  if (lastNameMatches.length === 1) return lastNameMatches[0]!
+  return null
+}
+
+/** Resuelve idPlayer de TSDB → playerKey de plantilla (Panini, doc id o nombre). */
 export async function resolveTsdbPlayer(
   db: Firestore,
   teamAId: string,
   teamBId: string,
   tsdbPlayerId: string,
-  cache: Map<string, { playerKey: string; rosterName?: string }>,
-): Promise<{ playerKey: string; rosterName?: string }> {
+  timelineName: string,
+  cache: Map<string, ResolvedPlayer>,
+): Promise<ResolvedPlayer> {
   const cached = cache.get(tsdbPlayerId)
   if (cached) return cached
 
@@ -79,10 +117,8 @@ export async function resolveTsdbPlayer(
     const direct = await directRef.get()
     if (direct.exists) {
       const data = direct.data() as TeamPlayerDoc
-      const resolved = {
-        playerKey: playerKeyFromDoc(direct.id, data),
-        rosterName: data.name?.trim() || undefined,
-      }
+      const ref = playerRefFromDoc(direct.id, data)
+      const resolved = { playerKey: ref.playerKey, rosterName: ref.name }
       cache.set(tsdbPlayerId, resolved)
       return resolved
     }
@@ -97,16 +133,23 @@ export async function resolveTsdbPlayer(
       .get()
     if (!snap.empty) {
       const doc = snap.docs[0]
-      const data = doc.data() as TeamPlayerDoc
-      const resolved = {
-        playerKey: playerKeyFromDoc(doc.id, data),
-        rosterName: data.name?.trim() || undefined,
-      }
+      const ref = playerRefFromDoc(doc.id, doc.data() as TeamPlayerDoc)
+      const resolved = { playerKey: ref.playerKey, rosterName: ref.name }
       cache.set(tsdbPlayerId, resolved)
       return resolved
     }
   }
-  const fallback = { playerKey: tsdbPlayerId }
+
+  const byName = await findPlayerByNormalizedName(db, teamAId, teamBId, timelineName)
+  if (byName) {
+    cache.set(tsdbPlayerId, byName)
+    return byName
+  }
+
+  const fallback = {
+    playerKey: tsdbPlayerId,
+    rosterName: timelineName.trim() || undefined,
+  }
   cache.set(tsdbPlayerId, fallback)
   return fallback
 }
@@ -127,13 +170,21 @@ export async function fetchScorersFromTimeline(
 
   const parsed = parseTimelineGoals(rows)
   const scorers: MatchScorerEntry[] = []
-  const cache = new Map<string, { playerKey: string; rosterName?: string }>()
+  const cache = new Map<string, ResolvedPlayer>()
 
   for (const ev of parsed) {
-    const { playerKey, rosterName } = await resolveTsdbPlayer(db, teamAId, teamBId, ev.tsdbPlayerId, cache)
+    const { playerKey, rosterName } = await resolveTsdbPlayer(
+      db,
+      teamAId,
+      teamBId,
+      ev.tsdbPlayerId,
+      ev.playerName,
+      cache,
+    )
     const displayName = rosterName || ev.playerName || undefined
     scorers.push({
       playerKey,
+      theSportsDbPlayerId: ev.tsdbPlayerId,
       goals: 1,
       ...(displayName ? { playerName: displayName } : {}),
       ...(ev.minute != null ? { minute: ev.minute } : {}),
@@ -155,7 +206,7 @@ export function scorersChanged(
     [...rows]
       .map(
         (s) =>
-          `${s.playerKey}:${s.playerName ?? ''}:${s.goals}:${s.minute ?? ''}:${s.teamSide ?? ''}:${s.includesPenalties ? 1 : 0}`,
+          `${s.playerKey}:${s.goals}:${s.minute ?? ''}:${s.teamSide ?? ''}:${s.includesPenalties ? 1 : 0}`,
       )
       .sort()
       .join('|')

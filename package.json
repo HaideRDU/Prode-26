@@ -50,6 +50,7 @@
     "verify:firebase-project": "tsx scripts/verify-firebase-project.ts",
     "link:tsdb": "npm run build:functions && tsx scripts/link-thesportsdb-fixtures.ts",
     "sync:tsdb-live": "npm run build:functions && tsx scripts/sync-thesportsdb-live.ts",
+    "resync:match-scorers": "npm run build:functions && tsx scripts/resync-match-scorers.ts",
     "link:api-sports": "npm run build:functions && tsx scripts/link-api-sports-fixtures.ts",
     "sync:api-sports-live": "npm run build:functions && tsx scripts/sync-api-sports-live.ts",
     "build:functions": "npm run build --prefix functions"

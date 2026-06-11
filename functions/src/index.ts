@@ -9,8 +9,10 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { onDocumentWritten } from 'firebase-functions/v2/firestore'
 import { HttpsError, onCall } from 'firebase-functions/v2/https'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
+import { defineSecret } from 'firebase-functions/params'
 import * as logger from 'firebase-functions/logger'
 import { linkTsdbFixtures } from './theSportsDb/linkFixtures'
+import { TSDB_FREE_KEY } from './theSportsDb/constants'
 import { syncMatchesFromTsdb as runTsdbSync } from './theSportsDb/syncMatches'
 import { getAllRoomIds, recalculateStandingsForRoom } from './recalculateRoom'
 
@@ -125,18 +127,21 @@ export const managePrivateRoomMember = onCall(async (request) => {
   return { ok: true }
 })
 
+const apisportsKey = defineSecret('APISPORTS_KEY')
+
 /**
  * Cada 1 min (solo ventana del Mundial): actualiza partidos en horario de juego vía TheSportsDB Free.
- * Clave pública 123 — no requiere secreto.
+ * Clave pública 123 — no requiere secreto. Fallback de goleadores vía API-Sports si el timeline TSDB está incompleto.
  */
 export const syncMatchesFromTsdb = onSchedule(
   {
     schedule: 'every 1 minutes',
     timeZone: 'UTC',
+    secrets: [apisportsKey],
   },
   async () => {
     try {
-      const result = await runTsdbSync(db)
+      const result = await runTsdbSync(db, TSDB_FREE_KEY, apisportsKey.value())
       logger.info('syncMatchesFromTsdb', result)
     } catch (err) {
       logger.error('syncMatchesFromTsdb failed', err)

@@ -17,7 +17,9 @@ const db = getFirestore()
 console.log('[sync-tsdb-live] projectId:', getApp().options.projectId ?? projectId)
 console.log('[sync-tsdb-live] Usando TheSportsDB Free (clave pública 123)')
 
-syncMatchesFromTsdb(db)
+const apiSportsKey = process.env.APISPORTS_KEY?.trim()
+
+syncMatchesFromTsdb(db, undefined, apiSportsKey)
   .then((r) => {
     console.log('[sync-tsdb-live] OK:', r)
   })

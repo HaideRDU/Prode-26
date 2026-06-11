@@ -22,6 +22,7 @@ import {
   type KnockoutRoundId,
   type MatchPointsRow,
 } from '../config/ruleset'
+import { type PlayerRef, scorerMatchesPick } from '../utils/playerKeyMatch'
 
 const GROUP_ROW = DEFAULT_RULESET.points.matchByPhase.group
 
@@ -485,15 +486,17 @@ function goalsPerGoalForMatch(match: Pick<MatchDoc, 'phase' | 'round'>): number 
 export function scorePlayerPerMatchPick(
   match: Pick<MatchDoc, 'status' | 'scorers' | 'phase' | 'round'>,
   playerKey: string | null | undefined,
+  pickPlayer?: PlayerRef | null,
 ): number {
   if (!playerKey || (match.status !== 'finished' && match.status !== 'live')) return 0
   const scorers = match.scorers
   if (!scorers?.length) return 0
+  const pick: PlayerRef = pickPlayer ?? { playerKey }
   const ptsPerGoal = goalsPerGoalForMatch(match)
   let total = 0
   for (const s of scorers) {
     if (s.includesPenalties) continue
-    if (s.playerKey !== playerKey) continue
+    if (!scorerMatchesPick(pick, s)) continue
     if (typeof s.goals !== 'number' || s.goals <= 0) continue
     total += s.goals * ptsPerGoal
   }

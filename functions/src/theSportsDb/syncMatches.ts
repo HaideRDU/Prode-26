@@ -1,11 +1,13 @@
 import type { Firestore } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
 import type { MatchDoc } from '../lib/types/predictions'
+import { fetchMatchScorers, matchNeedsScorerBackfill } from '../lib/syncMatchScorers'
+import { scorersIncompleteForScore } from '../lib/scorerSync'
+import { isMatchInPollingWindow, kickoffMs, shouldRunScheduledSync } from '../apiSports/matchWindow'
 import { TSDB_FREE_KEY } from './constants'
 import { tsdbGet, eventsOrEmpty } from './client'
 import { quickLinkTsdbFixtures } from './linkFixtures'
-import { isMatchInPollingWindow, kickoffMs, shouldRunScheduledSync } from '../apiSports/matchWindow'
-import { fetchScorersFromTimeline, scorersChanged } from './fetchScorers'
+import { scorersChanged } from './fetchScorers'
 import { mapEventToMatchUpdate, matchUpdateChanged } from './mapEventToUpdate'
 
 export interface SyncTsdbResult {
@@ -18,6 +20,7 @@ export interface SyncTsdbResult {
 export async function syncMatchesFromTsdb(
   db: Firestore,
   apiKey = TSDB_FREE_KEY,
+  apiSportsKey?: string,
 ): Promise<SyncTsdbResult> {
   const nowMs = Date.now()
   if (!shouldRunScheduledSync(nowMs)) {
@@ -28,12 +31,16 @@ export async function syncMatchesFromTsdb(
   const docs = snap.docs.map((d) => ({ id: d.id, data: d.data() as MatchDoc }))
 
   const inWindow = docs.filter((d) => isMatchInPollingWindow(d.data, nowMs))
-  if (inWindow.length === 0) {
+  const backfillScorers = docs.filter((d) => matchNeedsScorerBackfill(d.data))
+  const toProcess = [
+    ...new Map([...inWindow, ...backfillScorers].map((d) => [d.id, d] as const)).values(),
+  ]
+  if (toProcess.length === 0) {
     return { ran: true, inWindow: 0, updated: 0 }
   }
 
   // Relinkear si falta ID en ventana o hay partidos próximos (7 días) sin enlazar
-  const missingId = inWindow.some((d) => !d.data.theSportsDbEventId)
+  const missingId = toProcess.some((d) => !d.data.theSportsDbEventId)
   const soonMs = nowMs + 7 * 86_400_000
   const hasUnlinkedSoon = docs.some((d) => {
     if (d.data.theSportsDbEventId) return false
@@ -45,7 +52,7 @@ export async function syncMatchesFromTsdb(
     const linkResult = await quickLinkTsdbFixtures(db, apiKey)
     linked = linkResult.linked
     const refreshed = await db.collection('matches').get()
-    for (const d of inWindow) {
+    for (const d of toProcess) {
       const fresh = refreshed.docs.find((x) => x.id === d.id)
       if (fresh) d.data = fresh.data() as MatchDoc
     }
@@ -54,7 +61,7 @@ export async function syncMatchesFromTsdb(
   let updated = 0
   const writer = db.bulkWriter()
 
-  for (const { id: matchId, data: current } of inWindow) {
+  for (const { id: matchId, data: current } of toProcess) {
     const tsdbId = current.theSportsDbEventId
     if (!tsdbId) continue
 
@@ -69,20 +76,41 @@ export async function syncMatchesFromTsdb(
     const goalsChanged =
       (current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA ||
       (current.goalsTeamB ?? current.goalsAway ?? null) !== next.goalsTeamB
+    const scorersIncomplete = scorersIncompleteForScore(
+      next.goalsTeamA,
+      next.goalsTeamB,
+      current.scorers,
+    )
     const shouldFetchScorers =
       next.status === 'live' ||
       next.status === 'finished' ||
       goalsChanged ||
-      (current.scorers?.length ?? 0) === 0
+      (current.scorers?.length ?? 0) === 0 ||
+      scorersIncomplete
 
     if (shouldFetchScorers) {
       try {
-        const scorers = await fetchScorersFromTimeline(db, current, tsdbId, apiKey)
+        const scorers = await fetchMatchScorers(
+          db,
+          {
+            ...current,
+            goalsTeamA: next.goalsTeamA,
+            goalsTeamB: next.goalsTeamB,
+            status: next.status,
+          },
+          tsdbId,
+          {
+            tsdbApiKey: apiKey,
+            apiSportsKey,
+            goalsTeamA: next.goalsTeamA,
+            goalsTeamB: next.goalsTeamB,
+          },
+        )
         if (scorers.length > 0 || (current.scorers?.length ?? 0) > 0) {
           next.scorers = scorers
         }
       } catch (err) {
-        logger.warn(`[tsdb:sync] timeline scorers failed matchId=${matchId}`, err)
+        logger.warn(`[tsdb:sync] scorers failed matchId=${matchId}`, err)
       }
     }
 
@@ -94,6 +122,6 @@ export async function syncMatchesFromTsdb(
   }
 
   await writer.close()
-  logger.info(`[tsdb:sync] inWindow=${inWindow.length} updated=${updated}`)
-  return { ran: true, inWindow: inWindow.length, updated, linked }
+  logger.info(`[tsdb:sync] inWindow=${inWindow.length} backfill=${backfillScorers.length} updated=${updated}`)
+  return { ran: true, inWindow: toProcess.length, updated, linked }
 }

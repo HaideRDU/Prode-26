@@ -95,6 +95,8 @@ export interface TsdbLineupResponse {
 export interface TsdbTimelineItem {
   idTimeline?: string
   idEvent: string
+  /** Fixture id en API-Football (mismo evento, otra fuente de goles). */
+  idAPIfootball?: string | null
   /** "Goal" | "Card" | "subst" | … */
   strTimeline: string
   /** "Normal Goal" | "Penalty" | "Yellow Card" | … */

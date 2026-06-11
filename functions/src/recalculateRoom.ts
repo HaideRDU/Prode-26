@@ -1,6 +1,7 @@
 import { FieldValue, type Firestore, type Timestamp } from 'firebase-admin/firestore'
 import type { MatchDoc, PredictionDoc, TournamentResultDoc } from './lib/types/predictions'
 import { assignRanks, computeScoresForRoom } from './lib/aggregateScores'
+import { buildPlayerRosterIndex, teamIdsFromMatches } from './lib/loadPlayerRosterIndex'
 import { filterPredictionsForStandings, loadFinalizedUserIds } from './lib/loadFinalizedUserIds'
 
 type RoomMemberLite = { userId: string; displayName?: string }
@@ -85,11 +86,16 @@ export async function recalculateStandingsForRoom(
   const finalizedUserIds = await loadFinalizedUserIds(db, roomId, predictionUserIds)
   const scoringPredictions = filterPredictionsForStandings(predictions, finalizedUserIds)
 
+  const playerRosterIndex = await buildPlayerRosterIndex(
+    db,
+    teamIdsFromMatches(matchesById.values()),
+  )
   const scores = computeScoresForRoom(
     scoringPredictions,
     matchesById,
     tournamentResultsByQuestionId,
     enabledQuestionIds,
+    playerRosterIndex,
   )
 
   const memberRawNameByUserId = new Map<string, string>()
