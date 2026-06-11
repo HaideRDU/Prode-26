@@ -498,7 +498,7 @@ export function scorePlayerPerMatchPick(
   match: Pick<MatchDoc, 'status' | 'scorers' | 'phase' | 'round'>,
   playerKey: string | null | undefined,
 ): number {
-  if (!playerKey || match.status !== 'finished') return 0
+  if (!playerKey || (match.status !== 'finished' && match.status !== 'live')) return 0
   const scorers = match.scorers
   if (!scorers?.length) return 0
   const ptsPerGoal = goalsPerGoalForMatch(match)

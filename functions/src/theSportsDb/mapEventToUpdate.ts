@@ -1,8 +1,9 @@
 import * as admin from 'firebase-admin'
 import { Timestamp } from 'firebase-admin/firestore'
 import { penaltiesWinnerFlagsForTeamA } from '../lib/matchPenalties'
-import type { MatchDoc, MatchStatus } from '../lib/types/predictions'
+import type { MatchDoc, MatchScorerEntry, MatchStatus } from '../lib/types/predictions'
 import type { TsdbEventItem } from './types'
+import { scorersChanged } from './fetchScorers'
 import { mapTsdbStatus } from './mapStatus'
 
 export interface MatchFirestoreUpdate {
@@ -15,6 +16,7 @@ export interface MatchFirestoreUpdate {
   finishedAt?: admin.firestore.FieldValue
   theSportsDbEventId: string
   scheduledAt?: Timestamp
+  scorers?: MatchScorerEntry[]
   goalsHome?: admin.firestore.FieldValue
   goalsAway?: admin.firestore.FieldValue
   penaltiesWinnerHome?: admin.firestore.FieldValue
@@ -124,5 +126,6 @@ export function matchUpdateChanged(current: MatchDoc, next: MatchFirestoreUpdate
         : null
     if (curMs !== null && Math.abs(curMs - next.scheduledAt.toMillis()) > 60_000) return true
   }
+  if (scorersChanged(current.scorers, next.scorers ?? [])) return true
   return false
 }

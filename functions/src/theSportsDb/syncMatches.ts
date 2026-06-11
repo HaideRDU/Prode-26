@@ -4,7 +4,8 @@ import type { MatchDoc } from '../lib/types/predictions'
 import { TSDB_FREE_KEY } from './constants'
 import { tsdbGet, eventsOrEmpty } from './client'
 import { quickLinkTsdbFixtures } from './linkFixtures'
-import { isMatchInPollingWindow, shouldRunScheduledSync } from '../apiSports/matchWindow'
+import { isMatchInPollingWindow, kickoffMs, shouldRunScheduledSync } from '../apiSports/matchWindow'
+import { fetchScorersFromTimeline, scorersChanged } from './fetchScorers'
 import { mapEventToMatchUpdate, matchUpdateChanged } from './mapEventToUpdate'
 
 export interface SyncTsdbResult {
@@ -31,10 +32,16 @@ export async function syncMatchesFromTsdb(
     return { ran: true, inWindow: 0, updated: 0 }
   }
 
-  // Si algún match en ventana no tiene theSportsDbEventId, relinkear
+  // Relinkear si falta ID en ventana o hay partidos próximos (7 días) sin enlazar
   const missingId = inWindow.some((d) => !d.data.theSportsDbEventId)
+  const soonMs = nowMs + 7 * 86_400_000
+  const hasUnlinkedSoon = docs.some((d) => {
+    if (d.data.theSportsDbEventId) return false
+    const k = kickoffMs(d.data.scheduledAt)
+    return k != null && k >= nowMs - 15 * 60_000 && k <= soonMs
+  })
   let linked: number | undefined
-  if (missingId) {
+  if (missingId || hasUnlinkedSoon) {
     const linkResult = await quickLinkTsdbFixtures(db, apiKey)
     linked = linkResult.linked
     const refreshed = await db.collection('matches').get()
@@ -59,7 +66,28 @@ export async function syncMatchesFromTsdb(
     const item = events[0]
     const next = mapEventToMatchUpdate(item)
 
-    if (!matchUpdateChanged(current, next)) continue
+    const goalsChanged =
+      (current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA ||
+      (current.goalsTeamB ?? current.goalsAway ?? null) !== next.goalsTeamB
+    const shouldFetchScorers =
+      next.status === 'live' ||
+      next.status === 'finished' ||
+      goalsChanged ||
+      (current.scorers?.length ?? 0) === 0
+
+    if (shouldFetchScorers) {
+      try {
+        const scorers = await fetchScorersFromTimeline(db, current, tsdbId, apiKey)
+        if (scorers.length > 0 || (current.scorers?.length ?? 0) > 0) {
+          next.scorers = scorers
+        }
+      } catch (err) {
+        logger.warn(`[tsdb:sync] timeline scorers failed matchId=${matchId}`, err)
+      }
+    }
+
+    const scorersDelta = scorersChanged(current.scorers, next.scorers ?? [])
+    if (!matchUpdateChanged(current, next) && !scorersDelta) continue
 
     writer.set(db.collection('matches').doc(matchId), next, { merge: true })
     updated += 1

@@ -90,3 +90,23 @@ export interface TsdbLineupItem {
 export interface TsdbLineupResponse {
   lineup: TsdbLineupItem[] | null
 }
+
+/** Fila de lookuptimeline.php */
+export interface TsdbTimelineItem {
+  idTimeline?: string
+  idEvent: string
+  /** "Goal" | "Card" | "subst" | … */
+  strTimeline: string
+  /** "Normal Goal" | "Penalty" | "Yellow Card" | … */
+  strTimelineDetail?: string | null
+  idPlayer: string
+  strPlayer: string
+  strHome?: string | null
+  idTeam?: string | null
+  intTime?: string | null
+  strPeriod?: string | null
+}
+
+export interface TsdbTimelineResponse {
+  timeline: TsdbTimelineItem[] | null
+}

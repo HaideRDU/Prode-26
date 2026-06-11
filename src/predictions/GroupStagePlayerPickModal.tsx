@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { ModalPortal } from '../components/ModalPortal'
 import { orderedGroupIds } from '../domain/groupStandings'
 import type { MatchDoc } from '../types/predictions'
-import { filterGroupStageMatches } from '../utils/playerPerMatchWindows'
+import { filterGroupStageMatches, isMatchDisplayLive } from '../utils/playerPerMatchWindows'
 import { PlayerPickFixtureCard } from './PlayerPickFixtureCard'
 
 type Props = {
@@ -82,7 +82,7 @@ export function GroupStagePlayerPickModal({
                           key={m.id}
                           match={m}
                           teamLabel={teamLabel}
-                          mode={m.status === 'live' ? 'live' : 'pick'}
+                          mode={isMatchDisplayLive(m) ? 'live' : 'pick'}
                           savedPlayerKey={picksByMatchId[m.id]}
                           roomId={roomId}
                           userId={userId}

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_RULESET, getPlayerPerMatchOpensAt, toDate, type KnockoutRoundId } from '../config/ruleset'
 import { useMatchPlayerOptions } from '../hooks/useMatchPlayerOptions'
+import { scorePlayerPerMatchPick } from '../services/scoring'
 import { savePlayerPerMatchPrediction } from '../services/predictionsService'
-import type { MatchDoc } from '../types/predictions'
+import type { MatchDoc, MatchScorerEntry } from '../types/predictions'
 import { formatMatchHour, formatMatchTime, formatTimeZoneShort } from '../utils/formatMatchTime'
 import { getPlayerPickCardState, type PlayerPickCardState } from '../utils/playerPerMatchWindows'
 import { TeamFlagName } from './TeamFlagName'
@@ -19,6 +20,68 @@ function phaseLabel(match: MatchDoc): string {
   if (match.phase === 'group' && match.groupId) return `Grupo ${match.groupId}`
   if (match.round) return match.round.toUpperCase()
   return match.phase === 'knockout' ? 'Eliminatorias' : 'Partido'
+}
+
+type GoalDisplay = {
+  key: string
+  name: string
+  minute: number | null
+  isPick: boolean
+}
+
+function mapScorersToDisplay(
+  rows: MatchScorerEntry[],
+  nameByKey: Map<string, string>,
+  localKey: string,
+): { teamA: GoalDisplay[]; teamB: GoalDisplay[] } {
+  const teamA: GoalDisplay[] = []
+  const teamB: GoalDisplay[] = []
+  rows
+    .filter((s) => !s.includesPenalties && s.goals > 0)
+    .forEach((s, i) => {
+      const name = nameByKey.get(s.playerKey) ?? s.playerName ?? s.playerKey
+      const isPick = Boolean(localKey && s.playerKey === localKey)
+      const entry: GoalDisplay = {
+        key: `${s.playerKey}-${s.minute ?? 'x'}-${i}`,
+        name,
+        minute: s.minute ?? null,
+        isPick,
+      }
+      if (s.teamSide === 'teamB') teamB.push(entry)
+      else teamA.push(entry)
+    })
+  return { teamA, teamB }
+}
+
+function SideGoalList({ goals, ptsPerGoal }: { goals: GoalDisplay[]; ptsPerGoal: number }) {
+  if (goals.length === 0) return null
+  return (
+    <ul className="player-pick-fixture-card__side-scorers" aria-label="Goles">
+      {goals.map((g) => (
+        <li
+          key={g.key}
+          className={
+            g.isPick
+              ? 'player-pick-fixture-card__side-scorer player-pick-fixture-card__side-scorer--pick'
+              : 'player-pick-fixture-card__side-scorer'
+          }
+        >
+          <span className="player-pick-fixture-card__side-scorer-icon" aria-hidden>
+            ⚽
+          </span>
+          <span className="player-pick-fixture-card__side-scorer-text">
+            {g.minute != null ? (
+              <span className="player-pick-fixture-card__side-scorer-min">{g.minute}&apos;</span>
+            ) : null}
+            {g.name}
+            {g.isPick ? (
+              <span className="player-pick-fixture-card__side-scorer-pts"> +{ptsPerGoal}</span>
+            ) : null}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 function statusBadge(
@@ -110,6 +173,13 @@ export function PlayerPickFixtureCard({
     mode === 'pick' && effectiveState === 'blocked' && opensLabel && !groupStageEarlyPick && !pastKickoff
   const ptsPerGoal = playerGoalsPerGoal(match)
   const pickedName = allOptions.find((o) => o.playerKey === localKey)?.name
+  const nameByKey = useMemo(() => new Map(allOptions.map((o) => [o.playerKey, o.name])), [allOptions])
+  const goalsBySide = useMemo(
+    () => mapScorersToDisplay(match.scorers ?? [], nameByKey, localKey),
+    [match.scorers, nameByKey, localKey],
+  )
+  const livePickPoints =
+    mode === 'live' && localKey ? scorePlayerPerMatchPick(match, localKey) : 0
 
   const rawH = match.goalsTeamA ?? match.goalsHome
   const rawA = match.goalsTeamB ?? match.goalsAway
@@ -135,20 +205,29 @@ export function PlayerPickFixtureCard({
             </span>
           </header>
 
-          <div className="player-pick-fixture-card__matchup">
+          <div className="player-pick-fixture-card__matchup player-pick-fixture-card__matchup--live">
             <div className="player-pick-fixture-card__side">
               <span className="player-pick-fixture-card__score">{h}</span>
               <TeamFlagName teamId={teamAId} name={teamLabel(teamAId)} layout="stack" />
+              <SideGoalList goals={goalsBySide.teamA} ptsPerGoal={ptsPerGoal} />
             </div>
             <span className="player-pick-fixture-card__vs">vs</span>
             <div className="player-pick-fixture-card__side">
               <span className="player-pick-fixture-card__score">{a}</span>
               <TeamFlagName teamId={teamBId} name={teamLabel(teamBId)} layout="stack" />
+              <SideGoalList goals={goalsBySide.teamB} ptsPerGoal={ptsPerGoal} />
             </div>
           </div>
 
           <div className="player-pick-fixture-card__picked-display" aria-live="polite">
-            {pickedName ?? 'Nombre de jugador escogido'}
+            {pickedName ? (
+              <>
+                Tu jugador: <strong>{pickedName}</strong>
+                {livePickPoints > 0 ? ` · +${livePickPoints} pts` : ''}
+              </>
+            ) : (
+              'Sin jugador elegido'
+            )}
           </div>
         </>
       ) : (

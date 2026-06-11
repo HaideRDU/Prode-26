@@ -1564,6 +1564,58 @@
   cursor: not-allowed;
 }
 
+.player-pick-fixture-card__matchup--live {
+  align-items: flex-start;
+}
+
+.player-pick-fixture-card__matchup--live .player-pick-fixture-card__vs {
+  padding-top: 2rem;
+}
+
+.player-pick-fixture-card__side-scorers {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 11rem;
+}
+
+.player-pick-fixture-card__side-scorer {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--wc26-muted);
+  text-align: left;
+}
+
+.player-pick-fixture-card__side-scorer--pick {
+  color: var(--wc26-accent, #38bdf8);
+}
+
+.player-pick-fixture-card__side-scorer-icon {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.player-pick-fixture-card__side-scorer-min {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.2em;
+  opacity: 0.9;
+}
+
+.player-pick-fixture-card__side-scorer-pts {
+  font-weight: 800;
+  margin-left: 0.15em;
+}
+
 .player-pick-fixture-card__picked-display {
   margin-top: 12px;
   padding: 11px 12px;

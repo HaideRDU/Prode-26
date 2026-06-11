@@ -35,6 +35,15 @@ export interface TeamPlayerDoc {
   syncedAt?: unknown
 }
 
+export interface MatchScorerEntry {
+  playerKey: string
+  goals: number
+  includesPenalties?: boolean
+  playerName?: string
+  minute?: number
+  teamSide?: 'teamA' | 'teamB'
+}
+
 /** Partido en Firestore: matches/{matchId} */
 export interface MatchDoc {
   teamAId: string
@@ -69,7 +78,7 @@ export interface MatchDoc {
    * Contrato futuro para "Jugador por Partido" (90' + prórroga, sin tandas).
    * Se mantiene opcional hasta definir fuente oficial de plantillas/eventos.
    */
-  scorers?: { playerKey: string; goals: number; includesPenalties?: boolean }[]
+  scorers?: MatchScorerEntry[]
   /** ID de evento en TheSportsDB (league 4429); lo rellena el sync en backend. */
   theSportsDbEventId?: string
   /** @deprecated Reemplazado por theSportsDbEventId */

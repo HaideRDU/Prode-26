@@ -32,6 +32,19 @@ export interface TeamPlayerDoc {
   syncedAt?: unknown
 }
 
+export interface MatchScorerEntry {
+  playerKey: string
+  /** Goles en este evento (1 por entrada en timeline; scoring suma por jugador). */
+  goals: number
+  includesPenalties?: boolean
+  /** Nombre legible desde timeline TSDB o plantilla; evita mostrar solo el id. */
+  playerName?: string
+  /** Minuto del gol (90'+prórroga). */
+  minute?: number
+  /** Equipo que anotó: A = local / teamAId. */
+  teamSide?: 'teamA' | 'teamB'
+}
+
 export interface MatchDoc {
   teamAId: string
   teamBId: string
@@ -54,7 +67,7 @@ export interface MatchDoc {
   penaltiesWinnerAway?: boolean | null
   penaltiesWinnerTeamA?: boolean | null
   penaltiesWinnerTeamB?: boolean | null
-  scorers?: { playerKey: string; goals: number; includesPenalties?: boolean }[]
+  scorers?: MatchScorerEntry[]
   /** ID de evento en TheSportsDB (league 4429); lo rellena el sync. */
   theSportsDbEventId?: string
   /** @deprecated Reemplazado por theSportsDbEventId */

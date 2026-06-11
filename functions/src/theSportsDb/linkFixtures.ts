@@ -46,6 +46,22 @@ function findFirestoreMatchId(
   return best?.id ?? null
 }
 
+/** Si el kickoff en Firestore está desfasado, enlazar por par de equipos si es único y sin ID TSDB. */
+function findFirestoreMatchIdByTeamsOnly(
+  matches: { id: string; data: MatchDoc }[],
+  homeIso: string,
+  awayIso: string,
+): string | null {
+  const candidates = matches.filter((m) => {
+    const d = m.data
+    const { homeId, awayId } = matchHomeAwayIds(d)
+    if (homeId !== homeIso || awayId !== awayIso) return false
+    return !d.theSportsDbEventId
+  })
+  if (candidates.length === 1) return candidates[0].id
+  return null
+}
+
 function sleep(ms: number) {
   return new Promise<void>((res) => setTimeout(res, ms))
 }
@@ -95,8 +111,8 @@ async function fetchRecentTsdbEvents(apiKey: string): Promise<TsdbEventItem[]> {
   // Hoy y los próximos 3 días (ventana de polling relevante)
   const today = new Date()
   const todayStr = today.toISOString().slice(0, 10)
-  const plus3 = new Date(today.getTime() + 3 * 86_400_000).toISOString().slice(0, 10)
-  await fetchDays(apiKey, dateRange(todayStr, plus3), all)
+  const plus7 = new Date(today.getTime() + 7 * 86_400_000).toISOString().slice(0, 10)
+  await fetchDays(apiKey, dateRange(todayStr, plus7), all)
 
   logger.info(`[tsdb:link:quick] total: ${all.size}`)
   return Array.from(all.values())
@@ -151,7 +167,10 @@ async function doLink(
       continue
     }
 
-    const matchId = findFirestoreMatchId(firestoreMatches, homeIso, awayIso, eventKickoffMs)
+    let matchId = findFirestoreMatchId(firestoreMatches, homeIso, awayIso, eventKickoffMs)
+    if (!matchId) {
+      matchId = findFirestoreMatchIdByTeamsOnly(firestoreMatches, homeIso, awayIso)
+    }
     if (!matchId) {
       logger.warn(`[tsdb:link] sin match Firestore: ${homeIso} vs ${awayIso} @ ${item.strTimestamp}`)
       skipped += 1

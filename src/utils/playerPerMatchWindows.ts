@@ -174,6 +174,17 @@ export function classifyPlayerPickMatches(
   return { live, prediction, preview, nextOpensAt }
 }
 
+/** Partido en curso para la UI: status live o kickoff ya pasó (Firestore puede ir retrasado). */
+export function isMatchDisplayLive(
+  match: MatchDoc & { id: string },
+  nowMs: number = Date.now(),
+): boolean {
+  if (match.status === 'live') return true
+  if (match.status !== 'scheduled') return false
+  const kickoff = kickoffMs(match)
+  return kickoff !== null && nowMs >= kickoff
+}
+
 export function findNextPlayerPickOpensAt(
   matches: (MatchDoc & { id: string })[],
   nowMs: number = Date.now(),

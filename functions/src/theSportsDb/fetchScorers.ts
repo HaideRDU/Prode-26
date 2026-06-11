@@ -1,0 +1,163 @@
+import type { Firestore } from 'firebase-admin/firestore'
+import type { MatchDoc, MatchScorerEntry, TeamPlayerDoc } from '../lib/types/predictions'
+import { TSDB_FREE_KEY } from './constants'
+import { tsdbGetJson } from './client'
+import type { TsdbTimelineItem, TsdbTimelineResponse } from './types'
+
+function timelineOrEmpty(response: TsdbTimelineResponse): TsdbTimelineItem[] {
+  const rows = response.timeline
+  if (rows == null) return []
+  return Array.isArray(rows) ? rows : [rows]
+}
+
+function isPenaltyShootoutGoal(row: TsdbTimelineItem): boolean {
+  const period = (row.strPeriod ?? '').toLowerCase()
+  if (period.includes('pen')) return true
+  const detail = (row.strTimelineDetail ?? '').toLowerCase()
+  return detail.includes('shootout')
+}
+
+function isCountableGoal(row: TsdbTimelineItem): boolean {
+  if (row.strTimeline?.trim().toLowerCase() !== 'goal') return false
+  if (!row.idPlayer?.trim()) return false
+  return true
+}
+
+export interface ParsedGoalEvent {
+  tsdbPlayerId: string
+  playerName: string
+  minute: number | null
+  teamSide: 'teamA' | 'teamB'
+  includesPenalties: boolean
+}
+
+/** Un evento por gol (no agregado), ordenado por minuto. */
+export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] {
+  const goals: ParsedGoalEvent[] = []
+  for (const row of rows) {
+    if (!isCountableGoal(row)) continue
+    const shootout = isPenaltyShootoutGoal(row)
+    const detail = (row.strTimelineDetail ?? '').toLowerCase()
+    const isPenalty = detail.includes('penalty') && !shootout
+    const rawMin = row.intTime != null && row.intTime !== '' ? parseInt(String(row.intTime), 10) : NaN
+    const minute = Number.isFinite(rawMin) ? rawMin : null
+    const teamSide = (row.strHome ?? '').trim().toLowerCase() === 'yes' ? 'teamA' : 'teamB'
+    goals.push({
+      tsdbPlayerId: row.idPlayer,
+      playerName: row.strPlayer?.trim() ?? '',
+      minute,
+      teamSide,
+      includesPenalties: isPenalty || shootout,
+    })
+  }
+  goals.sort((a, b) => {
+    const ma = a.minute ?? 9999
+    const mb = b.minute ?? 9999
+    if (ma !== mb) return ma - mb
+    return a.tsdbPlayerId.localeCompare(b.tsdbPlayerId)
+  })
+  return goals
+}
+
+function playerKeyFromDoc(docId: string, data: TeamPlayerDoc): string {
+  return data.paniniStickerCode?.trim() || docId
+}
+
+/** Resuelve idPlayer de TSDB → playerKey y nombre en plantilla (si existe). */
+export async function resolveTsdbPlayer(
+  db: Firestore,
+  teamAId: string,
+  teamBId: string,
+  tsdbPlayerId: string,
+  cache: Map<string, { playerKey: string; rosterName?: string }>,
+): Promise<{ playerKey: string; rosterName?: string }> {
+  const cached = cache.get(tsdbPlayerId)
+  if (cached) return cached
+
+  for (const teamId of [teamAId, teamBId]) {
+    const directRef = db.collection('teams').doc(teamId).collection('players').doc(tsdbPlayerId)
+    const direct = await directRef.get()
+    if (direct.exists) {
+      const data = direct.data() as TeamPlayerDoc
+      const resolved = {
+        playerKey: playerKeyFromDoc(direct.id, data),
+        rosterName: data.name?.trim() || undefined,
+      }
+      cache.set(tsdbPlayerId, resolved)
+      return resolved
+    }
+  }
+  for (const teamId of [teamAId, teamBId]) {
+    const snap = await db
+      .collection('teams')
+      .doc(teamId)
+      .collection('players')
+      .where('theSportsDbPlayerId', '==', tsdbPlayerId)
+      .limit(1)
+      .get()
+    if (!snap.empty) {
+      const doc = snap.docs[0]
+      const data = doc.data() as TeamPlayerDoc
+      const resolved = {
+        playerKey: playerKeyFromDoc(doc.id, data),
+        rosterName: data.name?.trim() || undefined,
+      }
+      cache.set(tsdbPlayerId, resolved)
+      return resolved
+    }
+  }
+  const fallback = { playerKey: tsdbPlayerId }
+  cache.set(tsdbPlayerId, fallback)
+  return fallback
+}
+
+export async function fetchScorersFromTimeline(
+  db: Firestore,
+  match: Pick<MatchDoc, 'teamAId' | 'teamBId' | 'teamHomeId' | 'teamAwayId'>,
+  eventId: string,
+  apiKey = TSDB_FREE_KEY,
+): Promise<MatchScorerEntry[]> {
+  const teamAId = match.teamAId ?? match.teamHomeId
+  const teamBId = match.teamBId ?? match.teamAwayId
+  if (!teamAId || !teamBId) return []
+
+  const json = await tsdbGetJson<TsdbTimelineResponse>(apiKey, 'lookuptimeline.php', { id: eventId })
+  const rows = timelineOrEmpty(json)
+  if (rows.length === 0) return []
+
+  const parsed = parseTimelineGoals(rows)
+  const scorers: MatchScorerEntry[] = []
+  const cache = new Map<string, { playerKey: string; rosterName?: string }>()
+
+  for (const ev of parsed) {
+    const { playerKey, rosterName } = await resolveTsdbPlayer(db, teamAId, teamBId, ev.tsdbPlayerId, cache)
+    const displayName = rosterName || ev.playerName || undefined
+    scorers.push({
+      playerKey,
+      goals: 1,
+      ...(displayName ? { playerName: displayName } : {}),
+      ...(ev.minute != null ? { minute: ev.minute } : {}),
+      teamSide: ev.teamSide,
+      ...(ev.includesPenalties ? { includesPenalties: true } : {}),
+    })
+  }
+
+  return scorers
+}
+
+export function scorersChanged(
+  current: MatchDoc['scorers'] | undefined,
+  next: MatchScorerEntry[],
+): boolean {
+  const a = current ?? []
+  if (a.length !== next.length) return true
+  const norm = (rows: MatchScorerEntry[]) =>
+    [...rows]
+      .map(
+        (s) =>
+          `${s.playerKey}:${s.playerName ?? ''}:${s.goals}:${s.minute ?? ''}:${s.teamSide ?? ''}:${s.includesPenalties ? 1 : 0}`,
+      )
+      .sort()
+      .join('|')
+  return norm(a) !== norm(next)
+}
