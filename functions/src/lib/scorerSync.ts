@@ -26,27 +26,37 @@ export function scorersIncompleteForScore(
   return countNonPenaltyScorerGoals(scorers) < expected
 }
 
+/** Goles del mismo jugador/equipo reportados por TSDB y API-Sports con minutos distintos cuentan como el mismo gol. */
+const MERGE_MINUTE_TOLERANCE = 10
+
+/** Preferir entrada con más metadatos (p. ej. theSportsDbPlayerId desde timeline). */
+function scorerEntryScore(x: MatchScorerEntry): number {
+  return (x.theSportsDbPlayerId ? 2 : 0) + (x.playerName ? 1 : 0)
+}
+
 export function mergeScorerEntries(
   primary: MatchScorerEntry[],
   secondary: MatchScorerEntry[],
 ): MatchScorerEntry[] {
-  const key = (s: MatchScorerEntry) =>
-    `${s.playerKey}|${s.minute ?? ''}|${s.teamSide ?? ''}|${s.includesPenalties ? 1 : 0}`
-  const map = new Map<string, MatchScorerEntry>()
-  for (const s of primary) map.set(key(s), s)
+  const groupKey = (s: MatchScorerEntry) =>
+    `${s.playerKey}|${s.teamSide ?? ''}|${s.includesPenalties ? 1 : 0}`
+
+  const result = [...primary]
   for (const s of secondary) {
-    const k = key(s)
-    const existing = map.get(k)
-    if (!existing) {
-      map.set(k, s)
+    const sKey = groupKey(s)
+    const dupIndex = result.findIndex((e) => {
+      if (groupKey(e) !== sKey) return false
+      if (e.minute == null || s.minute == null) return e.minute === s.minute
+      return Math.abs(e.minute - s.minute) <= MERGE_MINUTE_TOLERANCE
+    })
+    if (dupIndex === -1) {
+      result.push(s)
       continue
     }
-    // Preferir entrada con más metadatos (p. ej. theSportsDbPlayerId desde timeline).
-    const score = (x: MatchScorerEntry) =>
-      (x.theSportsDbPlayerId ? 2 : 0) + (x.playerName ? 1 : 0)
-    if (score(s) > score(existing)) map.set(k, s)
+    if (scorerEntryScore(s) > scorerEntryScore(result[dupIndex]!)) result[dupIndex] = s
   }
-  return [...map.values()].sort((a, b) => {
+
+  return result.sort((a, b) => {
     const ma = a.minute ?? 9999
     const mb = b.minute ?? 9999
     if (ma !== mb) return ma - mb

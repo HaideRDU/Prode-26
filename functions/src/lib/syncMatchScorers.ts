@@ -5,10 +5,7 @@ import { TSDB_FREE_KEY } from '../theSportsDb/constants'
 import { fetchScorersFromTimeline } from '../theSportsDb/fetchScorers'
 import { tsdbGetJson } from '../theSportsDb/client'
 import type { TsdbTimelineItem, TsdbTimelineResponse } from '../theSportsDb/types'
-import {
-  countNonPenaltyScorerGoals,
-  scorersIncompleteForScore,
-} from './scorerSync'
+import { scorersIncompleteForScore } from './scorerSync'
 import type { MatchDoc, MatchScorerEntry } from './types/predictions'
 
 function timelineOrEmpty(response: TsdbTimelineResponse): TsdbTimelineItem[] {
@@ -51,7 +48,9 @@ export interface FetchMatchScorersOptions {
 }
 
 /**
- * Goleadores: primero timeline TSDB (uno por gol); si faltan vs el marcador, complementa con API-Sports.
+ * Goleadores: TSDB timeline para actualización en vivo (sin costo).
+ * Al finalizar el partido, se complementa una vez con API-Sports y se compara: si alguna
+ * fuente trae datos que la otra no tiene, se toma la versión más completa (unión deduplicada).
  */
 export async function fetchMatchScorers(
   db: Firestore,
@@ -70,6 +69,9 @@ export async function fetchMatchScorers(
     logger.warn(`[scorers] timeline failed tsdbEventId=${tsdbEventId}`, err)
   }
 
+  // API-Sports (cuota limitada en plan free) solo se consulta al finalizar el partido.
+  if (match.status !== 'finished') return scorers
+
   const incomplete = scorersIncompleteForScore(goalsTeamA, goalsTeamB, scorers)
   if (!incomplete && scorers.length > 0) return scorers
 
@@ -84,15 +86,12 @@ export async function fetchMatchScorers(
     if (apiScorers.length === 0) return scorers
 
     const merged = preferCompleteScorers(scorers, apiScorers)
-    const stillIncomplete = scorersIncompleteForScore(goalsTeamA, goalsTeamB, merged)
-    const apiHasMore = countNonPenaltyScorerGoals(apiScorers) > countNonPenaltyScorerGoals(scorers)
-
-    if (apiHasMore || stillIncomplete) {
+    if (merged.length !== scorers.length) {
       logger.info(
         `[scorers] API-Sports fallback tsdbEventId=${tsdbEventId} fixture=${fixtureId} timeline=${scorers.length} api=${apiScorers.length} merged=${merged.length}`,
       )
-      return merged
     }
+    return merged
   } catch (err) {
     logger.warn(`[scorers] API-Sports failed fixtureId=${fixtureId}`, err)
   }
@@ -100,9 +99,10 @@ export async function fetchMatchScorers(
   return scorers
 }
 
+/** Backfill solo para partidos finalizados (API-Sports no se consulta mientras está en vivo). */
 export function matchNeedsScorerBackfill(match: MatchDoc): boolean {
   if (!match.theSportsDbEventId) return false
-  if (match.status !== 'finished' && match.status !== 'live') return false
+  if (match.status !== 'finished') return false
   return scorersIncompleteForScore(
     match.goalsTeamA ?? match.goalsHome,
     match.goalsTeamB ?? match.goalsAway,

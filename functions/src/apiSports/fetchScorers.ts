@@ -1,9 +1,6 @@
 import type { Firestore } from 'firebase-admin/firestore'
 import { normalizePlayerName, playerRefFromDoc } from '../lib/playerKeyMatch'
-import {
-  countNonPenaltyScorerGoals,
-  mergeScorerEntries,
-} from '../lib/scorerSync'
+import { mergeScorerEntries } from '../lib/scorerSync'
 import type { MatchDoc, MatchScorerEntry, TeamPlayerDoc } from '../lib/types/predictions'
 import { apiSportsGet } from './client'
 import type { ApiSportsFixtureItem } from './types'
@@ -189,15 +186,12 @@ export async function fetchScorersFromApiSports(
   return scorers
 }
 
-/** Combina timeline TSDB con eventos API-Sports si el timeline trae menos goles. */
+/** Combina timeline TSDB con eventos API-Sports (unión deduplicada de ambas fuentes). */
 export function preferCompleteScorers(
   timelineScorers: MatchScorerEntry[],
   apiScorers: MatchScorerEntry[],
 ): MatchScorerEntry[] {
   if (apiScorers.length === 0) return timelineScorers
   if (timelineScorers.length === 0) return apiScorers
-  if (countNonPenaltyScorerGoals(apiScorers) > countNonPenaltyScorerGoals(timelineScorers)) {
-    return mergeScorerEntries(timelineScorers, apiScorers)
-  }
-  return timelineScorers
+  return mergeScorerEntries(timelineScorers, apiScorers)
 }
