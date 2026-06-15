@@ -38,8 +38,6 @@ export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] 
   for (const row of rows) {
     if (!isCountableGoal(row)) continue
     const shootout = isPenaltyShootoutGoal(row)
-    const detail = (row.strTimelineDetail ?? '').toLowerCase()
-    const isPenalty = detail.includes('penalty') && !shootout
     const rawMin = row.intTime != null && row.intTime !== '' ? parseInt(String(row.intTime), 10) : NaN
     const minute = Number.isFinite(rawMin) ? rawMin : null
     const teamSide = (row.strHome ?? '').trim().toLowerCase() === 'yes' ? 'teamA' : 'teamB'
@@ -48,7 +46,8 @@ export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] 
       playerName: row.strPlayer?.trim() ?? '',
       minute,
       teamSide,
-      includesPenalties: isPenalty || shootout,
+      // Penal en juego normal cuenta como gol; solo se excluye si fue en tanda de penales (shootout).
+      includesPenalties: shootout,
     })
   }
   goals.sort((a, b) => {

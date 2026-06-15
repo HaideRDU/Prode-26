@@ -18,6 +18,7 @@ import { InviteCodeQuickStrip } from '../rooms/InviteCodeQuickStrip'
 import { PrivateRoomAdminModal } from '../rooms/PrivateRoomAdminModal'
 import { RoomInviteModal } from '../rooms/RoomInviteModal'
 import { RoomHomePlayerPickBanner } from '../predictions/RoomHomePlayerPickBanner'
+import { MatchComparisonCarousel } from '../predictions/MatchComparisonCarousel'
 import { useRoomStandingsMeta } from '../hooks/useRoomStandingsMeta'
 import { StandingsLeaderboard } from '../standings/StandingsLeaderboard'
 import { StandingsMyStatusCard } from '../standings/StandingsMyStatusCard'
@@ -368,6 +369,7 @@ export function RoomStandingsPage() {
           ) : undefined
         }
       />
+      <MatchComparisonCarousel roomId={roomId} />
       {showScoringHelpModal ? (
         <ModalPortal>
           <div

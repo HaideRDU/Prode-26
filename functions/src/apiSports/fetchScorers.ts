@@ -145,8 +145,6 @@ export async function fetchScorersFromApiSports(
 
   for (const ev of events) {
     if (!isCountableApiGoal(ev)) continue
-    const detail = ev.detail.toLowerCase()
-    const isPenalty = detail.includes('penalty') && !isPenaltyShootoutGoal(ev.detail)
     const teamSide =
       homeTeamId != null && ev.team.id === homeTeamId
         ? 'teamA'
@@ -172,7 +170,6 @@ export async function fetchScorersFromApiSports(
       ...(displayName ? { playerName: displayName } : {}),
       ...(minute > 0 ? { minute } : {}),
       ...(teamSide ? { teamSide } : {}),
-      ...(isPenalty ? { includesPenalties: true } : {}),
     })
   }
 

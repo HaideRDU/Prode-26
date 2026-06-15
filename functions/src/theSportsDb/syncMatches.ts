@@ -2,7 +2,7 @@ import type { Firestore } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
 import type { MatchDoc } from '../lib/types/predictions'
 import { fetchMatchScorers, matchNeedsScorerBackfill } from '../lib/syncMatchScorers'
-import { scorersIncompleteForScore } from '../lib/scorerSync'
+import { mergeScorerEntries, scorersIncompleteForScore } from '../lib/scorerSync'
 import { isMatchInPollingWindow, kickoffMs, shouldRunScheduledSync } from '../apiSports/matchWindow'
 import { TSDB_FREE_KEY } from './constants'
 import { tsdbGet, eventsOrEmpty } from './client'
@@ -106,8 +106,10 @@ export async function syncMatchesFromTsdb(
             goalsTeamB: next.goalsTeamB,
           },
         )
+        // Nunca reducir scorers ya confirmados: TSDB a veces "parpadea" y devuelve
+        // un timeline temporalmente incompleto. Solo se permite agregar/enriquecer.
         if (scorers.length > 0 || (current.scorers?.length ?? 0) > 0) {
-          next.scorers = scorers
+          next.scorers = mergeScorerEntries(current.scorers ?? [], scorers)
         }
       } catch (err) {
         logger.warn(`[tsdb:sync] scorers failed matchId=${matchId}`, err)
