@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { matchTeamAId, matchTeamBId } from '../domain/matchFields'
 import { playerDocToKey, subscribeTeamPlayers } from '../services/teamsService'
+import { resolvePlayerPickName } from '../utils/playerKeyMatch'
 import type { MatchDoc, TeamPlayerDoc } from '../types/predictions'
 
 /**
@@ -11,6 +12,7 @@ export function usePlayerPickDisplayLabels(
   picksByMatchId: Record<string, string>,
 ): { labelByMatchId: Record<string, string>; nameByPlayerKey: Record<string, string>; loading: boolean } {
   const [nameByPlayerKey, setNameByPlayerKey] = useState<Record<string, string>>({})
+  const [playersByTeamId, setPlayersByTeamId] = useState<Record<string, (TeamPlayerDoc & { id: string })[]>>({})
   const [loading, setLoading] = useState(false)
 
   const teamIds = useMemo(() => {
@@ -30,11 +32,13 @@ export function usePlayerPickDisplayLabels(
   useEffect(() => {
     if (teamIds.length === 0) {
       setNameByPlayerKey({})
+      setPlayersByTeamId({})
       setLoading(false)
       return
     }
     setLoading(true)
     const names: Record<string, string> = {}
+    const rosterByTeam: Record<string, (TeamPlayerDoc & { id: string })[]> = {}
     const loadedTeams = new Set<string>()
     let cancelled = false
 
@@ -58,12 +62,17 @@ export function usePlayerPickDisplayLabels(
         teamId,
         (players) => {
           mergePlayers(players)
+          rosterByTeam[teamId] = players
           markTeamLoaded(teamId)
           if (!cancelled && loadedTeams.size >= teamIds.length) {
             setNameByPlayerKey({ ...names })
+            setPlayersByTeamId({ ...rosterByTeam })
           }
         },
-        () => markTeamLoaded(teamId),
+        () => {
+          rosterByTeam[teamId] = []
+          markTeamLoaded(teamId)
+        },
       ),
     )
 
@@ -74,14 +83,23 @@ export function usePlayerPickDisplayLabels(
   }, [teamIds.join('|')])
 
   const labelByMatchId = useMemo(() => {
+    const matchById = new Map(matches.map((m) => [m.id, m]))
     const out: Record<string, string> = {}
     for (const [matchId, playerKey] of Object.entries(picksByMatchId)) {
       const trimmed = playerKey.trim()
       if (!trimmed) continue
-      out[matchId] = nameByPlayerKey[trimmed] ?? trimmed
+      const m = matchById.get(matchId)
+      const rosterPlayers: (TeamPlayerDoc & { id: string })[] = []
+      if (m) {
+        const a = matchTeamAId(m)
+        const b = matchTeamBId(m)
+        if (a && playersByTeamId[a]) rosterPlayers.push(...playersByTeamId[a])
+        if (b && playersByTeamId[b]) rosterPlayers.push(...playersByTeamId[b])
+      }
+      out[matchId] = resolvePlayerPickName(rosterPlayers, trimmed) ?? nameByPlayerKey[trimmed] ?? trimmed
     }
     return out
-  }, [picksByMatchId, nameByPlayerKey])
+  }, [picksByMatchId, nameByPlayerKey, playersByTeamId, matches])
 
   return { labelByMatchId, nameByPlayerKey, loading }
 }

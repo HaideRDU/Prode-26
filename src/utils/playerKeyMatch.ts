@@ -1,10 +1,46 @@
-import type { MatchScorerEntry } from '../types/predictions'
+import type { MatchScorerEntry, TeamPlayerDoc } from '../types/predictions'
 
 export type PlayerRef = {
   playerKey: string
   name?: string
   theSportsDbPlayerId?: string
   apiSportsPlayerId?: number
+}
+
+type RosterPlayer = Pick<TeamPlayerDoc, 'name' | 'paniniStickerCode' | 'theSportsDbPlayerId'> & { id: string }
+
+/** Nombre legible inferido del slug de una clave guardada (p. ej. `3-jamal-musiala` → Jamal Musiala). */
+export function playerKeySlugDisplayName(playerKey: string): string | undefined {
+  const slug = playerKey
+    .trim()
+    .replace(/^\d+-/, '')
+    .replace(/-/g, ' ')
+    .trim()
+  if (!slug) return undefined
+  return slug.replace(/\b\p{L}/gu, (c) => c.toUpperCase())
+}
+
+/**
+ * Resuelve el nombre del jugador elegido aunque la plantilla haya cambiado de formato
+ * (TSDB doc id → Panini sticker, etc.).
+ */
+export function resolvePlayerPickName(
+  players: readonly RosterPlayer[],
+  playerKey: string | undefined,
+): string | undefined {
+  const k = playerKey?.trim()
+  if (!k) return undefined
+
+  for (const p of players) {
+    const canonical = p.paniniStickerCode?.trim() || p.id
+    if (p.id === k || canonical === k) return p.name
+    const tsdb = p.theSportsDbPlayerId?.trim()
+    if (tsdb && tsdb === k) return p.name
+    const slugName = playerKeySlugDisplayName(k)
+    if (slugName && normalizePlayerName(slugName) === normalizePlayerName(p.name)) return p.name
+  }
+
+  return playerKeySlugDisplayName(k)
 }
 
 export function normalizePlayerName(name: string): string {

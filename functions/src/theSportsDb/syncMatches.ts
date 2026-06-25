@@ -119,6 +119,16 @@ export async function syncMatchesFromTsdb(
     const scorersDelta = scorersChanged(current.scorers, next.scorers ?? [])
     if (!matchUpdateChanged(current, next) && !scorersDelta) continue
 
+    // FIFA u otra fuente puede marcar FT antes que TSDB; no revertir a live/scheduled.
+    if (current.status === 'finished' && next.status !== 'finished') {
+      next.status = 'finished'
+    }
+
+    const kickoff = kickoffMs(current.scheduledAt)
+    if (kickoff !== null && nowMs < kickoff && next.status === 'live') {
+      next.status = 'scheduled'
+    }
+
     writer.set(db.collection('matches').doc(matchId), next, { merge: true })
     updated += 1
   }

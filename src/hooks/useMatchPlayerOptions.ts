@@ -14,6 +14,7 @@ export function useMatchPlayerOptions(match: MatchDoc | null | undefined): {
   options: MatchPlayerOption[]
   loading: boolean
   hasRoster: boolean
+  allPlayers: (TeamPlayerDoc & { id: string })[]
 } {
   const [teamAPlayers, setTeamAPlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
   const [teamBPlayers, setTeamBPlayers] = useState<(TeamPlayerDoc & { id: string })[]>([])
@@ -96,6 +97,10 @@ export function useMatchPlayerOptions(match: MatchDoc | null | undefined): {
   }, [teamAPlayers, teamBPlayers, teamAId, teamBId])
 
   const hasRoster = options.length > 0
+  const allPlayers = useMemo(
+    () => [...teamAPlayers, ...teamBPlayers],
+    [teamAPlayers, teamBPlayers],
+  )
 
-  return { options, loading, hasRoster }
+  return { options, loading, hasRoster, allPlayers }
 }

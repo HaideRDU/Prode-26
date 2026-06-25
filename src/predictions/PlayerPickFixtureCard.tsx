@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_RULESET, getPlayerPerMatchOpensAt, toDate, type KnockoutRoundId } from '../config/ruleset'
 import { useMatchPlayerOptions } from '../hooks/useMatchPlayerOptions'
 import { scorePlayerPerMatchPick } from '../services/scoring'
-import { scorerMatchesPick, type PlayerRef } from '../utils/playerKeyMatch'
+import { resolvePlayerPickName, scorerMatchesPick, type PlayerRef } from '../utils/playerKeyMatch'
 import { savePlayerPerMatchPrediction } from '../services/predictionsService'
 import type { MatchDoc, MatchScorerEntry } from '../types/predictions'
 import { formatMatchHour, formatMatchTime, formatTimeZoneShort } from '../utils/formatMatchTime'
@@ -90,11 +90,14 @@ function statusBadge(
   cardState: PlayerPickCardState,
   saveUi: SaveUiState,
   hasPick: boolean,
+  beforeKickoff: boolean,
 ): { label: string; variant: 'emerald' | 'slate' | 'amber' | 'live' } {
   if (mode === 'live') return { label: 'En juego', variant: 'live' }
   if (saveUi === 'saving') return { label: 'Guardando…', variant: 'amber' }
   if (saveUi === 'error') return { label: 'Error', variant: 'amber' }
-  if (cardState === 'closed') return { label: 'Cerrado', variant: 'slate' }
+  if (cardState === 'closed') {
+    return { label: beforeKickoff ? 'Próximo' : 'Cerrado', variant: 'slate' }
+  }
   if (cardState === 'blocked') return { label: 'Bloqueado', variant: 'slate' }
   if (hasPick || saveUi === 'saved') return { label: 'Guardado', variant: 'emerald' }
   if (cardState === 'enabled') return { label: 'Habilitado', variant: 'emerald' }
@@ -121,7 +124,7 @@ export function PlayerPickFixtureCard({
   /** Fase de grupos: elegir jugador desde ya; cierre 1 h antes del inicio oficial. */
   groupStageEarlyPick?: boolean
 }) {
-  const { options, loading: rosterLoading, hasRoster } = useMatchPlayerOptions(match)
+  const { options, loading: rosterLoading, hasRoster, allPlayers } = useMatchPlayerOptions(match)
   const [localKey, setLocalKey] = useState(savedPlayerKey ?? '')
   const [saveUi, setSaveUi] = useState<SaveUiState>('idle')
   const saveGen = useRef(0)
@@ -164,18 +167,21 @@ export function PlayerPickFixtureCard({
     [canEdit, match.id, roomId, userId],
   )
 
-  const badge = statusBadge(mode, effectiveState, saveUi, Boolean(localKey))
   const kickHour = formatMatchHour(match.scheduledAt, timeZone)
   const tzShort = formatTimeZoneShort(timeZone)
   const opensAt = getPlayerPerMatchOpensAt(match.scheduledAt)
   const opensLabel = opensAt ? formatMatchTime(opensAt, timeZone) : null
   const kickoffMsVal = toDate(match.scheduledAt)?.getTime() ?? null
   const pastKickoff = kickoffMsVal !== null && Date.now() >= kickoffMsVal
+  const beforeKickoff = kickoffMsVal !== null && Date.now() < kickoffMsVal
+  const badge = statusBadge(mode, effectiveState, saveUi, Boolean(localKey), beforeKickoff)
   const showOpensHint =
     mode === 'pick' && effectiveState === 'blocked' && opensLabel && !groupStageEarlyPick && !pastKickoff
   const ptsPerGoal = playerGoalsPerGoal(match)
-  const pickedOption = allOptions.find((o) => o.playerKey === localKey)
-  const pickedName = pickedOption?.name
+  const pickedOption = allOptions.find(
+    (o) => o.playerKey === localKey || o.theSportsDbPlayerId === localKey,
+  )
+  const pickedName = resolvePlayerPickName(allPlayers, localKey) ?? pickedOption?.name
   const pickRef: PlayerRef | null = localKey
     ? {
         playerKey: localKey,

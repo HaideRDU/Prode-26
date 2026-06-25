@@ -89,6 +89,31 @@ function isScheduledMatchInLiveFallback(match: MatchDoc, nowMs: number): boolean
   return nowMs >= kickoff && nowMs < kickoff + SCHEDULED_MATCH_LIVE_FALLBACK_MS
 }
 
+/** FIFA/TSDB a veces marcan `live` antes del pitazo; la UI lo ignora hasta la hora oficial. */
+export function isPrematureLiveStatus(match: MatchDoc, nowMs: number = Date.now()): boolean {
+  if (match.status !== 'live') return false
+  const kickoff = kickoffMs(match)
+  return kickoff !== null && nowMs < kickoff
+}
+
+/** Partido aún no empezado para ventanas de jugador por partido (incluye live prematuro). */
+export function isScheduledForPlayerPickUi(match: MatchDoc, nowMs: number = Date.now()): boolean {
+  if (match.status === 'scheduled') return true
+  return isPrematureLiveStatus(match, nowMs)
+}
+
+/** En juego real: status live tras kickoff, o scheduled con kickoff ya pasado (sync retrasado). */
+export function isMatchLiveForDisplay(match: MatchDoc, nowMs: number = Date.now()): boolean {
+  if (match.status === 'finished' || match.status === 'postponed' || match.status === 'cancelled') {
+    return false
+  }
+  const kickoff = kickoffMs(match)
+  if (match.status === 'live') {
+    return kickoff === null || nowMs >= kickoff
+  }
+  return isScheduledMatchInLiveFallback(match, nowMs)
+}
+
 /** México–Sudáfrica y otros IDs en PLAYER_PICK_EARLY_ACCESS_MATCH_IDS: editable hasta 1 h antes del pitazo. */
 export function isPlayerPickEarlyAccessOpen(
   match: MatchDoc & { id: string },
@@ -110,7 +135,7 @@ export function getPlayerPickCardState(
   config: RulesetConfig = DEFAULT_RULESET,
   options?: { allowGroupStageEarlyPick?: boolean },
 ): PlayerPickCardState {
-  if (!hasRoster || match.status !== 'scheduled') return 'blocked'
+  if (!hasRoster || !isScheduledForPlayerPickUi(match, nowMs)) return 'blocked'
   const lock = pickLockMs(match, config)
   if (lock === null) return 'blocked'
   if (nowMs >= lock) return 'closed'
@@ -129,7 +154,7 @@ export function isMatchVisibleForPlayerPrediction(
   nowMs: number,
   config: RulesetConfig = DEFAULT_RULESET,
 ): boolean {
-  if (match.status !== 'scheduled') return false
+  if (!isScheduledForPlayerPickUi(match, nowMs)) return false
   if (isPlayerPickEarlyAccessOpen(match, nowMs, config)) return true
   const kickoff = kickoffMs(match)
   const opens = getPlayerPerMatchOpensAt(match.scheduledAt, config)?.getTime()
@@ -155,13 +180,7 @@ export function classifyPlayerPickMatches(
   })
 
   for (const m of sorted) {
-    if (m.status === 'live') {
-      live.push(m)
-      continue
-    }
-    // Firestore puede estar retrasado: si el kickoff ya pasó pero aún dice 'scheduled',
-    // tratar el partido como en juego hasta que la Cloud Function lo actualice.
-    if (isScheduledMatchInLiveFallback(m, nowMs)) {
+    if (isMatchLiveForDisplay(m, nowMs)) {
       live.push(m)
       continue
     }
@@ -187,13 +206,12 @@ export function classifyPlayerPickMatches(
   return { live, prediction, preview, nextOpensAt }
 }
 
-/** Partido en curso para la UI: status live o kickoff ya pasó (Firestore puede ir retrasado). */
+/** Partido en curso para la UI (respeta kickoff; ignora live prematuro en Firestore). */
 export function isMatchDisplayLive(
   match: MatchDoc & { id: string },
   nowMs: number = Date.now(),
 ): boolean {
-  if (match.status === 'live') return true
-  return isScheduledMatchInLiveFallback(match, nowMs)
+  return isMatchLiveForDisplay(match, nowMs)
 }
 
 export function findNextPlayerPickOpensAt(

@@ -78,8 +78,10 @@ function scoreValue(value: number | null | undefined): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
-function mapFifaStatus(row: FifaMatch): MatchStatus {
+function mapFifaStatus(row: FifaMatch, nowMs = Date.now()): MatchStatus {
   if (row.ResultType === 1) return 'finished'
+  const kickoffMs = Date.parse(normalizeDateIso(row.Date) ?? '')
+  if (Number.isFinite(kickoffMs) && nowMs < kickoffMs) return 'scheduled'
   if (row.MatchStatus === 3) return 'live'
   if (row.MatchTime && row.MatchTime.trim()) return 'live'
   return 'scheduled'
@@ -102,7 +104,7 @@ function mapFifaRow(row: FifaMatch): FifaGroupMatch | null {
     awayTeamId,
     homeGoals: scoreValue(row.HomeTeamScore ?? row.Home?.Score),
     awayGoals: scoreValue(row.AwayTeamScore ?? row.Away?.Score),
-    status: mapFifaStatus(row),
+    status: mapFifaStatus(row, Date.now()),
   }
 }
 
