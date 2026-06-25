@@ -112,8 +112,20 @@ service cloud.firestore {
         && request.time < specialPlayersLockAt();
     }
 
-    function canWritePredictionDoc(roomId) {
+    function playerPerMatchLockAt(matchId) {
+      return get(/databases/$(database)/documents/matches/$(matchId)).data.scheduledAt
+        - duration.value(1, 'h');
+    }
+
+    function canWritePlayerPerMatch() {
       return request.resource.data.scope == 'player_per_match'
+        && request.resource.data.matchId is string
+        && exists(/databases/$(database)/documents/matches/$(request.resource.data.matchId))
+        && request.time < playerPerMatchLockAt(request.resource.data.matchId);
+    }
+
+    function canWritePredictionDoc(roomId) {
+      return canWritePlayerPerMatch()
         || !isPredictionFinalizedInRoom(roomId)
         || canWriteSpecialPlayersAfterFinalize();
     }

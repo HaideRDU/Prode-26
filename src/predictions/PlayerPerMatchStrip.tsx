@@ -21,7 +21,7 @@ export function PlayerPerMatchStrip({
       <h2 className="pred-section-title">Jugador por partido</h2>
       <p className="app-muted" style={{ marginTop: 4 }}>
         Elegís <strong>un jugador</strong> por encuentro desde <strong>{openH} horas antes</strong> del pitazo.
-        Cierre: <strong>11:59 p. m. del día anterior</strong> al partido (hora del torneo). Puntos por gol según
+        Cierre: <strong>1 hora antes del inicio oficial</strong> del partido (hora del torneo). Puntos por gol según
         fase (grupos 1 pt, hasta 5 en la final). Se guarda al seleccionar en clasificación.
       </p>
       {first ? (

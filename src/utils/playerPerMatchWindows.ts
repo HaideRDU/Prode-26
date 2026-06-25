@@ -21,10 +21,12 @@ export function isGroupStagePhaseActive(matches: (MatchDoc & { id: string })[]):
   return groupMatches.some((m) => m.status === 'scheduled' || m.status === 'live')
 }
 
-export type PlayerPickCardState = 'enabled' | 'blocked'
+export type PlayerPickCardState = 'enabled' | 'blocked' | 'closed'
 
 /** Partidos con ventana de jugador abierta antes de las 24 h (p. ej. apertura del torneo). */
 export const PLAYER_PICK_EARLY_ACCESS_MATCH_IDS = new Set<string>(['wc26-A-01'])
+
+const SCHEDULED_MATCH_LIVE_FALLBACK_MS = 4 * 60 * 60 * 1000
 
 export type ClassifiedPlayerPickMatches = {
   live: (MatchDoc & { id: string })[]
@@ -48,15 +50,26 @@ function isPreviewCandidate(
 }
 
 /** Vista previa: primer partido pendiente en orden de catálogo (grupos A→L, -01…-06), no por hora en DB. */
-function findPreviewMatch(
+function matchOpensMs(match: MatchDoc, config: RulesetConfig): number | null {
+  const opens = getPlayerPerMatchOpensAt(match.scheduledAt, config)?.getTime()
+  return opens !== undefined && Number.isFinite(opens) ? opens : null
+}
+
+function findPreviewMatches(
   matches: (MatchDoc & { id: string })[],
   nowMs: number,
   config: RulesetConfig = DEFAULT_RULESET,
-): (MatchDoc & { id: string }) | null {
-  for (const m of sortByTournamentCatalog(matches)) {
-    if (isPreviewCandidate(m, nowMs, config)) return m
+): (MatchDoc & { id: string })[] {
+  let nextOpenMs = Number.POSITIVE_INFINITY
+  for (const m of matches) {
+    if (!isPreviewCandidate(m, nowMs, config)) continue
+    const opens = matchOpensMs(m, config)
+    if (opens !== null && nowMs < opens && opens < nextOpenMs) nextOpenMs = opens
   }
-  return null
+  if (!Number.isFinite(nextOpenMs)) return []
+  return sortByTournamentCatalog(
+    matches.filter((m) => isPreviewCandidate(m, nowMs, config) && matchOpensMs(m, config) === nextOpenMs),
+  )
 }
 
 function kickoffMs(match: MatchDoc): number | null {
@@ -67,6 +80,13 @@ function kickoffMs(match: MatchDoc): number | null {
 function pickLockMs(match: MatchDoc, config: RulesetConfig): number | null {
   const lock = getPlayerPickLockAt(match.scheduledAt, config)?.getTime()
   return lock !== undefined && Number.isFinite(lock) ? lock : null
+}
+
+function isScheduledMatchInLiveFallback(match: MatchDoc, nowMs: number): boolean {
+  if (match.status !== 'scheduled') return false
+  const kickoff = kickoffMs(match)
+  if (kickoff === null) return false
+  return nowMs >= kickoff && nowMs < kickoff + SCHEDULED_MATCH_LIVE_FALLBACK_MS
 }
 
 /** México–Sudáfrica y otros IDs en PLAYER_PICK_EARLY_ACCESS_MATCH_IDS: editable hasta 1 h antes del pitazo. */
@@ -93,7 +113,7 @@ export function getPlayerPickCardState(
   if (!hasRoster || match.status !== 'scheduled') return 'blocked'
   const lock = pickLockMs(match, config)
   if (lock === null) return 'blocked'
-  if (nowMs > lock) return 'blocked'
+  if (nowMs >= lock) return 'closed'
 
   if (options?.allowGroupStageEarlyPick && match.phase === 'group') return 'enabled'
 
@@ -141,12 +161,9 @@ export function classifyPlayerPickMatches(
     }
     // Firestore puede estar retrasado: si el kickoff ya pasó pero aún dice 'scheduled',
     // tratar el partido como en juego hasta que la Cloud Function lo actualice.
-    if (m.status === 'scheduled') {
-      const kMs = kickoffMs(m)
-      if (kMs !== null && nowMs >= kMs) {
-        live.push(m)
-        continue
-      }
+    if (isScheduledMatchInLiveFallback(m, nowMs)) {
+      live.push(m)
+      continue
     }
     if (isMatchVisibleForPlayerPrediction(m, nowMs, config)) {
       prediction.push(m)
@@ -165,11 +182,7 @@ export function classifyPlayerPickMatches(
     }
   }
 
-  let preview: (MatchDoc & { id: string })[] = []
-  if (prediction.length === 0) {
-    const first = findPreviewMatch(matches, nowMs, config)
-    if (first) preview = [first]
-  }
+  const preview = findPreviewMatches(matches, nowMs, config)
 
   return { live, prediction, preview, nextOpensAt }
 }
@@ -180,9 +193,7 @@ export function isMatchDisplayLive(
   nowMs: number = Date.now(),
 ): boolean {
   if (match.status === 'live') return true
-  if (match.status !== 'scheduled') return false
-  const kickoff = kickoffMs(match)
-  return kickoff !== null && nowMs >= kickoff
+  return isScheduledMatchInLiveFallback(match, nowMs)
 }
 
 export function findNextPlayerPickOpensAt(

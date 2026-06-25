@@ -37,8 +37,8 @@ export function ReglamentoContent({ showPageTitle = true }: ReglamentoContentPro
         </li>
         <li>
           <strong>Goleador por partido (bonus):</strong> podés elegir un jugador desde{' '}
-          <strong>{openH} horas</strong> antes del pitazo; el cierre es independiente por partido, a las{' '}
-          <strong>11:59 p. m. del día anterior</strong> a la disputa (zona {DEFAULT_RULESET.timezone}).
+          <strong>{openH} horas</strong> antes del pitazo; el cierre es independiente por partido,{' '}
+          <strong>1 hora antes del inicio oficial</strong> (zona {DEFAULT_RULESET.timezone}).
         </li>
       </ul>
 

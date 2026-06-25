@@ -94,6 +94,7 @@ function statusBadge(
   if (mode === 'live') return { label: 'En juego', variant: 'live' }
   if (saveUi === 'saving') return { label: 'Guardando…', variant: 'amber' }
   if (saveUi === 'error') return { label: 'Error', variant: 'amber' }
+  if (cardState === 'closed') return { label: 'Cerrado', variant: 'slate' }
   if (cardState === 'blocked') return { label: 'Bloqueado', variant: 'slate' }
   if (hasPick || saveUi === 'saved') return { label: 'Guardado', variant: 'emerald' }
   if (cardState === 'enabled') return { label: 'Habilitado', variant: 'emerald' }
@@ -117,7 +118,7 @@ export function PlayerPickFixtureCard({
   roomId: string
   userId: string
   timeZone: string
-  /** Fase de grupos: elegir jugador desde ya; cierre 23:59 del día anterior al partido. */
+  /** Fase de grupos: elegir jugador desde ya; cierre 1 h antes del inicio oficial. */
   groupStageEarlyPick?: boolean
 }) {
   const { options, loading: rosterLoading, hasRoster } = useMatchPlayerOptions(match)

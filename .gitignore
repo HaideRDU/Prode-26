@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 functions/lib
 dist
+backups
 dist-ssr
 *.local
 .env

@@ -8,6 +8,7 @@ import { GroupStageSection } from './GroupStageSection'
 import { PodiumReadOnlyDisplay } from './PodiumReadOnlyDisplay'
 import { TournamentSpecialPlayersSection } from './TournamentSpecialPlayersSection'
 import { BonusQuestionBank } from './BonusQuestionBank'
+import { R32BracketComparison } from './R32BracketComparison'
 import { usePredictionReviewData } from './usePredictionReviewData'
 
 type Props = {
@@ -134,6 +135,7 @@ export function PredictionReviewModal({
                 sectionIndex={2}
                 showEditWindowHint={isOwnPrediction}
               />
+              <R32BracketComparison matches={matches} predictions={predictions} teamLabel={teamLabel} />
               <KnockoutSection
                 groupPredByMatchId={review.groupPredForBracket}
                 koPredByMatchId={review.koPredByMatchId}
@@ -142,7 +144,7 @@ export function PredictionReviewModal({
                 onKoDraftChange={noopKo}
                 readOnly
                 layoutMode="review"
-                sectionIndex={3}
+                sectionIndex={4}
                 showPoints
                 bonusPlayerLabelByMatchId={bonusPlayerLabelByMatchId}
               />
@@ -154,7 +156,7 @@ export function PredictionReviewModal({
                   onDraftChange={noopGroup}
                   teamLabel={teamLabel}
                   groupLocked
-                  sectionIndex={4}
+                  sectionIndex={5}
                   showPoints
                   bonusPlayerLabelByMatchId={bonusPlayerLabelByMatchId}
                 />
@@ -168,7 +170,7 @@ export function PredictionReviewModal({
                   onBonusDraftChange={noopBonus}
                   incompleteQuestionIds={new Set()}
                   readOnly
-                  sectionIndex={5}
+                  sectionIndex={6}
                 />
               ) : null}
             </div>

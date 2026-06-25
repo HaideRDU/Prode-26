@@ -14,6 +14,7 @@ import * as logger from 'firebase-functions/logger'
 import { linkTsdbFixtures } from './theSportsDb/linkFixtures'
 import { TSDB_FREE_KEY } from './theSportsDb/constants'
 import { syncMatchesFromTsdb as runTsdbSync } from './theSportsDb/syncMatches'
+import { syncMatchesFromFifa as runFifaSync } from './fifa/syncMatches'
 import { getAllRoomIds, recalculateStandingsForRoom } from './recalculateRoom'
 
 initializeApp()
@@ -145,6 +146,26 @@ export const syncMatchesFromTsdb = onSchedule(
       logger.info('syncMatchesFromTsdb', result)
     } catch (err) {
       logger.error('syncMatchesFromTsdb failed', err)
+      throw err
+    }
+  },
+)
+
+/**
+ * Cada 1 min: actualiza horario/marcador/estado desde la API oficial de FIFA.
+ * No reemplaza goleadores ya guardados; FIFA calendar no expone detalle de autores de gol.
+ */
+export const syncMatchesFromFifa = onSchedule(
+  {
+    schedule: 'every 1 minutes',
+    timeZone: 'UTC',
+  },
+  async () => {
+    try {
+      const result = await runFifaSync(db)
+      logger.info('syncMatchesFromFifa', result)
+    } catch (err) {
+      logger.error('syncMatchesFromFifa failed', err)
       throw err
     }
   },

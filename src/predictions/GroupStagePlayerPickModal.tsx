@@ -63,7 +63,7 @@ export function GroupStagePlayerPickModal({
         <div className="pred-rules-modal__body group-stage-player-pick-modal__body">
           <p className="group-stage-player-pick-modal__lead app-muted">
             Elegí un jugador por partido de fase de grupos <strong>desde ya</strong>. Cierre{' '}
-            <strong>11:59 p. m. del día anterior</strong> al partido (hora del torneo). Se guarda al
+            <strong>1 hora antes del inicio oficial</strong> del partido (hora del torneo). Se guarda al
             seleccionar.
           </p>
 

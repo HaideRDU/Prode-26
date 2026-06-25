@@ -25,6 +25,7 @@ export interface RulesetConfig {
   lockWindows: {
     generalPredictionsHoursBeforeTournament: number
     playerPerMatchOpensHoursBeforeKickoff: number
+    playerPerMatchLocksHoursBeforeKickoff: number
   }
   features: {
     playerPerMatchEnabled: boolean
@@ -73,6 +74,7 @@ export const DEFAULT_RULESET: RulesetConfig = {
   lockWindows: {
     generalPredictionsHoursBeforeTournament: GENERAL_PREDICTIONS_LOCK_HOURS_BEFORE_TOURNAMENT,
     playerPerMatchOpensHoursBeforeKickoff: 24,
+    playerPerMatchLocksHoursBeforeKickoff: 1,
   },
   features: {
     playerPerMatchEnabled: true,
@@ -155,75 +157,15 @@ export function getGeneralPredictionsLockAt(config: RulesetConfig = DEFAULT_RULE
   )
 }
 
-function localDateKeyInZone(ms: number, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(ms))
-}
-
-function parseDayKey(key: string): { y: number; m: number; d: number } {
-  const [y, m, d] = key.split('-').map(Number)
-  return { y, m, d }
-}
-
-function shiftCalendarDay(key: string, deltaDays: number): string {
-  const { y, m, d } = parseDayKey(key)
-  const t = Date.UTC(y, m - 1, d + deltaDays)
-  const nd = new Date(t)
-  return `${nd.getUTCFullYear()}-${String(nd.getUTCMonth() + 1).padStart(2, '0')}-${String(nd.getUTCDate()).padStart(2, '0')}`
-}
-
-function msAtLocalHms(
-  dayKey: string,
-  hour: number,
-  minute: number,
-  second: number,
-  timeZone: string,
-): Date {
-  const { y, m, d } = parseDayKey(dayKey)
-  let utc = Date.UTC(y, m - 1, d, 12, 0, 0)
-  for (let i = 0; i < 8; i++) {
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric',
-      hour12: false,
-    }).formatToParts(new Date(utc))
-    const n = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0)
-    if (
-      n('year') === y &&
-      n('month') === m &&
-      n('day') === d &&
-      n('hour') === hour &&
-      n('minute') === minute &&
-      n('second') === second
-    ) {
-      return new Date(utc)
-    }
-    const desired = Date.UTC(y, m - 1, d, hour, minute, second)
-    const actual = Date.UTC(n('year'), n('month') - 1, n('day'), n('hour'), n('minute'), n('second'))
-    utc += desired - actual
-  }
-  return new Date(utc)
-}
-
 export function getPlayerPickLockAt(
   kickoffAt: unknown,
   config: RulesetConfig = DEFAULT_RULESET,
 ): Date | null {
   const kickoff = toDate(kickoffAt)
   if (!kickoff) return null
-  const tz = config.timezone
-  const matchDayKey = localDateKeyInZone(kickoff.getTime(), tz)
-  const prevDayKey = shiftCalendarDay(matchDayKey, -1)
-  return msAtLocalHms(prevDayKey, 23, 59, 59, tz)
+  return new Date(
+    kickoff.getTime() - config.lockWindows.playerPerMatchLocksHoursBeforeKickoff * 60 * 60 * 1000,
+  )
 }
 
 export function getKnockoutPickLockAt(
@@ -255,5 +197,5 @@ export function isPlayerPickLocked(
 ): boolean {
   const lock = getPlayerPickLockAt(kickoffAt, config)
   if (!lock) return true
-  return nowMs > lock.getTime()
+  return nowMs >= lock.getTime()
 }

@@ -19,7 +19,7 @@ Por cada selección predicha que efectivamente participa en la fase: R32 +2, R16
 
 ## 4) Jugador por partido
 
-Puntos por gol según ronda (Gr=1 … Final=5). Cierre: 23:59 del día anterior al partido (zona del torneo).
+Puntos por gol según ronda (Gr=1 … Final=5). Cierre: 1 hora antes del inicio oficial del partido (zona del torneo).
 Apertura: 24 h antes del pitazo.
 
 ## 5) Cierre predicciones generales

@@ -54,7 +54,7 @@ function NextMatchesHelp({ variant }: { variant: BannerVariant }) {
         <p className="room-home-player-banner__tooltip-lead">
           <strong>Jugador por partido:</strong> desde <strong>{openH} horas antes</strong> del pitazo podés elegir un
           jugador de cualquiera de los dos equipos. Puntos por gol según fase del torneo (1–5). Cierre{' '}
-          <strong>11:59 p. m. del día anterior</strong> al partido. El cambio se guarda al seleccionar.
+          <strong>1 hora antes del inicio oficial</strong> del partido. El cambio se guarda al seleccionar.
         </p>
         {isPrivate ? (
           <p className="room-home-player-banner__tooltip-p">
@@ -103,6 +103,9 @@ export function RoomHomePlayerPickBanner({
   const hasLive = classified.live.length > 0
   const predictCards = [...classified.prediction, ...classified.preview]
   const hasPredictBlock = predictCards.length > 0
+  const liveTitle = classified.live.length === 1 ? 'Partido disputándose' : 'Partidos disputándose'
+  const predictTitle =
+    predictCards.length === 1 ? 'Predicción partido a disputar' : 'Predicción partidos a disputar'
   const groupStageActive = useMemo(() => isGroupStagePhaseActive(matches), [matches])
 
   const previewMatch = classified.preview[0]
@@ -112,7 +115,7 @@ export function RoomHomePlayerPickBanner({
 
   const description =
     classified.prediction.length > 0 || classified.live.length > 0
-      ? `Elegí el jugador que anotará en cada partido (desde ${openH} h antes del pitazo; cierre 11:59 p. m. del día anterior). Se guarda al seleccionar.`
+      ? `Elegí el jugador que anotará en cada partido (desde ${openH} h antes del pitazo; cierre 1 hora antes del inicio oficial). Se guarda al seleccionar.`
       : previewMatch
         ? `Próximo partido: ${formatMatchTime(previewMatch.scheduledAt)}. Podrás elegir jugador${
             previewOpensAt
@@ -150,7 +153,7 @@ export function RoomHomePlayerPickBanner({
 
       {hasLive ? (
         <div className="room-home-player-banner__block room-home-player-banner__block--live">
-          <h3 className="room-home-player-banner__block-title">Partidos disputándose</h3>
+          <h3 className="room-home-player-banner__block-title">{liveTitle}</h3>
           <div className="player-pick-fixture-grid player-pick-fixture-grid--live">
             {classified.live.map((m) => (
               <PlayerPickFixtureCard
@@ -170,10 +173,10 @@ export function RoomHomePlayerPickBanner({
 
       {hasPredictBlock ? (
         <div className="room-home-player-banner__block room-home-player-banner__block--predict">
-          <h3 className="room-home-player-banner__hero-title">Predicción partido a disputar</h3>
+          <h3 className="room-home-player-banner__hero-title">{predictTitle}</h3>
           <p className="room-home-player-banner__hero-lead">
             Escogé un jugador por partido: puntos por gol según fase (1–5). Cierre{' '}
-            <strong>11:59 p. m. del día anterior</strong> al partido; podés elegir desde{' '}
+            <strong>1 hora antes del inicio oficial</strong> del partido; podés elegir desde{' '}
             <strong>{openH} h antes</strong> del pitazo.
           </p>
           {groupStageActive ? (
@@ -207,7 +210,7 @@ export function RoomHomePlayerPickBanner({
           <h3 className="room-home-player-banner__hero-title">Predicción partido a disputar</h3>
           <p className="room-home-player-banner__hero-lead">
             Escogé un jugador por partido: puntos por gol según fase (1–5). Cierre{' '}
-            <strong>11:59 p. m. del día anterior</strong> al partido; podés elegir desde{' '}
+            <strong>1 hora antes del inicio oficial</strong> del partido; podés elegir desde{' '}
             <strong>{openH} h antes</strong> del pitazo.
           </p>
           <div className="room-home-player-banner__group-stage-btn-wrap">
@@ -236,7 +239,7 @@ export function RoomHomePlayerPickBanner({
 
       {classified.live.length > 0 || classified.prediction.length > 0 ? (
         <p className="room-home-player-banner__player-hint room-home-player-banner__player-hint--below-grid">
-          Cierre automático: <strong>11:59 p. m. del día anterior</strong> al partido (hora del torneo; tu vista:{' '}
+          Cierre automático: <strong>1 hora antes del inicio oficial</strong> del partido (hora del torneo; tu vista:{' '}
           {formatTimeZoneShort(timeZone)}).
         </p>
       ) : classified.preview.length > 0 ? (

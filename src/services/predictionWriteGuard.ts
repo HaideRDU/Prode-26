@@ -53,7 +53,7 @@ export function assertPlayerPickOpen(
   if (isPlayerPickLocked(scheduledAt, nowMs, DEFAULT_RULESET)) {
     const lockAt = getPlayerPickLockAtDisplay(scheduledAt)
     throw new PredictionWriteBlockedError(
-      `El cierre del goleador por partido fue el ${lockAt} (11:59 p. m. del día anterior, hora del torneo).`,
+      `El cierre del goleador por partido fue el ${lockAt} (1 hora antes del inicio oficial).`,
     )
   }
 }

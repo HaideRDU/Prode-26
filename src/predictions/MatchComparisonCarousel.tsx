@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toDate } from '../config/ruleset'
+import { getPredictedKoLineupForMatch } from '../domain/koPredictedLineup'
 import { matchTeamAId, matchTeamBId } from '../domain/matchFields'
 import { useMatchList } from '../hooks/useMatchList'
 import { useRoomPredictions } from '../hooks/useRoomMatchPredictions'
@@ -18,6 +19,7 @@ import type {
 import { TeamFlagName } from './TeamFlagName'
 
 type PlayerInfo = { name: string; theSportsDbPlayerId?: string }
+type ProjectedKoLineup = { predictedTeamAId: string | null; predictedTeamBId: string | null }
 
 // Cache compartida de plantillas por equipo: un único listener por teamId,
 // reutilizado al cambiar de partido en el carrusel para evitar llamadas repetidas.
@@ -92,6 +94,63 @@ function initialsFromName(name: string): string {
   if (parts.length === 0) return '?'
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+function koLineupStatus(
+  lineup: ProjectedKoLineup | null,
+  actualTeamAId: string | null,
+  actualTeamBId: string | null,
+): 'same' | 'inverted' | 'different' | 'unknown' {
+  if (!lineup?.predictedTeamAId || !lineup.predictedTeamBId || !actualTeamAId || !actualTeamBId) {
+    return 'unknown'
+  }
+  if (lineup.predictedTeamAId === actualTeamAId && lineup.predictedTeamBId === actualTeamBId) {
+    return 'same'
+  }
+  if (lineup.predictedTeamAId === actualTeamBId && lineup.predictedTeamBId === actualTeamAId) {
+    return 'inverted'
+  }
+  return 'different'
+}
+
+function koLineupStatusLabel(status: ReturnType<typeof koLineupStatus>): string {
+  switch (status) {
+    case 'same':
+      return 'Coincide'
+    case 'inverted':
+      return 'Mismos equipos'
+    case 'different':
+      return 'Cruce distinto'
+    default:
+      return 'Sin datos'
+  }
+}
+
+function ProjectedKoCell({
+  lineup,
+  actualTeamAId,
+  actualTeamBId,
+  teamLabel,
+}: {
+  lineup: ProjectedKoLineup | null
+  actualTeamAId: string | null
+  actualTeamBId: string | null
+  teamLabel: (id: string) => string
+}) {
+  const status = koLineupStatus(lineup, actualTeamAId, actualTeamBId)
+  if (!lineup?.predictedTeamAId || !lineup.predictedTeamBId) {
+    return <span className="match-comparison-table__empty">Sin cruce</span>
+  }
+  return (
+    <div className="match-comparison-table__projected-ko">
+      <span className="match-comparison-table__projected-teams">
+        {teamLabel(lineup.predictedTeamAId)} vs {teamLabel(lineup.predictedTeamBId)}
+      </span>
+      <span className={`match-comparison-table__ko-badge match-comparison-table__ko-badge--${status}`}>
+        {koLineupStatusLabel(status)}
+      </span>
+    </div>
+  )
 }
 
 function MatchCard({
@@ -238,6 +297,7 @@ function MatchPredictionsTable({
   }, [matchPredictions])
 
   const isFinished = match.status === 'finished'
+  const isKnockout = match.phase === 'knockout'
 
   const rows = useMemo(() => {
     return members
@@ -247,9 +307,13 @@ function MatchPredictionsTable({
         const bonusKey = entry?.bonus
         const bonusPlayer = bonusKey ? playerByKey[bonusKey] : undefined
         const bonusName = bonusKey ? bonusPlayer?.name ?? bonusKey : null
+        const userPredictions = isKnockout ? predictions.filter((p) => p.userId === member.userId) : []
+        const predictedLineup = isKnockout
+          ? getPredictedKoLineupForMatch(userPredictions, match.id)
+          : null
         let points: number | null = null
         if (isFinished && playersLoaded) {
-          const matchPts = scoreMatchPrediction(match, score ?? null)
+          const matchPts = scoreMatchPrediction(match, score ?? null, predictedLineup)
           const bonusPts = bonusKey
             ? scorePlayerPerMatchPick(match, bonusKey, {
                 playerKey: bonusKey,
@@ -264,11 +328,12 @@ function MatchPredictionsTable({
           displayName: member.displayName || 'Jugador',
           score,
           bonusName,
+          predictedLineup,
           points,
         }
       })
       .sort((a, b) => a.displayName.localeCompare(b.displayName, 'es'))
-  }, [members, byUserId, playerByKey, playersLoaded, isFinished, match])
+  }, [members, byUserId, playerByKey, playersLoaded, isFinished, isKnockout, match, predictions])
 
   if (predictionsLoading || membersLoading) {
     return <p className="match-comparison-table__hint">Cargando predicciones…</p>
@@ -285,6 +350,7 @@ function MatchPredictionsTable({
           <tr>
             <th scope="col">Usuario</th>
             <th scope="col">Predicción</th>
+            {isKnockout ? <th scope="col">Cruce pronosticado</th> : null}
             <th scope="col">Jugador bonus</th>
             {isFinished ? <th scope="col">Puntos</th> : null}
           </tr>
@@ -309,6 +375,16 @@ function MatchPredictionsTable({
                   <span className="match-comparison-table__empty">Sin predicción</span>
                 )}
               </td>
+              {isKnockout ? (
+                <td>
+                  <ProjectedKoCell
+                    lineup={row.predictedLineup}
+                    actualTeamAId={teamAId}
+                    actualTeamBId={teamBId}
+                    teamLabel={teamLabel}
+                  />
+                </td>
+              ) : null}
               <td>
                 {row.bonusName ? (
                   <span className="match-comparison-table__bonus">{row.bonusName}</span>
