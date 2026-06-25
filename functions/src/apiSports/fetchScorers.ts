@@ -114,6 +114,10 @@ function isPenaltyShootoutGoal(detail: string): boolean {
   return d.includes('shootout')
 }
 
+function isOwnGoal(detail: string): boolean {
+  return detail.toLowerCase().includes('own goal')
+}
+
 function isCountableApiGoal(event: ApiSportsFixtureEvent): boolean {
   if (event.type !== 'Goal') return false
   if (!event.player?.id) return false
@@ -145,12 +149,22 @@ export async function fetchScorersFromApiSports(
 
   for (const ev of events) {
     if (!isCountableApiGoal(ev)) continue
-    const teamSide =
+    const ownGoal = isOwnGoal(ev.detail)
+    // API-Football reporta el equipo del jugador que anotó. En un autogol el gol cuenta
+    // para el rival, así que se invierte el lado.
+    const playerSide =
       homeTeamId != null && ev.team.id === homeTeamId
         ? 'teamA'
         : homeTeamId != null
           ? 'teamB'
           : undefined
+    const teamSide = ownGoal
+      ? playerSide === 'teamA'
+        ? 'teamB'
+        : playerSide === 'teamB'
+          ? 'teamA'
+          : undefined
+      : playerSide
 
     const { playerKey, rosterName } = await resolveApiSportsPlayer(
       db,
@@ -167,6 +181,7 @@ export async function fetchScorersFromApiSports(
     scorers.push({
       playerKey,
       goals: 1,
+      ...(ownGoal ? { ownGoal: true } : {}),
       ...(displayName ? { playerName: displayName } : {}),
       ...(minute > 0 ? { minute } : {}),
       ...(teamSide ? { teamSide } : {}),

@@ -39,6 +39,8 @@ export interface MatchScorerEntry {
   playerKey: string
   goals: number
   includesPenalties?: boolean
+  /** Autogol: cuenta para el marcador del equipo rival, pero NO para el bonus "jugador por partido". */
+  ownGoal?: boolean
   playerName?: string
   theSportsDbPlayerId?: string
   minute?: number

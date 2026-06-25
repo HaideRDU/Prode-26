@@ -37,6 +37,8 @@ export interface MatchScorerEntry {
   /** Goles en este evento (1 por entrada en timeline; scoring suma por jugador). */
   goals: number
   includesPenalties?: boolean
+  /** Autogol: cuenta para el marcador del equipo rival, pero NO para el bonus "jugador por partido". */
+  ownGoal?: boolean
   /** Nombre legible desde timeline TSDB o plantilla; evita mostrar solo el id. */
   playerName?: string
   /** idPlayer en TheSportsDB (para cruzar con plantilla Panini / TSDB). */

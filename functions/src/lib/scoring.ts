@@ -509,6 +509,7 @@ export function scorePlayerPerMatchPick(
   let total = 0
   for (const s of scorers) {
     if (s.includesPenalties) continue
+    if (s.ownGoal) continue
     if (!scorerMatchesPick(pick, s)) continue
     if (typeof s.goals !== 'number' || s.goals <= 0) continue
     total += s.goals * ptsPerGoal

@@ -24,12 +24,17 @@ function isCountableGoal(row: TsdbTimelineItem): boolean {
   return true
 }
 
+function isOwnGoal(row: TsdbTimelineItem): boolean {
+  return (row.strTimelineDetail ?? '').toLowerCase().includes('own goal')
+}
+
 export interface ParsedGoalEvent {
   tsdbPlayerId: string
   playerName: string
   minute: number | null
   teamSide: 'teamA' | 'teamB'
   includesPenalties: boolean
+  ownGoal: boolean
 }
 
 /** Un evento por gol (no agregado), ordenado por minuto. */
@@ -38,9 +43,16 @@ export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] 
   for (const row of rows) {
     if (!isCountableGoal(row)) continue
     const shootout = isPenaltyShootoutGoal(row)
+    const ownGoal = isOwnGoal(row)
     const rawMin = row.intTime != null && row.intTime !== '' ? parseInt(String(row.intTime), 10) : NaN
     const minute = Number.isFinite(rawMin) ? rawMin : null
-    const teamSide = (row.strHome ?? '').trim().toLowerCase() === 'yes' ? 'teamA' : 'teamB'
+    const playerSide = (row.strHome ?? '').trim().toLowerCase() === 'yes' ? 'teamA' : 'teamB'
+    // En un autogol el gol cuenta para el rival del jugador que lo metió.
+    const teamSide: 'teamA' | 'teamB' = ownGoal
+      ? playerSide === 'teamA'
+        ? 'teamB'
+        : 'teamA'
+      : playerSide
     goals.push({
       tsdbPlayerId: row.idPlayer,
       playerName: row.strPlayer?.trim() ?? '',
@@ -48,6 +60,7 @@ export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] 
       teamSide,
       // Penal en juego normal cuenta como gol; solo se excluye si fue en tanda de penales (shootout).
       includesPenalties: shootout,
+      ownGoal,
     })
   }
   goals.sort((a, b) => {
@@ -189,6 +202,7 @@ export async function fetchScorersFromTimeline(
       ...(ev.minute != null ? { minute: ev.minute } : {}),
       teamSide: ev.teamSide,
       ...(ev.includesPenalties ? { includesPenalties: true } : {}),
+      ...(ev.ownGoal ? { ownGoal: true } : {}),
     })
   }
 

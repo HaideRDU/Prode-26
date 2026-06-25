@@ -5,7 +5,11 @@ import { TSDB_FREE_KEY } from '../theSportsDb/constants'
 import { fetchScorersFromTimeline } from '../theSportsDb/fetchScorers'
 import { tsdbGetJson } from '../theSportsDb/client'
 import type { TsdbTimelineItem, TsdbTimelineResponse } from '../theSportsDb/types'
-import { scorersIncompleteForScore } from './scorerSync'
+import {
+  countNonPenaltyScorerGoals,
+  expectedGoalsFromScore,
+  scorersIncompleteForScore,
+} from './scorerSync'
 import type { MatchDoc, MatchScorerEntry } from './types/predictions'
 
 function timelineOrEmpty(response: TsdbTimelineResponse): TsdbTimelineItem[] {
@@ -62,6 +66,26 @@ export async function fetchMatchScorers(
   const goalsTeamA = options.goalsTeamA ?? match.goalsTeamA ?? match.goalsHome ?? null
   const goalsTeamB = options.goalsTeamB ?? match.goalsTeamB ?? match.goalsAway ?? null
 
+  const expectedGoals = expectedGoalsFromScore(goalsTeamA, goalsTeamB)
+
+  /**
+   * Nunca regresar a una versión MENOS completa de los goleadores: si lo que ya está
+   * guardado cubre más goles (p. ej. corrección manual o backfill previo de API-Sports)
+   * y el candidato viene incompleto, conservar lo existente. Evita que el sync en vivo
+   * pise data buena con la timeline incompleta de TSDB cuando API-Sports no responde.
+   */
+  const keepMoreComplete = (candidate: MatchScorerEntry[]): MatchScorerEntry[] => {
+    if (match.status !== 'finished') return candidate
+    const existing = match.scorers ?? []
+    if (existing.length === 0) return candidate
+    const candCount = countNonPenaltyScorerGoals(candidate)
+    const existingCount = countNonPenaltyScorerGoals(existing)
+    if (candCount < expectedGoals && existingCount > candCount && existingCount <= expectedGoals) {
+      return existing
+    }
+    return candidate
+  }
+
   let scorers: MatchScorerEntry[] = []
   try {
     scorers = await fetchScorersFromTimeline(db, match, tsdbEventId, tsdbApiKey)
@@ -73,17 +97,17 @@ export async function fetchMatchScorers(
   if (match.status !== 'finished') return scorers
 
   const incomplete = scorersIncompleteForScore(goalsTeamA, goalsTeamB, scorers)
-  if (!incomplete && scorers.length > 0) return scorers
+  if (!incomplete && scorers.length > 0) return keepMoreComplete(scorers)
 
   const apiSportsKey = options.apiSportsKey?.trim()
-  if (!apiSportsKey) return scorers
+  if (!apiSportsKey) return keepMoreComplete(scorers)
 
   const fixtureId = await resolveApiSportsFixtureId(match, tsdbEventId, tsdbApiKey)
-  if (fixtureId == null) return scorers
+  if (fixtureId == null) return keepMoreComplete(scorers)
 
   try {
     const apiScorers = await fetchScorersFromApiSports(db, match, fixtureId, apiSportsKey)
-    if (apiScorers.length === 0) return scorers
+    if (apiScorers.length === 0) return keepMoreComplete(scorers)
 
     const merged = preferCompleteScorers(scorers, apiScorers)
     if (merged.length !== scorers.length) {
@@ -91,12 +115,12 @@ export async function fetchMatchScorers(
         `[scorers] API-Sports fallback tsdbEventId=${tsdbEventId} fixture=${fixtureId} timeline=${scorers.length} api=${apiScorers.length} merged=${merged.length}`,
       )
     }
-    return merged
+    return keepMoreComplete(merged)
   } catch (err) {
     logger.warn(`[scorers] API-Sports failed fixtureId=${fixtureId}`, err)
   }
 
-  return scorers
+  return keepMoreComplete(scorers)
 }
 
 /** Backfill solo para partidos finalizados (API-Sports no se consulta mientras está en vivo). */

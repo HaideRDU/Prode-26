@@ -7,7 +7,11 @@
       "Bash(npm run *)",
       "Bash(sort -u -t\"'\" -k2)",
       "Bash(firebase deploy *)",
-      "Bash(node -e \"require\\('./lib/index.js'\\); console.log\\('OK'\\)\")"
+      "Bash(node -e \"require\\('./lib/index.js'\\); console.log\\('OK'\\)\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node --loader tsx/esm -e ' *)",
+      "WebSearch",
+      "Bash(del scripts\\\\test-scoring-b03.ts scripts\\\\inspect-match.ts scripts\\\\list-scorers.ts)"
     ]
   }
 }
