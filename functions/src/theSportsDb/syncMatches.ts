@@ -3,6 +3,7 @@ import * as logger from 'firebase-functions/logger'
 import type { MatchDoc } from '../lib/types/predictions'
 import { fetchMatchScorers, matchNeedsScorerBackfill } from '../lib/syncMatchScorers'
 import { mergeScorerEntries, scorersIncompleteForScore } from '../lib/scorerSync'
+import { linkApiSportsFixtures } from '../apiSports/linkFixtures'
 import { isMatchInPollingWindow, kickoffMs, shouldRunScheduledSync } from '../apiSports/matchWindow'
 import { TSDB_FREE_KEY } from './constants'
 import { tsdbGet, eventsOrEmpty } from './client'
@@ -58,12 +59,49 @@ export async function syncMatchesFromTsdb(
     }
   }
 
+  const missingApiFixtureId = toProcess.some((d) => d.data.apiSportsFixtureId == null)
+  if (missingApiFixtureId && apiSportsKey?.trim()) {
+    try {
+      await linkApiSportsFixtures(db, apiSportsKey)
+      const refreshed = await db.collection('matches').get()
+      for (const d of toProcess) {
+        const fresh = refreshed.docs.find((x) => x.id === d.id)
+        if (fresh) d.data = fresh.data() as MatchDoc
+      }
+    } catch (err) {
+      logger.warn('[tsdb:sync] apiSports link skipped (plan o cuota)', err)
+    }
+  }
+
   let updated = 0
   const writer = db.bulkWriter()
 
   for (const { id: matchId, data: current } of toProcess) {
     const tsdbId = current.theSportsDbEventId
-    if (!tsdbId) continue
+    const goalsTeamA = current.goalsTeamA ?? current.goalsHome ?? null
+    const goalsTeamB = current.goalsTeamB ?? current.goalsAway ?? null
+
+    if (!tsdbId) {
+      const needsScorers =
+        (current.status === 'live' || current.status === 'finished') &&
+        scorersIncompleteForScore(goalsTeamA, goalsTeamB, current.scorers)
+      if (!needsScorers || !apiSportsKey?.trim()) continue
+
+      try {
+        const scorers = await fetchMatchScorers(db, current, null, {
+          apiSportsKey,
+          goalsTeamA,
+          goalsTeamB,
+        })
+        const merged = mergeScorerEntries(current.scorers ?? [], scorers)
+        if (!scorersChanged(current.scorers, merged)) continue
+        writer.set(db.collection('matches').doc(matchId), { scorers: merged }, { merge: true })
+        updated += 1
+      } catch (err) {
+        logger.warn(`[tsdb:sync] scorers-only failed matchId=${matchId}`, err)
+      }
+      continue
+    }
 
     // 1 llamada por partido en ventana (máx ~8 = muy bajo de 30/min)
     const resp = await tsdbGet(apiKey, 'lookupevent.php', { id: tsdbId })
@@ -77,8 +115,8 @@ export async function syncMatchesFromTsdb(
       (current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA ||
       (current.goalsTeamB ?? current.goalsAway ?? null) !== next.goalsTeamB
     const scorersIncomplete = scorersIncompleteForScore(
-      next.goalsTeamA,
-      next.goalsTeamB,
+      next.goalsTeamA ?? goalsTeamA,
+      next.goalsTeamB ?? goalsTeamB,
       current.scorers,
     )
     const shouldFetchScorers =
@@ -94,16 +132,16 @@ export async function syncMatchesFromTsdb(
           db,
           {
             ...current,
-            goalsTeamA: next.goalsTeamA,
-            goalsTeamB: next.goalsTeamB,
+            goalsTeamA: next.goalsTeamA ?? goalsTeamA,
+            goalsTeamB: next.goalsTeamB ?? goalsTeamB,
             status: next.status,
           },
           tsdbId,
           {
             tsdbApiKey: apiKey,
             apiSportsKey,
-            goalsTeamA: next.goalsTeamA,
-            goalsTeamB: next.goalsTeamB,
+            goalsTeamA: next.goalsTeamA ?? goalsTeamA,
+            goalsTeamB: next.goalsTeamB ?? goalsTeamB,
           },
         )
         // Nunca reducir scorers ya confirmados: TSDB a veces "parpadea" y devuelve

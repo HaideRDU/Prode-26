@@ -3,6 +3,7 @@ import { normalizePlayerName, playerRefFromDoc } from '../lib/playerKeyMatch'
 import { mergeScorerEntries } from '../lib/scorerSync'
 import type { MatchDoc, MatchScorerEntry, TeamPlayerDoc } from '../lib/types/predictions'
 import { apiSportsGet } from './client'
+import { buildApiTeamIdToIso3 } from './linkFixtures'
 import type { ApiSportsFixtureItem } from './types'
 
 export interface ApiSportsFixtureEvent {
@@ -135,14 +136,18 @@ export async function fetchScorersFromApiSports(
   const teamBId = match.teamBId ?? match.teamAwayId
   if (!teamAId || !teamBId) return []
 
-  const [eventsJson, fixtureJson] = await Promise.all([
+  const [eventsJson, fixtureJson, teamMap] = await Promise.all([
     apiSportsGet<ApiSportsFixtureEvent>(apiKey, '/fixtures/events', { fixture: fixtureId }),
     apiSportsGet<ApiSportsFixtureItem>(apiKey, '/fixtures', { id: fixtureId }),
+    buildApiTeamIdToIso3(apiKey),
   ])
 
   const events = eventsJson.response ?? []
   const fixture = fixtureJson.response?.[0]
-  const homeTeamId = fixture?.teams.home.id
+  const homeApiId = fixture?.teams.home.id
+  const awayApiId = fixture?.teams.away.id
+  const homeIso = homeApiId != null ? (teamMap.get(homeApiId) ?? null) : null
+  const awayIso = awayApiId != null ? (teamMap.get(awayApiId) ?? null) : null
 
   const scorers: MatchScorerEntry[] = []
   const cache = new Map<number, ResolvedPlayer>()
@@ -150,14 +155,10 @@ export async function fetchScorersFromApiSports(
   for (const ev of events) {
     if (!isCountableApiGoal(ev)) continue
     const ownGoal = isOwnGoal(ev.detail)
-    // API-Football reporta el equipo del jugador que anotó. En un autogol el gol cuenta
-    // para el rival, así que se invierte el lado.
+    const scorerIso =
+      ev.team.id === homeApiId ? homeIso : ev.team.id === awayApiId ? awayIso : (teamMap.get(ev.team.id) ?? null)
     const playerSide =
-      homeTeamId != null && ev.team.id === homeTeamId
-        ? 'teamA'
-        : homeTeamId != null
-          ? 'teamB'
-          : undefined
+      scorerIso === teamAId ? 'teamA' : scorerIso === teamBId ? 'teamB' : undefined
     const teamSide = ownGoal
       ? playerSide === 'teamA'
         ? 'teamB'

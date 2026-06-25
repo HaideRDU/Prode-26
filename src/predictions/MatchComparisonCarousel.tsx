@@ -16,6 +16,8 @@ import type {
   PredictionDoc,
   TeamPlayerDoc,
 } from '../types/predictions'
+import { isMatchLiveForDisplay } from '../utils/playerPerMatchWindows'
+import { scorersForTeamSide } from '../utils/matchScorerDisplay'
 import { TeamFlagName } from './TeamFlagName'
 
 type PlayerInfo = { name: string; theSportsDbPlayerId?: string }
@@ -65,7 +67,7 @@ function matchKickoffMs(match: MatchDoc): number {
 
 /** Encuentra el partido más cercano: en juego primero, luego el próximo por jugar, sino el último finalizado. */
 function findNearestMatchIndex(matches: (MatchDoc & { id: string })[], nowMs: number): number {
-  const liveIdx = matches.findIndex((m) => m.status === 'live')
+  const liveIdx = matches.findIndex((m) => isMatchLiveForDisplay(m, nowMs))
   if (liveIdx !== -1) return liveIdx
 
   let upcomingIdx = -1
@@ -171,10 +173,13 @@ function MatchCard({
   const rawA = match.goalsTeamA ?? match.goalsHome
   const rawB = match.goalsTeamB ?? match.goalsAway
   const hasScore = rawA !== null && rawA !== undefined && rawB !== null && rawB !== undefined
+  const scorersA = scorersForTeamSide(match.scorers, 'teamA')
+  const scorersB = scorersForTeamSide(match.scorers, 'teamB')
+  const showScorers = match.status === 'live' || match.status === 'finished'
   const cardClass = [
     'match-comparison-card',
     isSelected ? 'match-comparison-card--selected' : '',
-    match.status === 'live' ? 'match-comparison-card--live' : '',
+    match.status === 'live' || isMatchLiveForDisplay(match) ? 'match-comparison-card--live' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -183,7 +188,7 @@ function MatchCard({
     <button type="button" className={cardClass} onClick={onSelect} aria-pressed={isSelected}>
       <div className="match-comparison-card__meta">
         <span className="match-comparison-card__phase">{phaseLabel(match)}</span>
-        {match.status === 'live' ? (
+        {match.status === 'live' || isMatchLiveForDisplay(match) ? (
           <span className="match-comparison-card__status match-comparison-card__status--live">En juego</span>
         ) : (
           <span className="match-comparison-card__time">{formatMatchTime(match.scheduledAt)}</span>
@@ -192,6 +197,16 @@ function MatchCard({
       <div className="match-comparison-card__teams">
         <div className="match-comparison-card__team">
           <TeamFlagName teamId={teamAId ?? ''} name={teamLabel(teamAId ?? '')} layout="stack" />
+          {showScorers && scorersA.length > 0 ? (
+            <ul className="match-comparison-card__scorers" aria-label="Goles local">
+              {scorersA.map((g) => (
+                <li key={g.key}>
+                  {g.minute != null ? `${g.minute}' ` : ''}
+                  {g.name}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
         <div className="match-comparison-card__score">
           {hasScore ? (
@@ -206,6 +221,16 @@ function MatchCard({
         </div>
         <div className="match-comparison-card__team">
           <TeamFlagName teamId={teamBId ?? ''} name={teamLabel(teamBId ?? '')} layout="stack" />
+          {showScorers && scorersB.length > 0 ? (
+            <ul className="match-comparison-card__scorers" aria-label="Goles visitante">
+              {scorersB.map((g) => (
+                <li key={g.key}>
+                  {g.minute != null ? `${g.minute}' ` : ''}
+                  {g.name}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </div>
     </button>

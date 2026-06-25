@@ -36,6 +36,17 @@ function findFirestoreMatchId(
   awayIso: string,
   fixtureKickoffMs: number,
 ): string | null {
+  const direct = findFirestoreMatchIdStrict(matches, homeIso, awayIso, fixtureKickoffMs)
+  if (direct) return direct
+  return findFirestoreMatchIdStrict(matches, awayIso, homeIso, fixtureKickoffMs)
+}
+
+function findFirestoreMatchIdStrict(
+  matches: { id: string; data: MatchDoc }[],
+  homeIso: string,
+  awayIso: string,
+  fixtureKickoffMs: number,
+): string | null {
   let best: { id: string; delta: number } | null = null
   for (const m of matches) {
     const d = m.data

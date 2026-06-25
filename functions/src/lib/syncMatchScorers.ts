@@ -59,7 +59,7 @@ export interface FetchMatchScorersOptions {
 export async function fetchMatchScorers(
   db: Firestore,
   match: MatchDoc,
-  tsdbEventId: string,
+  tsdbEventId: string | null | undefined,
   options: FetchMatchScorersOptions = {},
 ): Promise<MatchScorerEntry[]> {
   const tsdbApiKey = options.tsdbApiKey ?? TSDB_FREE_KEY
@@ -87,22 +87,31 @@ export async function fetchMatchScorers(
   }
 
   let scorers: MatchScorerEntry[] = []
-  try {
-    scorers = await fetchScorersFromTimeline(db, match, tsdbEventId, tsdbApiKey)
-  } catch (err) {
-    logger.warn(`[scorers] timeline failed tsdbEventId=${tsdbEventId}`, err)
+  if (tsdbEventId) {
+    try {
+      scorers = await fetchScorersFromTimeline(db, match, tsdbEventId, tsdbApiKey)
+    } catch (err) {
+      logger.warn(`[scorers] timeline failed tsdbEventId=${tsdbEventId}`, err)
+    }
   }
 
-  // API-Sports (cuota limitada en plan free) solo se consulta al finalizar el partido.
-  if (match.status !== 'finished') return scorers
-
   const incomplete = scorersIncompleteForScore(goalsTeamA, goalsTeamB, scorers)
-  if (!incomplete && scorers.length > 0) return keepMoreComplete(scorers)
+  const needsApiFallback =
+    incomplete || (expectedGoals > 0 && scorers.length === 0 && (match.status === 'live' || match.status === 'finished'))
+
+  if (!needsApiFallback) {
+    return match.status === 'finished' ? keepMoreComplete(scorers) : scorers
+  }
 
   const apiSportsKey = options.apiSportsKey?.trim()
   if (!apiSportsKey) return keepMoreComplete(scorers)
 
-  const fixtureId = await resolveApiSportsFixtureId(match, tsdbEventId, tsdbApiKey)
+  const fixtureId =
+    typeof match.apiSportsFixtureId === 'number' && match.apiSportsFixtureId > 0
+      ? match.apiSportsFixtureId
+      : tsdbEventId
+        ? await resolveApiSportsFixtureId(match, tsdbEventId, tsdbApiKey)
+        : null
   if (fixtureId == null) return keepMoreComplete(scorers)
 
   try {
@@ -123,10 +132,10 @@ export async function fetchMatchScorers(
   return keepMoreComplete(scorers)
 }
 
-/** Backfill solo para partidos finalizados (API-Sports no se consulta mientras está en vivo). */
+/** Partidos en vivo o finalizados cuyo marcador no coincide con scorers[]. */
 export function matchNeedsScorerBackfill(match: MatchDoc): boolean {
-  if (!match.theSportsDbEventId) return false
-  if (match.status !== 'finished') return false
+  if (!match.theSportsDbEventId && !match.apiSportsFixtureId) return false
+  if (match.status !== 'finished' && match.status !== 'live') return false
   return scorersIncompleteForScore(
     match.goalsTeamA ?? match.goalsHome,
     match.goalsTeamB ?? match.goalsAway,

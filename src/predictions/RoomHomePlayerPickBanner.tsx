@@ -115,7 +115,9 @@ export function RoomHomePlayerPickBanner({
 
   const description =
     classified.prediction.length > 0 || classified.live.length > 0
-      ? `Elegí el jugador que anotará en cada partido (desde ${openH} h antes del pitazo; cierre 1 hora antes del inicio oficial). Se guarda al seleccionar.`
+      ? groupStageActive
+        ? `En fase de grupos mostramos los partidos de hoy (hora del torneo) y los en ventana de 24 h. Cierre del bonus: 1 hora antes del pitazo. El listado completo está en «Ver partidos de fase de grupos».`
+        : `Elegí el jugador que anotará en cada partido (desde ${openH} h antes del pitazo; cierre 1 hora antes del inicio oficial). Se guarda al seleccionar.`
       : previewMatch
         ? `Próximo partido: ${formatMatchTime(previewMatch.scheduledAt)}. Podrás elegir jugador${
             previewOpensAt
@@ -176,8 +178,20 @@ export function RoomHomePlayerPickBanner({
           <h3 className="room-home-player-banner__hero-title">{predictTitle}</h3>
           <p className="room-home-player-banner__hero-lead">
             Escogé un jugador por partido: puntos por gol según fase (1–5). Cierre{' '}
-            <strong>1 hora antes del inicio oficial</strong> del partido; podés elegir desde{' '}
-            <strong>{openH} h antes</strong> del pitazo.
+            <strong>1 hora antes del inicio oficial</strong> del partido.
+            {groupStageActive ? (
+              <>
+                {' '}
+                En <strong>fase de grupos</strong> el banner muestra los de <strong>hoy</strong> (hora del torneo); el
+                listado completo está en el botón de abajo.
+                En eliminatorias, desde <strong>{openH} h antes</strong> del pitazo.
+              </>
+            ) : (
+              <>
+                {' '}
+                Podés elegir desde <strong>{openH} h antes</strong> del pitazo.
+              </>
+            )}
           </p>
           {groupStageActive ? (
             <div className="room-home-player-banner__group-stage-btn-wrap">
@@ -201,6 +215,7 @@ export function RoomHomePlayerPickBanner({
                 roomId={roomId!}
                 userId={userId!}
                 timeZone={timeZone}
+                groupStageEarlyPick={m.phase === 'group'}
               />
             ))}
           </div>
@@ -210,8 +225,8 @@ export function RoomHomePlayerPickBanner({
           <h3 className="room-home-player-banner__hero-title">Predicción partido a disputar</h3>
           <p className="room-home-player-banner__hero-lead">
             Escogé un jugador por partido: puntos por gol según fase (1–5). Cierre{' '}
-            <strong>1 hora antes del inicio oficial</strong> del partido; podés elegir desde{' '}
-            <strong>{openH} h antes</strong> del pitazo.
+            <strong>1 hora antes del inicio oficial</strong> del partido. En{' '}
+            <strong>fase de grupos</strong> podés elegir desde ya.
           </p>
           <div className="room-home-player-banner__group-stage-btn-wrap">
             <button

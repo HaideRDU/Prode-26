@@ -1,5 +1,4 @@
 import type { Firestore } from 'firebase-admin/firestore'
-import { Timestamp } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
 import type { MatchDoc } from '../lib/types/predictions'
 import { TSDB_FREE_KEY, TSDB_WC_LEAGUE_ID, TSDB_SEASON, KICKOFF_TOLERANCE_MS } from './constants'
@@ -27,6 +26,17 @@ function matchHomeAwayIds(d: MatchDoc): { homeId: string | undefined; awayId: st
 }
 
 function findFirestoreMatchId(
+  matches: { id: string; data: MatchDoc }[],
+  homeIso: string,
+  awayIso: string,
+  fixtureKickoffMs: number,
+): string | null {
+  const direct = findFirestoreMatchIdStrict(matches, homeIso, awayIso, fixtureKickoffMs)
+  if (direct) return direct
+  return findFirestoreMatchIdStrict(matches, awayIso, homeIso, fixtureKickoffMs)
+}
+
+function findFirestoreMatchIdStrict(
   matches: { id: string; data: MatchDoc }[],
   homeIso: string,
   awayIso: string,
@@ -178,12 +188,13 @@ async function doLink(
     }
 
     const ref = db.collection('matches').doc(matchId)
+    const scheduledAt = new Date(`${item.strTimestamp}Z`)
     writer.set(
       ref,
       {
         theSportsDbEventId: item.idEvent,
-        // Corregir scheduledAt con el tiempo exacto de TSDB
-        scheduledAt: Timestamp.fromDate(new Date(`${item.strTimestamp}Z`)),
+        // Corregir scheduledAt con el tiempo exacto de TSDB (Date evita conflicto de Timestamp entre paquetes admin).
+        scheduledAt,
       },
       { merge: true },
     )
@@ -193,7 +204,7 @@ async function doLink(
     const entry = firestoreMatches.find((m) => m.id === matchId)
     if (entry) {
       entry.data.theSportsDbEventId = item.idEvent
-      entry.data.scheduledAt = Timestamp.fromDate(new Date(`${item.strTimestamp}Z`))
+      entry.data.scheduledAt = scheduledAt as MatchDoc['scheduledAt']
       updated += 1
     }
   }

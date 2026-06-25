@@ -132,7 +132,7 @@ const apisportsKey = defineSecret('APISPORTS_KEY')
 
 /**
  * Cada 1 min (solo ventana del Mundial): actualiza partidos en horario de juego vía TheSportsDB Free.
- * Clave pública 123 — no requiere secreto. Fallback de goleadores vía API-Sports si el timeline TSDB está incompleto.
+ * Clave pública 123 — no requiere secreto. Fallback API-Sports si el timeline TSDB está vacío o incompleto (también en vivo).
  */
 export const syncMatchesFromTsdb = onSchedule(
   {
@@ -152,8 +152,7 @@ export const syncMatchesFromTsdb = onSchedule(
 )
 
 /**
- * Cada 1 min: actualiza horario/marcador/estado desde la API oficial de FIFA.
- * No reemplaza goleadores ya guardados; FIFA calendar no expone detalle de autores de gol.
+ * Cada 1 min: actualiza horario/marcador/estado y goleadores desde la API oficial de FIFA (live).
  */
 export const syncMatchesFromFifa = onSchedule(
   {

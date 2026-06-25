@@ -6,9 +6,8 @@
  *   npm run resync:match-scorers -- --match=wc26-A-01
  */
 import './seed-load-env.ts'
-import { fetchScorersFromApiSports, preferCompleteScorers } from '../functions/lib/apiSports/fetchScorers.js'
 import { fetchScorersFromTimeline, scorersChanged } from '../functions/lib/theSportsDb/fetchScorers.js'
-import { resolveApiSportsFixtureId } from '../functions/lib/lib/syncMatchScorers.js'
+import { fetchMatchScorers } from '../functions/lib/lib/syncMatchScorers.js'
 import { TSDB_FREE_KEY } from '../functions/lib/theSportsDb/constants.js'
 import { mapEventToMatchUpdate } from '../functions/lib/theSportsDb/mapEventToUpdate.js'
 import { tsdbGet, eventsOrEmpty } from '../functions/lib/theSportsDb/client.js'
@@ -40,41 +39,61 @@ async function main(): Promise<void> {
 
   const current = raw as unknown as MatchDoc
   const tsdbId = current.theSportsDbEventId
-  if (!tsdbId) throw new Error(`matches/${matchId} sin theSportsDbEventId`)
+  if (!tsdbId && !current.apiSportsFixtureId) {
+    throw new Error(`matches/${matchId} sin theSportsDbEventId ni apiSportsFixtureId`)
+  }
+  if (!apiSportsKey && !tsdbId) {
+    throw new Error('APISPORTS_KEY requerida para partidos sin enlace TSDB')
+  }
   if (!apiSportsKey) {
     console.warn('[resync:match-scorers] APISPORTS_KEY no definida; solo timeline TSDB.')
   }
 
   const db = createRestFirestoreShim(projectId)
 
-  const resp = await tsdbGet(TSDB_FREE_KEY, 'lookupevent.php', { id: tsdbId })
-  const events = eventsOrEmpty(resp)
-  if (events.length === 0) throw new Error(`TSDB sin evento id=${tsdbId}`)
-
-  const next = mapEventToMatchUpdate(events[0]!)
-  const matchCtx = {
-    ...current,
-    goalsTeamA: next.goalsTeamA,
-    goalsTeamB: next.goalsTeamB,
-    status: next.status,
+  let nextGoals = {
+    goalsTeamA: current.goalsTeamA ?? current.goalsHome ?? null,
+    goalsTeamB: current.goalsTeamB ?? current.goalsAway ?? null,
+    status: current.status,
   }
 
-  const timelineScorers = await fetchScorersFromTimeline(db, matchCtx, tsdbId, TSDB_FREE_KEY)
-  let scorers = timelineScorers
+  if (tsdbId) {
+    const resp = await tsdbGet(TSDB_FREE_KEY, 'lookupevent.php', { id: tsdbId })
+    const events = eventsOrEmpty(resp)
+    if (events.length === 0) throw new Error(`TSDB sin evento id=${tsdbId}`)
+    const next = mapEventToMatchUpdate(events[0]!)
+    nextGoals = {
+      goalsTeamA: next.goalsTeamA,
+      goalsTeamB: next.goalsTeamB,
+      status: next.status,
+    }
+  }
+
+  const matchCtx = { ...current, ...nextGoals }
+
+  let scorers: Awaited<ReturnType<typeof fetchScorersFromTimeline>> = []
+  if (tsdbId) {
+    scorers = await fetchScorersFromTimeline(db, matchCtx, tsdbId, TSDB_FREE_KEY)
+  }
 
   if (apiSportsKey) {
-    const fixtureId = await resolveApiSportsFixtureId(matchCtx, tsdbId, TSDB_FREE_KEY)
-    if (fixtureId != null) {
-      const apiScorers = await fetchScorersFromApiSports(db, matchCtx, fixtureId, apiSportsKey)
-      scorers = preferCompleteScorers(timelineScorers, apiScorers)
-    }
+    scorers = await fetchMatchScorers(db, matchCtx, tsdbId ?? null, {
+      apiSportsKey,
+      goalsTeamA: nextGoals.goalsTeamA,
+      goalsTeamB: nextGoals.goalsTeamB,
+    })
   }
 
   console.log('[resync:match-scorers] scorers antes:', JSON.stringify(current.scorers ?? [], null, 2))
   console.log('[resync:match-scorers] scorers después:', JSON.stringify(scorers, null, 2))
 
   const changed = scorersChanged(current.scorers, scorers)
-  if (!changed && current.goalsTeamA === next.goalsTeamA && current.goalsTeamB === next.goalsTeamB) {
+  if (
+    !changed &&
+    current.goalsTeamA === nextGoals.goalsTeamA &&
+    current.goalsTeamB === nextGoals.goalsTeamB &&
+    current.status === nextGoals.status
+  ) {
     console.log('[resync:match-scorers] Sin cambios.')
     return
   }
@@ -83,9 +102,9 @@ async function main(): Promise<void> {
     projectId,
     `matches/${matchId}`,
     {
-      goalsTeamA: next.goalsTeamA,
-      goalsTeamB: next.goalsTeamB,
-      status: next.status,
+      goalsTeamA: nextGoals.goalsTeamA,
+      goalsTeamB: nextGoals.goalsTeamB,
+      status: nextGoals.status,
       scorers,
     },
     ['goalsTeamA', 'goalsTeamB', 'status', 'scorers'],

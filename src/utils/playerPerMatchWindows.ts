@@ -82,6 +82,68 @@ function pickLockMs(match: MatchDoc, config: RulesetConfig): number | null {
   return lock !== undefined && Number.isFinite(lock) ? lock : null
 }
 
+function tournamentCalendarDay(ms: number, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(ms))
+}
+
+function nextCalendarDay(dayKey: string): string {
+  const [y, m, d] = dayKey.split('-').map(Number)
+  const t = Date.UTC(y, m - 1, d + 1)
+  const date = new Date(t)
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
+}
+
+/** Pitazo en el día calendario actual del torneo (America/Bogota). */
+export function isGroupMatchOnTodayTournamentDay(
+  match: MatchDoc,
+  nowMs: number = Date.now(),
+  config: RulesetConfig = DEFAULT_RULESET,
+): boolean {
+  const kickoff = kickoffMs(match)
+  if (kickoff === null) return false
+  const tz = config.timezone
+  return tournamentCalendarDay(kickoff, tz) === tournamentCalendarDay(nowMs, tz)
+}
+
+/** @deprecated Usar isGroupMatchOnTodayTournamentDay */
+export function isGroupMatchOnNextTournamentDay(
+  match: MatchDoc,
+  nowMs: number = Date.now(),
+  config: RulesetConfig = DEFAULT_RULESET,
+): boolean {
+  const kickoff = kickoffMs(match)
+  if (kickoff === null) return false
+  const tz = config.timezone
+  const tomorrow = nextCalendarDay(tournamentCalendarDay(nowMs, tz))
+  return tournamentCalendarDay(kickoff, tz) === tomorrow
+}
+
+/** Partido de grupos aún no jugado (programado o live prematuro en DB). */
+export function isRemainingGroupStageMatch(
+  match: MatchDoc & { id: string },
+  nowMs: number = Date.now(),
+): boolean {
+  if (match.phase !== 'group') return false
+  if (!isScheduledForPlayerPickUi(match, nowMs)) return false
+  const kickoff = kickoffMs(match)
+  return kickoff !== null && nowMs < kickoff
+}
+
+function allowsGroupStageEarlyPlayerPick(
+  match: MatchDoc & { id: string },
+  nowMs: number,
+  options?: { allowGroupStageEarlyPick?: boolean },
+  config: RulesetConfig = DEFAULT_RULESET,
+): boolean {
+  if (options?.allowGroupStageEarlyPick) return true
+  return isRemainingGroupStageMatch(match, nowMs) && isGroupMatchOnTodayTournamentDay(match, nowMs, config)
+}
+
 function isScheduledMatchInLiveFallback(match: MatchDoc, nowMs: number): boolean {
   if (match.status !== 'scheduled') return false
   const kickoff = kickoffMs(match)
@@ -140,7 +202,7 @@ export function getPlayerPickCardState(
   if (lock === null) return 'blocked'
   if (nowMs >= lock) return 'closed'
 
-  if (options?.allowGroupStageEarlyPick && match.phase === 'group') return 'enabled'
+  if (allowsGroupStageEarlyPlayerPick(match, nowMs, options, config) && match.phase === 'group') return 'enabled'
 
   if (isPlayerPickEarlyAccessOpen(match, nowMs, config)) return 'enabled'
   const opens = getPlayerPerMatchOpensAt(match.scheduledAt, config)?.getTime()
@@ -155,6 +217,9 @@ export function isMatchVisibleForPlayerPrediction(
   config: RulesetConfig = DEFAULT_RULESET,
 ): boolean {
   if (!isScheduledForPlayerPickUi(match, nowMs)) return false
+  if (isRemainingGroupStageMatch(match, nowMs) && isGroupMatchOnTodayTournamentDay(match, nowMs, config)) {
+    return true
+  }
   if (isPlayerPickEarlyAccessOpen(match, nowMs, config)) return true
   const kickoff = kickoffMs(match)
   const opens = getPlayerPerMatchOpensAt(match.scheduledAt, config)?.getTime()

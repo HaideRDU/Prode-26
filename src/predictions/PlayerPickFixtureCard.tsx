@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_RULESET, getPlayerPerMatchOpensAt, toDate, type KnockoutRoundId } from '../config/ruleset'
 import { useMatchPlayerOptions } from '../hooks/useMatchPlayerOptions'
 import { scorePlayerPerMatchPick } from '../services/scoring'
-import { resolvePlayerPickName, scorerMatchesPick, type PlayerRef } from '../utils/playerKeyMatch'
+import { resolvePlayerPickName, scorerMatchesPick, playerKeySlugDisplayName, type PlayerRef } from '../utils/playerKeyMatch'
 import { savePlayerPerMatchPrediction } from '../services/predictionsService'
 import type { MatchDoc, MatchScorerEntry } from '../types/predictions'
 import { formatMatchHour, formatMatchTime, formatTimeZoneShort } from '../utils/formatMatchTime'
@@ -40,7 +40,8 @@ function mapScorersToDisplay(
   rows
     .filter((s) => !s.includesPenalties && s.goals > 0)
     .forEach((s, i) => {
-      const name = nameByKey.get(s.playerKey) ?? s.playerName ?? s.playerKey
+      const name =
+        s.playerName?.trim() || nameByKey.get(s.playerKey) || playerKeySlugDisplayName(s.playerKey) || s.playerKey
       const isPick = pickRef ? scorerMatchesPick(pickRef, s) : false
       const entry: GoalDisplay = {
         key: `${s.playerKey}-${s.minute ?? 'x'}-${i}`,
@@ -199,6 +200,10 @@ export function PlayerPickFixtureCard({
 
   const rawH = match.goalsTeamA ?? match.goalsHome
   const rawA = match.goalsTeamB ?? match.goalsAway
+  const totalGoals =
+    (typeof rawH === 'number' ? rawH : 0) + (typeof rawA === 'number' ? rawA : 0)
+  const hasScorerRows = (match.scorers ?? []).some((s) => !s.includesPenalties && s.goals > 0)
+  const scorersPending = mode === 'live' && totalGoals > 0 && !hasScorerRows
   const h = rawH !== null && rawH !== undefined ? String(rawH) : '—'
   const a = rawA !== null && rawA !== undefined ? String(rawA) : '—'
 
@@ -245,6 +250,11 @@ export function PlayerPickFixtureCard({
               'Sin jugador elegido'
             )}
           </div>
+          {scorersPending ? (
+            <p className="player-pick-fixture-card__scorers-pending">
+              Autores de gol en actualización…
+            </p>
+          ) : null}
         </>
       ) : (
         <>

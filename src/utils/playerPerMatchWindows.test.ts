@@ -74,4 +74,34 @@ assert.ok(
   'premature live with open pick window shows in prediction block',
 )
 
+const farGroupKickoff = '2026-07-01T20:00:00.000Z'
+const farGroupNow = Date.parse('2026-06-25T12:00:00.000Z')
+
+assert.equal(
+  classifyPlayerPickMatches([match('wc26-L-06', farGroupKickoff)], farGroupNow).prediction.some(
+    (m) => m.id === 'wc26-L-06',
+  ),
+  false,
+  'group match several days out should not flood the banner',
+)
+
+const todayGroupKickoff = '2026-06-25T20:00:00.000Z'
+const todayGroupNow = Date.parse('2026-06-25T12:00:00.000Z')
+
+assert.ok(
+  classifyPlayerPickMatches([match('wc26-E-05', todayGroupKickoff)], todayGroupNow).prediction.some(
+    (m) => m.id === 'wc26-E-05',
+  ),
+  'group match on today tournament day appears in banner',
+)
+
+const tomorrowGroupKickoff = '2026-06-26T20:00:00.000Z'
+assert.equal(
+  classifyPlayerPickMatches([match('wc26-L-01', tomorrowGroupKickoff)], todayGroupNow).prediction.some(
+    (m) => m.id === 'wc26-L-01',
+  ),
+  false,
+  'group match on a future day should not appear via today filter alone',
+)
+
 console.log('playerPerMatchWindows.test.ts OK')

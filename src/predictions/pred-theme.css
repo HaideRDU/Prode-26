@@ -1633,6 +1633,13 @@
   color: var(--wc26-text);
 }
 
+.player-pick-fixture-card__scorers-pending {
+  margin: 6px 0 0;
+  font-size: 0.7rem;
+  color: var(--pred-muted, rgba(255, 255, 255, 0.55));
+  text-align: center;
+}
+
 .player-pick-fixture-card__roster-hint {
   margin: 0;
   font-size: 0.75rem;
@@ -2952,6 +2959,22 @@ html[data-theme='light'] .pred-wc26 .pred-podium-section {
 .match-comparison-card__team {
   flex: 1 1 0;
   min-width: 0;
+}
+
+.match-comparison-card__scorers {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.65rem;
+  line-height: 1.25;
+  color: var(--pred-muted, rgba(255, 255, 255, 0.65));
+  text-align: center;
+}
+
+.match-comparison-card__scorers li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .match-comparison-card__score {

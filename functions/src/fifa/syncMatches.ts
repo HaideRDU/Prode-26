@@ -1,7 +1,10 @@
 import type { Firestore } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
 import { isMatchInPollingWindow, shouldRunScheduledSync } from '../apiSports/matchWindow'
-import type { MatchDoc, MatchStatus } from '../lib/types/predictions'
+import { scorersChanged } from '../theSportsDb/fetchScorers'
+import { mergeScorerEntries, scorersIncompleteForScore } from '../lib/scorerSync'
+import type { MatchDoc, MatchScorerEntry, MatchStatus } from '../lib/types/predictions'
+import { fetchFifaLiveMatch, fetchScorersFromFifaLive } from './fetchScorers'
 
 const FIFA_MATCHES_URL =
   'https://api.fifa.com/api/v3/calendar/matches?language=es&count=500&idCompetition=17&from=2026-06-01&to=2026-07-31'
@@ -18,14 +21,17 @@ type FifaLocalized = {
 type FifaMatch = {
   Date?: string
   GroupName?: FifaLocalized[]
-  Home?: FifaTeam
-  Away?: FifaTeam
+  Home?: FifaTeam & { IdCountry?: string }
+  Away?: FifaTeam & { IdCountry?: string }
   HomeTeamScore?: number | null
   AwayTeamScore?: number | null
   MatchNumber?: number
   MatchStatus?: number
   MatchTime?: string | null
   ResultType?: number | null
+  IdMatch?: string
+  IdStage?: string
+  IdSeason?: string
 }
 
 type FifaResponse = {
@@ -40,6 +46,9 @@ type FifaGroupMatch = {
   homeGoals: number | null
   awayGoals: number | null
   status: MatchStatus
+  idMatch: string
+  idStage: string
+  idSeason: string
 }
 
 type FifaMatchUpdate = {
@@ -50,6 +59,7 @@ type FifaMatchUpdate = {
   goalsHome: number | null
   goalsAway: number | null
   finishedAt?: Date
+  scorers?: MatchScorerEntry[]
 }
 
 export interface SyncFifaResult {
@@ -92,10 +102,13 @@ function mapFifaRow(row: FifaMatch): FifaGroupMatch | null {
   if (!Number.isFinite(matchNumber) || matchNumber < 1 || matchNumber > 72) return null
 
   const groupId = groupIdFromDescription(row.GroupName?.[0]?.Description)
-  const homeTeamId = row.Home?.Abbreviation?.trim()
-  const awayTeamId = row.Away?.Abbreviation?.trim()
+  const homeTeamId = row.Home?.Abbreviation?.trim() ?? row.Home?.IdCountry?.trim()
+  const awayTeamId = row.Away?.Abbreviation?.trim() ?? row.Away?.IdCountry?.trim()
   const dateIso = normalizeDateIso(row.Date)
-  if (!groupId || !homeTeamId || !awayTeamId || !dateIso) return null
+  const idMatch = row.IdMatch?.trim()
+  const idStage = row.IdStage?.trim()
+  const idSeason = row.IdSeason?.trim() ?? '285023'
+  if (!groupId || !homeTeamId || !awayTeamId || !dateIso || !idMatch || !idStage) return null
 
   return {
     dateIso,
@@ -105,6 +118,9 @@ function mapFifaRow(row: FifaMatch): FifaGroupMatch | null {
     homeGoals: scoreValue(row.HomeTeamScore ?? row.Home?.Score),
     awayGoals: scoreValue(row.AwayTeamScore ?? row.Away?.Score),
     status: mapFifaStatus(row, Date.now()),
+    idMatch,
+    idStage,
+    idSeason,
   }
 }
 
@@ -151,7 +167,25 @@ function updateChanged(current: MatchDoc, next: FifaMatchUpdate): boolean {
   if (current.status !== next.status) return true
   const currentMs = currentTimeMs(current.scheduledAt)
   if (currentMs != null && Math.abs(currentMs - next.scheduledAt.getTime()) > 60_000) return true
+  if (next.scorers && scorersChanged(current.scorers, next.scorers)) return true
   return false
+}
+
+async function attachFifaScorers(
+  db: Firestore,
+  current: MatchDoc,
+  official: FifaGroupMatch,
+  next: FifaMatchUpdate,
+): Promise<void> {
+  const totalGoals = (next.goalsTeamA ?? 0) + (next.goalsTeamB ?? 0)
+  if (totalGoals <= 0) return
+  if (next.status !== 'live' && next.status !== 'finished') return
+  if (!scorersIncompleteForScore(next.goalsTeamA, next.goalsTeamB, current.scorers)) return
+
+  const live = await fetchFifaLiveMatch(official.idStage, official.idMatch, official.idSeason)
+  const fetched = await fetchScorersFromFifaLive(db, live, current.teamAId, current.teamBId)
+  if (fetched.length === 0) return
+  next.scorers = mergeScorerEntries(current.scorers ?? [], fetched)
 }
 
 export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult> {
@@ -171,6 +205,11 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
     const official = officialByMatch.get(`${data.groupId ?? ''}|${teamPairKey(data.teamAId, data.teamBId)}`)
     if (!official) continue
     const next = updateFromFifa(data, official)
+    try {
+      await attachFifaScorers(db, data, official, next)
+    } catch (err) {
+      logger.warn(`[fifa:sync] scorers failed matchId=${id}`, err)
+    }
     if (!updateChanged(data, next)) continue
     writer.set(db.collection('matches').doc(id), next, { merge: true })
     updated += 1
