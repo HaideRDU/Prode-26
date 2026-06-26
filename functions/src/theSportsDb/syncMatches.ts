@@ -1,6 +1,6 @@
 import type { Firestore } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
-import type { MatchDoc } from '../lib/types/predictions'
+import type { MatchDoc, MatchScorerEntry, TeamDoc } from '../lib/types/predictions'
 import { fetchMatchScorers, matchNeedsScorerBackfill } from '../lib/syncMatchScorers'
 import { mergeScorerEntries, scorersIncompleteForScore } from '../lib/scorerSync'
 import { linkApiSportsFixtures } from '../apiSports/linkFixtures'
@@ -18,6 +18,13 @@ export interface SyncTsdbResult {
   linked?: number
 }
 
+function swapScorerSides(scorers: MatchScorerEntry[]): MatchScorerEntry[] {
+  return scorers.map((s) => ({
+    ...s,
+    teamSide: s.teamSide === 'teamA' ? 'teamB' : s.teamSide === 'teamB' ? 'teamA' : s.teamSide,
+  }))
+}
+
 export async function syncMatchesFromTsdb(
   db: Firestore,
   apiKey = TSDB_FREE_KEY,
@@ -30,6 +37,12 @@ export async function syncMatchesFromTsdb(
 
   const snap = await db.collection('matches').get()
   const docs = snap.docs.map((d) => ({ id: d.id, data: d.data() as MatchDoc }))
+  const teamsSnap = await db.collection('teams').get()
+  const tsdbTeamIdByTeamId = new Map<string, string>()
+  teamsSnap.forEach((d) => {
+    const team = d.data() as TeamDoc
+    if (team.theSportsDbTeamId) tsdbTeamIdByTeamId.set(d.id, team.theSportsDbTeamId)
+  })
 
   const inWindow = docs.filter((d) => isMatchInPollingWindow(d.data, nowMs))
   const backfillScorers = docs.filter((d) => matchNeedsScorerBackfill(d.data))
@@ -110,6 +123,15 @@ export async function syncMatchesFromTsdb(
 
     const item = events[0]
     const next = mapEventToMatchUpdate(item)
+    const teamATsdbId = tsdbTeamIdByTeamId.get(current.teamAId)
+    const tsdbHomeIsTeamA = Boolean(teamATsdbId && item.idHomeTeam === teamATsdbId)
+    const tsdbAwayIsTeamA = Boolean(teamATsdbId && item.idAwayTeam === teamATsdbId)
+    const shouldSwapTsdbSides = !tsdbHomeIsTeamA && tsdbAwayIsTeamA
+    if (shouldSwapTsdbSides) {
+      const goalsTeamA = next.goalsTeamB
+      next.goalsTeamB = next.goalsTeamA
+      next.goalsTeamA = goalsTeamA
+    }
 
     const goalsChanged =
       (current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA ||
@@ -147,7 +169,8 @@ export async function syncMatchesFromTsdb(
         // Nunca reducir scorers ya confirmados: TSDB a veces "parpadea" y devuelve
         // un timeline temporalmente incompleto. Solo se permite agregar/enriquecer.
         if (scorers.length > 0 || (current.scorers?.length ?? 0) > 0) {
-          next.scorers = mergeScorerEntries(current.scorers ?? [], scorers)
+          const normalizedScorers = shouldSwapTsdbSides ? swapScorerSides(scorers) : scorers
+          next.scorers = mergeScorerEntries(current.scorers ?? [], normalizedScorers)
         }
       } catch (err) {
         logger.warn(`[tsdb:sync] scorers failed matchId=${matchId}`, err)
