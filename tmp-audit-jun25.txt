@@ -1,0 +1,280 @@
+﻿[audit] D├¡a torneo 2026-06-25: 6 partidos
+wc26-D-05, wc26-D-06, wc26-E-05, wc26-E-06, wc26-F-05, wc26-F-06
+
+[audit] Salas con predicciones en esos partidos: 8
+
+=== Sala 9mG6A6CJT9JEeImj56Zl ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+
+=== Sala DTAoBofP9CJa6evlCx1V ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    AjcFD9NA1yOkWfZUZgeXLXsvlwh2: pred 1-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-folarin-balogun ΓåÆ 0 pts | subtotal 0
+    BRA9ft80crUPhoL0zOGme4vb5dK2: pred 2-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 4-christian-pulisic ΓåÆ 0 pts | subtotal 2
+    C8gPIX0p4NZ9Br2AIkCldTlwkcG3: pred 1-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 2-tim-ream ΓåÆ 0 pts | subtotal 0
+    GaiteBeWz3X4ADWMNez5KLQx34P2: pred 1-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-folarin-balogun ΓåÆ 0 pts | subtotal 0
+    aQy2amQ9e7Y9AnObMuUePUKUmLg1: pred 2-2 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 4-ricardo-pepi ΓåÆ 0 pts | subtotal 2
+    dWTZ3RhpHff0r5sd53YQNVLwUDZ2: pred 3-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 3-giovanni-reyna ΓåÆ 0 pts | subtotal 0
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: pred 2-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 4-folarin-balogun ΓåÆ 0 pts | subtotal 2
+    qrfXrxhWN2h85xTVEtenkWQSdhG3: pred 2-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+    rgpDvp3e0xRNhAxTxY9zwFx4LaE2: pred 1-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-folarin-balogun ΓåÆ 0 pts | subtotal 0
+    yPfaVqkENiUn2KutpN5dPHXql0J3: pred 1-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-folarin-balogun ΓåÆ 0 pts | subtotal 0
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 1-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-haji-wright ΓåÆ 0 pts | subtotal 0
+    zJ6Nih0oj6PDIcr9jW1ScAUwDwd2: pred 1-2 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-folarin-balogun ΓåÆ 0 pts | subtotal 1
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    AjcFD9NA1yOkWfZUZgeXLXsvlwh2: pred 1-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-julio-enciso ΓåÆ 0 pts | subtotal 2
+    BRA9ft80crUPhoL0zOGme4vb5dK2: pred 2-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-julio-enciso ΓåÆ 0 pts | subtotal 2
+    C8gPIX0p4NZ9Br2AIkCldTlwkcG3: pred 1-2 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    GaiteBeWz3X4ADWMNez5KLQx34P2: pred 1-1 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-julio-enciso ΓåÆ 0 pts | subtotal 1
+    aQy2amQ9e7Y9AnObMuUePUKUmLg1: pred 3-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-nestory-irankunda ΓåÆ 0 pts | subtotal 0
+    dWTZ3RhpHff0r5sd53YQNVLwUDZ2: pred 1-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-isidro-pitta ΓåÆ 0 pts | subtotal 2
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: pred 2-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-julio-enciso ΓåÆ 0 pts | subtotal 2
+    qrfXrxhWN2h85xTVEtenkWQSdhG3: pred 0-2 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+    rgpDvp3e0xRNhAxTxY9zwFx4LaE2: pred 2-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-julio-enciso ΓåÆ 0 pts | subtotal 2
+    yPfaVqkENiUn2KutpN5dPHXql0J3: pred 1-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-julio-enciso ΓåÆ 0 pts | subtotal 2
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 2-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-julio-enciso ΓåÆ 0 pts | subtotal 2
+    zJ6Nih0oj6PDIcr9jW1ScAUwDwd2: pred 2-2 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-nestory-irankunda ΓåÆ 0 pts | subtotal 1
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    AjcFD9NA1yOkWfZUZgeXLXsvlwh2: pred 2-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 3-jamal-musiala ΓåÆ 0 pts | subtotal 0
+    BRA9ft80crUPhoL0zOGme4vb5dK2: pred 2-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-kai-havertz ΓåÆ 0 pts | subtotal 0
+    C8gPIX0p4NZ9Br2AIkCldTlwkcG3: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-deniz-undav ΓåÆ 0 pts | subtotal 0
+    GaiteBeWz3X4ADWMNez5KLQx34P2: pred 1-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 3-jamal-musiala ΓåÆ 0 pts | subtotal 2
+    aQy2amQ9e7Y9AnObMuUePUKUmLg1: pred 2-2 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-deniz-undav ΓåÆ 0 pts | subtotal 2
+    dWTZ3RhpHff0r5sd53YQNVLwUDZ2: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-deniz-undav ΓåÆ 0 pts | subtotal 0
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: pred 1-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 4-kai-havertz ΓåÆ 0 pts | subtotal 2
+    qrfXrxhWN2h85xTVEtenkWQSdhG3: pred 3-2 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | sin bonus jugador | subtotal 2
+    rgpDvp3e0xRNhAxTxY9zwFx4LaE2: pred 2-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-deniz-undav ΓåÆ 0 pts | subtotal 0
+    yPfaVqkENiUn2KutpN5dPHXql0J3: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-enner-valencia ΓåÆ 0 pts | subtotal 0
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-deniz-undav ΓåÆ 0 pts | subtotal 0
+    zJ6Nih0oj6PDIcr9jW1ScAUwDwd2: pred 1-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 3-florian-wirtz ΓåÆ 0 pts | subtotal 2
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    AjcFD9NA1yOkWfZUZgeXLXsvlwh2: pred 0-2 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-yan-diomande ΓåÆ 0 pts | subtotal 5
+    BRA9ft80crUPhoL0zOGme4vb5dK2: pred 0-3 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | jugador 4-amad-diallo ΓåÆ 0 pts | subtotal 3
+    C8gPIX0p4NZ9Br2AIkCldTlwkcG3: pred 0-1 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | jugador 4-evann-guessand ΓåÆ 0 pts | subtotal 3
+    GaiteBeWz3X4ADWMNez5KLQx34P2: pred 0-2 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-elye-wahi ΓåÆ 0 pts | subtotal 5
+    aQy2amQ9e7Y9AnObMuUePUKUmLg1: pred 1-3 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 3-franck-kessie ΓåÆ 0 pts | subtotal 1
+    dWTZ3RhpHff0r5sd53YQNVLwUDZ2: pred 1-1 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-ange-yoan-bonny ΓåÆ 0 pts | subtotal 0
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: pred 0-1 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | jugador 4-amad-diallo ΓåÆ 0 pts | subtotal 3
+    qrfXrxhWN2h85xTVEtenkWQSdhG3: pred 0-3 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 3
+    rgpDvp3e0xRNhAxTxY9zwFx4LaE2: pred 0-3 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | jugador 4-amad-diallo ΓåÆ 0 pts | subtotal 3
+    yPfaVqkENiUn2KutpN5dPHXql0J3: pred 1-3 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 3-seko-fofana ΓåÆ 0 pts | subtotal 1
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 1-3 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-amad-diallo ΓåÆ 0 pts | subtotal 1
+    zJ6Nih0oj6PDIcr9jW1ScAUwDwd2: pred 3-4 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-amad-diallo ΓåÆ 0 pts | subtotal 1
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    AjcFD9NA1yOkWfZUZgeXLXsvlwh2: pred 3-0 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 3
+    BRA9ft80crUPhoL0zOGme4vb5dK2: pred 2-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-memphis-depay ΓåÆ 0 pts | subtotal 1
+    C8gPIX0p4NZ9Br2AIkCldTlwkcG3: pred 3-1 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 5
+    GaiteBeWz3X4ADWMNez5KLQx34P2: pred 3-1 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-memphis-depay ΓåÆ 0 pts | subtotal 5
+    aQy2amQ9e7Y9AnObMuUePUKUmLg1: pred 4-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-brian-brobbey ΓåÆ 1 pts | subtotal 2
+    dWTZ3RhpHff0r5sd53YQNVLwUDZ2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 0
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: pred 2-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 1
+    qrfXrxhWN2h85xTVEtenkWQSdhG3: pred 1-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+    rgpDvp3e0xRNhAxTxY9zwFx4LaE2: pred 3-0 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 3
+    yPfaVqkENiUn2KutpN5dPHXql0J3: pred 3-1 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 5
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 3-1 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-brian-brobbey ΓåÆ 1 pts | subtotal 6
+    zJ6Nih0oj6PDIcr9jW1ScAUwDwd2: pred 3-1 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 5
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    AjcFD9NA1yOkWfZUZgeXLXsvlwh2: pred 2-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-ayase-ueda ΓåÆ 0 pts | subtotal 2
+    BRA9ft80crUPhoL0zOGme4vb5dK2: pred 1-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 4-ayase-ueda ΓåÆ 0 pts | subtotal 2
+    C8gPIX0p4NZ9Br2AIkCldTlwkcG3: pred 2-2 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+    GaiteBeWz3X4ADWMNez5KLQx34P2: pred 1-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 4-alexander-isak ΓåÆ 0 pts | subtotal 2
+    aQy2amQ9e7Y9AnObMuUePUKUmLg1: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-ayase-ueda ΓåÆ 0 pts | subtotal 0
+    dWTZ3RhpHff0r5sd53YQNVLwUDZ2: pred 2-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 4-ayase-ueda ΓåÆ 0 pts | subtotal 2
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-ayase-ueda ΓåÆ 0 pts | subtotal 0
+    qrfXrxhWN2h85xTVEtenkWQSdhG3: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    rgpDvp3e0xRNhAxTxY9zwFx4LaE2: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | jugador 4-ayase-ueda ΓåÆ 0 pts | subtotal 0
+    yPfaVqkENiUn2KutpN5dPHXql0J3: pred 1-1 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | jugador 4-viktor-gyokeres ΓåÆ 0 pts | subtotal 5
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 1-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | jugador 3-ao-tanaka ΓåÆ 0 pts | subtotal 2
+    zJ6Nih0oj6PDIcr9jW1ScAUwDwd2: pred 2-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | jugador 3-keito-nakamura ΓåÆ 0 pts | subtotal 2
+
+=== Sala DtJtEKtr9tduvkAsQRkA ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+
+=== Sala RWQpRTOivjVvsRXizmvv ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    l12QJzjmYcV6fWsrpfnUhjskEtV2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+    l12QJzjmYcV6fWsrpfnUhjskEtV2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    l12QJzjmYcV6fWsrpfnUhjskEtV2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+    l12QJzjmYcV6fWsrpfnUhjskEtV2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    l12QJzjmYcV6fWsrpfnUhjskEtV2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+    l12QJzjmYcV6fWsrpfnUhjskEtV2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+    rbXs6BNLsycJcWLgtQXy8uUgbVk2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+
+=== Sala ZOSq3f8hnwziVPVhR2u0 ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+
+=== Sala c37BTwlxdli5gjUrmdL0 ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+
+=== Sala global ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 4-3 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | sin bonus jugador | subtotal 2
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 1-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 1-1 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 2-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | sin bonus jugador | subtotal 2
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 1-3 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 3
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 2-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 1-3 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 0-3 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 3
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 2-2 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: sin predicci├│n marcador | jugador 4-cody-gakpo ΓåÆ 0 pts | subtotal 0
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 3-2 ΓåÆ 3 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 3
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 2-1 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ô] | sin bonus jugador | subtotal 2
+    nJ0ZERnGLhTtbAlQxi6baN5xGDo2: sin predicci├│n marcador | jugador 4-viktor-gyokeres ΓåÆ 0 pts | subtotal 0
+    yhTVhK6WmTfuwcodigxDBlj39i43: pred 1-2 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+
+=== Sala jRel5e384g3bFGyY0Ucu ===
+Standings OK: totales coinciden con rec├ílculo.
+
+Detalle partidos del d├¡a:
+
+  wc26-D-05 USA-TUR resultado 2-3 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-D-06 PAR-AUS resultado 0-0 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 5 pts [ganador:Γ£ô golesA:Γ£ô golesB:Γ£ô] | sin bonus jugador | subtotal 5
+
+  wc26-E-05 GER-ECU resultado 1-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-E-06 CUW-CIV resultado 0-2 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 2 pts [ganador:Γ£ù golesA:Γ£ô golesB:Γ£ù] | sin bonus jugador | subtotal 2
+
+  wc26-F-05 NED-TUN resultado 3-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 0 pts [ganador:Γ£ù golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 0
+
+  wc26-F-06 JPN-SWE resultado 1-1 status=finished
+    NHLTMJIicKdHVj9Y7VgcnFvHWXt2: pred 0-0 ΓåÆ 1 pts [ganador:Γ£ô golesA:Γ£ù golesB:Γ£ù] | sin bonus jugador | subtotal 1

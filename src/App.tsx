@@ -801,14 +801,14 @@ function App() {
                     </p>
                   ) : null}
                 </div>
-              </div>
+        </div>
             ) : null}
             {isForgotModalOpen ? (
               <div className="modal-overlay" role="presentation">
                 <div className="modal-card" role="dialog" aria-modal="true">
                   <div className="modal-header">
                     <h2>Restablecer contraseña</h2>
-                    <button
+        <button
                       type="button"
                       className="modal-close"
                       aria-label="Cerrar"
@@ -820,7 +820,7 @@ function App() {
                       }}
                     >
                       ×
-                    </button>
+        </button>
                   </div>
                   {forgotSuccess ? (
                     <p className="auth-info" role="status">
@@ -841,7 +841,7 @@ function App() {
                           onChange={(e) => setForgotEmail(e.target.value)}
                           autoComplete="email"
                         />
-                      </div>
+        </div>
                       <div className="button-group">
                         <button
                           type="button"
@@ -987,7 +987,7 @@ function App() {
                     </p>
                   ) : null}
                 </div>
-              </div>
+        </div>
             ) : null}
     </>
   )

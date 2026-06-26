@@ -34,6 +34,8 @@ export type FifaLiveMatch = {
   AwayTeam?: FifaLiveTeam
 }
 
+type ResolvedPlayer = { playerKey: string; rosterName?: string; teamId?: string }
+
 function playerDisplayName(player: FifaLivePlayer | undefined): string {
   if (!player) return ''
   return (
@@ -57,31 +59,59 @@ function teamSideForIso(iso: string | null, teamAId: string, teamBId: string): '
   return undefined
 }
 
+function lastNameToken(name: string): string | null {
+  const normalized = normalizePlayerName(name)
+  const parts = normalized.split(' ').filter(Boolean)
+  return parts.length ? parts[parts.length - 1]! : null
+}
+
+async function findPlayerByName(
+  db: Firestore,
+  teamAId: string,
+  teamBId: string,
+  displayName: string,
+): Promise<ResolvedPlayer | null> {
+  const target = normalizePlayerName(displayName)
+  if (!target) return null
+  const targetLast = lastNameToken(displayName)
+  const lastNameMatches: ResolvedPlayer[] = []
+
+  for (const teamId of [teamAId, teamBId]) {
+    const snap = await db.collection('teams').doc(teamId).collection('players').get()
+    for (const doc of snap.docs) {
+      const data = doc.data() as TeamPlayerDoc
+      const name = data.name?.trim()
+      if (!name) continue
+      if (normalizePlayerName(name) === target) {
+        const ref = playerRefFromDoc(doc.id, data)
+        return { playerKey: ref.playerKey, rosterName: name, teamId }
+      }
+      if (targetLast && lastNameToken(name) === targetLast) {
+        const ref = playerRefFromDoc(doc.id, data)
+        lastNameMatches.push({ playerKey: ref.playerKey, rosterName: name, teamId })
+      }
+    }
+  }
+
+  if (lastNameMatches.length === 1) return lastNameMatches[0]!
+  return null
+}
+
 async function resolveFifaPlayer(
   db: Firestore,
   teamAId: string,
   teamBId: string,
   fifaPlayerId: string,
   displayName: string,
-  cache: Map<string, { playerKey: string; rosterName?: string }>,
-): Promise<{ playerKey: string; rosterName?: string }> {
+  cache: Map<string, ResolvedPlayer>,
+): Promise<ResolvedPlayer> {
   const cached = cache.get(fifaPlayerId)
   if (cached) return cached
 
-  const target = normalizePlayerName(displayName)
-  if (target) {
-    for (const teamId of [teamAId, teamBId]) {
-      const snap = await db.collection('teams').doc(teamId).collection('players').get()
-      for (const doc of snap.docs) {
-        const data = doc.data() as TeamPlayerDoc
-        const name = data.name?.trim()
-        if (!name || normalizePlayerName(name) !== target) continue
-        const ref = playerRefFromDoc(doc.id, data)
-        const resolved = { playerKey: ref.playerKey, rosterName: name }
-        cache.set(fifaPlayerId, resolved)
-        return resolved
-      }
-    }
+  const byName = await findPlayerByName(db, teamAId, teamBId, displayName)
+  if (byName) {
+    cache.set(fifaPlayerId, byName)
+    return byName
   }
 
   const fallback = {
@@ -120,7 +150,7 @@ export async function fetchScorersFromFifaLive(
   }
 
   const scorers: MatchScorerEntry[] = []
-  const cache = new Map<string, { playerKey: string; rosterName?: string }>()
+  const cache = new Map<string, ResolvedPlayer>()
 
   const sides: Array<{ goals: FifaLiveGoal[]; benefitsIso: string | null }> = [
     { goals: home.Goals ?? [], benefitsIso: home.IdCountry ?? home.Abbreviation ?? null },
@@ -136,7 +166,7 @@ export async function fetchScorersFromFifaLive(
 
       const player = playersById.get(goal.IdPlayer)
       const displayName = playerDisplayName(player)
-      const { playerKey, rosterName } = await resolveFifaPlayer(
+      const { playerKey, rosterName, teamId: playerTeamId } = await resolveFifaPlayer(
         db,
         teamAId,
         teamBId,
@@ -145,10 +175,12 @@ export async function fetchScorersFromFifaLive(
         cache,
       )
       const minute = parseFifaMinute(goal.Minute)
+      const playerSide = teamSideForIso(playerTeamId ?? null, teamAId, teamBId)
+      const ownGoal = goal.Type === 3 || Boolean(playerSide && teamSide && playerSide !== teamSide)
       scorers.push({
         playerKey,
         goals: 1,
-        ...(goal.Type === 3 ? { ownGoal: true } : {}),
+        ...(ownGoal ? { ownGoal: true } : {}),
         ...(rosterName || displayName ? { playerName: rosterName || displayName } : {}),
         ...(minute != null ? { minute } : {}),
         ...(teamSide ? { teamSide } : {}),

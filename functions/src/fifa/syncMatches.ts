@@ -188,6 +188,28 @@ async function attachFifaScorers(
   next.scorers = mergeScorerEntries(current.scorers ?? [], fetched)
 }
 
+function localGoals(current: MatchDoc): { a: number | null; b: number | null } {
+  return {
+    a: current.goalsTeamA ?? current.goalsHome ?? null,
+    b: current.goalsTeamB ?? current.goalsAway ?? null,
+  }
+}
+
+/** Ventana en vivo o partido ya jugado en FIFA cuyo doc local aún no tiene marcador/estado. */
+function needsFifaCalendarSync(current: MatchDoc, official: FifaGroupMatch, nowMs: number): boolean {
+  if (current.phase !== 'group') return false
+  if (isMatchInPollingWindow(current, nowMs)) return true
+  if (official.status !== 'finished' && official.status !== 'live') return false
+
+  const local = localGoals(current)
+  if (local.a === null || local.b === null) return true
+  if (current.status !== 'finished' && official.status === 'finished') return true
+  if (current.status === 'scheduled' && official.status === 'live') return true
+
+  const expected = updateFromFifa(current, official)
+  return local.a !== expected.goalsTeamA || local.b !== expected.goalsTeamB
+}
+
 export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult> {
   const nowMs = Date.now()
   if (!shouldRunScheduledSync(nowMs)) return { ran: false, inWindow: 0, updated: 0 }
@@ -197,11 +219,16 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
     fetchFifaGroupMatches(),
   ])
   const docs = snap.docs.map((d) => ({ id: d.id, data: d.data() as MatchDoc }))
-  const inWindow = docs.filter((d) => d.data.phase === 'group' && isMatchInPollingWindow(d.data, nowMs))
+  const toSync = docs.filter((d) => {
+    if (d.data.phase !== 'group') return false
+    const official = officialByMatch.get(`${d.data.groupId ?? ''}|${teamPairKey(d.data.teamAId, d.data.teamBId)}`)
+    if (!official) return false
+    return needsFifaCalendarSync(d.data, official, nowMs)
+  })
 
   const writer = db.bulkWriter()
   let updated = 0
-  for (const { id, data } of inWindow) {
+  for (const { id, data } of toSync) {
     const official = officialByMatch.get(`${data.groupId ?? ''}|${teamPairKey(data.teamAId, data.teamBId)}`)
     if (!official) continue
     const next = updateFromFifa(data, official)
@@ -215,6 +242,6 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
     updated += 1
   }
   await writer.close()
-  logger.info(`[fifa:sync] inWindow=${inWindow.length} updated=${updated}`)
-  return { ran: true, inWindow: inWindow.length, updated }
+  logger.info(`[fifa:sync] toSync=${toSync.length} updated=${updated}`)
+  return { ran: true, inWindow: toSync.length, updated }
 }
