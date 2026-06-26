@@ -26,26 +26,27 @@ export function scorersIncompleteForScore(
   return countNonPenaltyScorerGoals(scorers) < expected
 }
 
-/** Goles del mismo jugador/equipo reportados por TSDB y API-Sports con minutos distintos cuentan como el mismo gol. */
+/** Goles del mismo jugador/minuto de fuentes distintas cuentan como un solo gol (ignora teamSide erróneo de TSDB). */
 const MERGE_MINUTE_TOLERANCE = 10
+
+function mergeGroupKey(s: MatchScorerEntry): string {
+  return `${s.playerKey}|${s.minute ?? 'x'}|${s.includesPenalties ? 1 : 0}|${s.ownGoal ? 1 : 0}`
+}
 
 /** Preferir entrada con más metadatos (p. ej. theSportsDbPlayerId desde timeline). */
 function scorerEntryScore(x: MatchScorerEntry): number {
-  return (x.theSportsDbPlayerId ? 2 : 0) + (x.playerName ? 1 : 0)
+  return (x.theSportsDbPlayerId ? 2 : 0) + (x.playerName ? 1 : 0) + (x.teamSide ? 1 : 0)
 }
 
 export function mergeScorerEntries(
   primary: MatchScorerEntry[],
   secondary: MatchScorerEntry[],
 ): MatchScorerEntry[] {
-  const groupKey = (s: MatchScorerEntry) =>
-    `${s.playerKey}|${s.teamSide ?? ''}|${s.includesPenalties ? 1 : 0}`
-
   const result = [...primary]
   for (const s of secondary) {
-    const sKey = groupKey(s)
+    const sKey = mergeGroupKey(s)
     const dupIndex = result.findIndex((e) => {
-      if (groupKey(e) !== sKey) return false
+      if (mergeGroupKey(e) !== sKey) return false
       if (e.minute == null || s.minute == null) return e.minute === s.minute
       return Math.abs(e.minute - s.minute) <= MERGE_MINUTE_TOLERANCE
     })
@@ -53,7 +54,15 @@ export function mergeScorerEntries(
       result.push(s)
       continue
     }
-    if (scorerEntryScore(s) > scorerEntryScore(result[dupIndex]!)) result[dupIndex] = s
+    const existing = result[dupIndex]!
+    if (s.teamSide && existing.teamSide && s.teamSide !== existing.teamSide) {
+      continue
+    }
+    if (scorerEntryScore(s) > scorerEntryScore(existing)) {
+      result[dupIndex] = s
+    } else if (scorerEntryScore(s) === scorerEntryScore(existing) && s.teamSide && !existing.teamSide) {
+      result[dupIndex] = s
+    }
   }
 
   return result.sort((a, b) => {
@@ -62,4 +71,48 @@ export function mergeScorerEntries(
     if (ma !== mb) return ma - mb
     return a.playerKey.localeCompare(b.playerKey)
   })
+}
+
+/** Elimina duplicados o goles de más respecto al marcador oficial. */
+export function reconcileScorersWithScore(
+  scorers: MatchScorerEntry[],
+  goalsTeamA: number | null | undefined,
+  goalsTeamB: number | null | undefined,
+): MatchScorerEntry[] {
+  if (goalsTeamA == null || goalsTeamB == null) return scorers
+
+  const sorted = [...scorers].sort((a, b) => {
+    const ma = a.minute ?? 9999
+    const mb = b.minute ?? 9999
+    if (ma !== mb) return ma - mb
+    return a.playerKey.localeCompare(b.playerKey)
+  })
+
+  const seenGoal = new Set<string>()
+  let countA = 0
+  let countB = 0
+  const result: MatchScorerEntry[] = []
+
+  for (const s of sorted) {
+    if (s.includesPenalties) continue
+    const goals = typeof s.goals === 'number' && s.goals > 0 ? s.goals : 1
+    const side = s.teamSide
+    if (side !== 'teamA' && side !== 'teamB') continue
+
+    const goalKey = `${s.playerKey}|${s.minute ?? 'x'}|${s.ownGoal ? 1 : 0}`
+    if (seenGoal.has(goalKey)) continue
+
+    if (side === 'teamA') {
+      if (countA + goals > goalsTeamA) continue
+      countA += goals
+    } else {
+      if (countB + goals > goalsTeamB) continue
+      countB += goals
+    }
+
+    seenGoal.add(goalKey)
+    result.push(s)
+  }
+
+  return result
 }

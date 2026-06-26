@@ -34,7 +34,7 @@ export type FifaLiveMatch = {
   AwayTeam?: FifaLiveTeam
 }
 
-type ResolvedPlayer = { playerKey: string; rosterName?: string; teamId?: string }
+type ResolvedPlayer = { playerKey: string; rosterName?: string }
 
 function playerDisplayName(player: FifaLivePlayer | undefined): string {
   if (!player) return ''
@@ -84,11 +84,11 @@ async function findPlayerByName(
       if (!name) continue
       if (normalizePlayerName(name) === target) {
         const ref = playerRefFromDoc(doc.id, data)
-        return { playerKey: ref.playerKey, rosterName: name, teamId }
+        return { playerKey: ref.playerKey, rosterName: name }
       }
       if (targetLast && lastNameToken(name) === targetLast) {
         const ref = playerRefFromDoc(doc.id, data)
-        lastNameMatches.push({ playerKey: ref.playerKey, rosterName: name, teamId })
+        lastNameMatches.push({ playerKey: ref.playerKey, rosterName: name })
       }
     }
   }
@@ -151,41 +151,49 @@ export async function fetchScorersFromFifaLive(
 
   const scorers: MatchScorerEntry[] = []
   const cache = new Map<string, ResolvedPlayer>()
+  const seenGoals = new Set<string>()
 
-  const sides: Array<{ goals: FifaLiveGoal[]; benefitsIso: string | null }> = [
-    { goals: home.Goals ?? [], benefitsIso: home.IdCountry ?? home.Abbreviation ?? null },
-    { goals: away.Goals ?? [], benefitsIso: away.IdCountry ?? away.Abbreviation ?? null },
-  ]
+  const allGoals: FifaLiveGoal[] = [...(home.Goals ?? []), ...(away.Goals ?? [])]
 
-  for (const { goals, benefitsIso } of sides) {
-    const teamSide = teamSideForIso(benefitsIso, teamAId, teamBId)
-    for (const goal of goals) {
-      if (!goal.IdPlayer) continue
-      // Type 2 = gol; Type 3 = autogol (observado en datos FIFA WC2026).
-      if (goal.Type !== 2 && goal.Type !== 3) continue
+  for (const goal of allGoals) {
+    if (!goal.IdPlayer) continue
+    if (goal.Type !== 2 && goal.Type !== 3) continue
 
-      const player = playersById.get(goal.IdPlayer)
-      const displayName = playerDisplayName(player)
-      const { playerKey, rosterName, teamId: playerTeamId } = await resolveFifaPlayer(
-        db,
-        teamAId,
-        teamBId,
-        goal.IdPlayer,
-        displayName,
-        cache,
-      )
-      const minute = parseFifaMinute(goal.Minute)
-      const playerSide = teamSideForIso(playerTeamId ?? null, teamAId, teamBId)
-      const ownGoal = goal.Type === 3 || Boolean(playerSide && teamSide && playerSide !== teamSide)
-      scorers.push({
-        playerKey,
-        goals: 1,
-        ...(ownGoal ? { ownGoal: true } : {}),
-        ...(rosterName || displayName ? { playerName: rosterName || displayName } : {}),
-        ...(minute != null ? { minute } : {}),
-        ...(teamSide ? { teamSide } : {}),
-      })
-    }
+    const minute = parseFifaMinute(goal.Minute)
+    const dedupeKey = `${goal.IdPlayer}|${minute ?? 'x'}|${goal.IdTeam ?? ''}`
+    if (seenGoals.has(dedupeKey)) continue
+    seenGoals.add(dedupeKey)
+
+    const scoringOnFifaHome = goal.IdTeam === home.IdTeam
+    const homeIso = home.IdCountry ?? home.Abbreviation ?? null
+    const awayIso = away.IdCountry ?? away.Abbreviation ?? null
+    const scorerIso = scoringOnFifaHome ? homeIso : awayIso
+    const ownGoal = goal.Type === 3
+    const benefitingIso = ownGoal
+      ? scoringOnFifaHome
+        ? awayIso
+        : homeIso
+      : scorerIso
+    const teamSide = teamSideForIso(benefitingIso ?? null, teamAId, teamBId)
+
+    const player = playersById.get(goal.IdPlayer)
+    const displayName = playerDisplayName(player)
+    const { playerKey, rosterName } = await resolveFifaPlayer(
+      db,
+      teamAId,
+      teamBId,
+      goal.IdPlayer,
+      displayName,
+      cache,
+    )
+    scorers.push({
+      playerKey,
+      goals: 1,
+      ...(ownGoal ? { ownGoal: true } : {}),
+      ...(rosterName || displayName ? { playerName: rosterName || displayName } : {}),
+      ...(minute != null ? { minute } : {}),
+      ...(teamSide ? { teamSide } : {}),
+    })
   }
 
   scorers.sort((a, b) => {

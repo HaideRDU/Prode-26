@@ -1,7 +1,7 @@
 import './seed-load-env.ts'
 import { restGetDoc } from './lib/firestoreRest.ts'
 
-const ids = ['wc26-C-05', 'wc26-C-06', 'wc26-A-05', 'wc26-A-06', 'wc26-E-05']
+const ids = ['wc26-C-05', 'wc26-C-06', 'wc26-A-05', 'wc26-A-06', 'wc26-E-05', 'wc26-I-05', 'wc26-I-06']
 for (const id of ids) {
   const d = await restGetDoc('polla-mundialist', `matches/${id}`)
   if (!d) {
@@ -17,8 +17,8 @@ for (const id of ids) {
       goalsTeamB: d.goalsTeamB,
       goalsHome: d.goalsHome,
       goalsAway: d.goalsAway,
-      scorers: Array.isArray(d.scorers) ? d.scorers.length : 0,
+      scorers: d.scorers,
       scheduledAt: d.scheduledAt,
-    }),
+    }, null, 2),
   )
 }

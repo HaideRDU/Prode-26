@@ -2,7 +2,7 @@ import type { Firestore } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
 import type { MatchDoc, MatchScorerEntry, TeamDoc } from '../lib/types/predictions'
 import { fetchMatchScorers, matchNeedsScorerBackfill } from '../lib/syncMatchScorers'
-import { mergeScorerEntries, scorersIncompleteForScore } from '../lib/scorerSync'
+import { mergeScorerEntries, reconcileScorersWithScore, scorersIncompleteForScore } from '../lib/scorerSync'
 import { linkApiSportsFixtures } from '../apiSports/linkFixtures'
 import { isMatchInPollingWindow, kickoffMs, shouldRunScheduledSync } from '../apiSports/matchWindow'
 import { TSDB_FREE_KEY } from './constants'
@@ -106,7 +106,16 @@ export async function syncMatchesFromTsdb(
           goalsTeamA,
           goalsTeamB,
         })
-        const merged = mergeScorerEntries(current.scorers ?? [], scorers)
+        const baseScorers = reconcileScorersWithScore(
+          current.scorers ?? [],
+          goalsTeamA,
+          goalsTeamB,
+        )
+        const merged = reconcileScorersWithScore(
+          mergeScorerEntries(baseScorers, scorers),
+          goalsTeamA,
+          goalsTeamB,
+        )
         if (!scorersChanged(current.scorers, merged)) continue
         writer.set(db.collection('matches').doc(matchId), { scorers: merged }, { merge: true })
         updated += 1
@@ -164,13 +173,24 @@ export async function syncMatchesFromTsdb(
             apiSportsKey,
             goalsTeamA: next.goalsTeamA ?? goalsTeamA,
             goalsTeamB: next.goalsTeamB ?? goalsTeamB,
+            tsdbHomeTeamId: item.idHomeTeam,
+            tsdbAwayTeamId: item.idAwayTeam,
           },
         )
         // Nunca reducir scorers ya confirmados: TSDB a veces "parpadea" y devuelve
         // un timeline temporalmente incompleto. Solo se permite agregar/enriquecer.
         if (scorers.length > 0 || (current.scorers?.length ?? 0) > 0) {
           const normalizedScorers = shouldSwapTsdbSides ? swapScorerSides(scorers) : scorers
-          next.scorers = mergeScorerEntries(current.scorers ?? [], normalizedScorers)
+          const baseScorers = reconcileScorersWithScore(
+            current.scorers ?? [],
+            next.goalsTeamA ?? goalsTeamA,
+            next.goalsTeamB ?? goalsTeamB,
+          )
+          next.scorers = reconcileScorersWithScore(
+            mergeScorerEntries(baseScorers, normalizedScorers),
+            next.goalsTeamA ?? goalsTeamA,
+            next.goalsTeamB ?? goalsTeamB,
+          )
         }
       } catch (err) {
         logger.warn(`[tsdb:sync] scorers failed matchId=${matchId}`, err)
@@ -188,6 +208,14 @@ export async function syncMatchesFromTsdb(
     const kickoff = kickoffMs(current.scheduledAt)
     if (kickoff !== null && nowMs < kickoff && next.status === 'live') {
       next.status = 'scheduled'
+    }
+
+    if (next.scorers?.length) {
+      next.scorers = reconcileScorersWithScore(
+        next.scorers,
+        next.goalsTeamA ?? goalsTeamA,
+        next.goalsTeamB ?? goalsTeamB,
+      )
     }
 
     writer.set(db.collection('matches').doc(matchId), next, { merge: true })

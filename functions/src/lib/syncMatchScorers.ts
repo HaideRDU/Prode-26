@@ -49,6 +49,8 @@ export interface FetchMatchScorersOptions {
   apiSportsKey?: string
   goalsTeamA?: number | null
   goalsTeamB?: number | null
+  tsdbHomeTeamId?: string
+  tsdbAwayTeamId?: string
 }
 
 /**
@@ -89,7 +91,10 @@ export async function fetchMatchScorers(
   let scorers: MatchScorerEntry[] = []
   if (tsdbEventId) {
     try {
-      scorers = await fetchScorersFromTimeline(db, match, tsdbEventId, tsdbApiKey)
+      scorers = await fetchScorersFromTimeline(db, match, tsdbEventId, tsdbApiKey, {
+        idHomeTeam: options.tsdbHomeTeamId,
+        idAwayTeam: options.tsdbAwayTeamId,
+      })
     } catch (err) {
       logger.warn(`[scorers] timeline failed tsdbEventId=${tsdbEventId}`, err)
     }

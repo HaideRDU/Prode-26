@@ -8,6 +8,7 @@
 import './seed-load-env.ts'
 import { fetchScorersFromTimeline, scorersChanged } from '../functions/lib/theSportsDb/fetchScorers.js'
 import { fetchMatchScorers } from '../functions/lib/lib/syncMatchScorers.js'
+import { mergeScorerEntries, reconcileScorersWithScore } from '../functions/lib/lib/scorerSync.js'
 import { TSDB_FREE_KEY } from '../functions/lib/theSportsDb/constants.js'
 import { mapEventToMatchUpdate } from '../functions/lib/theSportsDb/mapEventToUpdate.js'
 import { tsdbGet, eventsOrEmpty } from '../functions/lib/theSportsDb/client.js'
@@ -57,11 +58,17 @@ async function main(): Promise<void> {
     status: current.status,
   }
 
+  let tsdbHomeTeamId: string | undefined
+  let tsdbAwayTeamId: string | undefined
+
   if (tsdbId) {
     const resp = await tsdbGet(TSDB_FREE_KEY, 'lookupevent.php', { id: tsdbId })
     const events = eventsOrEmpty(resp)
     if (events.length === 0) throw new Error(`TSDB sin evento id=${tsdbId}`)
-    const next = mapEventToMatchUpdate(events[0]!)
+    const item = events[0]!
+    tsdbHomeTeamId = item.idHomeTeam
+    tsdbAwayTeamId = item.idAwayTeam
+    const next = mapEventToMatchUpdate(item)
     nextGoals = {
       goalsTeamA: next.goalsTeamA,
       goalsTeamB: next.goalsTeamB,
@@ -81,8 +88,19 @@ async function main(): Promise<void> {
       apiSportsKey,
       goalsTeamA: nextGoals.goalsTeamA,
       goalsTeamB: nextGoals.goalsTeamB,
+      tsdbHomeTeamId,
+      tsdbAwayTeamId,
     })
   }
+
+  scorers = reconcileScorersWithScore(
+    mergeScorerEntries(
+      reconcileScorersWithScore(current.scorers ?? [], nextGoals.goalsTeamA, nextGoals.goalsTeamB),
+      scorers,
+    ),
+    nextGoals.goalsTeamA,
+    nextGoals.goalsTeamB,
+  )
 
   console.log('[resync:match-scorers] scorers antes:', JSON.stringify(current.scorers ?? [], null, 2))
   console.log('[resync:match-scorers] scorers después:', JSON.stringify(scorers, null, 2))

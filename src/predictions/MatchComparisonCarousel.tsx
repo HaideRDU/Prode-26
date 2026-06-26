@@ -173,8 +173,8 @@ function MatchCard({
   const rawA = match.goalsTeamA ?? match.goalsHome
   const rawB = match.goalsTeamB ?? match.goalsAway
   const hasScore = rawA !== null && rawA !== undefined && rawB !== null && rawB !== undefined
-  const scorersA = scorersForTeamSide(match.scorers, 'teamA')
-  const scorersB = scorersForTeamSide(match.scorers, 'teamB')
+  const scorersA = scorersForTeamSide(match.scorers, 'teamA', rawA, rawB)
+  const scorersB = scorersForTeamSide(match.scorers, 'teamB', rawA, rawB)
   const showScorers = match.status === 'live' || match.status === 'finished'
   const cardClass = [
     'match-comparison-card',

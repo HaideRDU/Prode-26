@@ -7,6 +7,7 @@ import { savePlayerPerMatchPrediction } from '../services/predictionsService'
 import type { MatchDoc, MatchScorerEntry } from '../types/predictions'
 import { formatMatchHour, formatMatchTime, formatTimeZoneShort } from '../utils/formatMatchTime'
 import { getPlayerPickCardState, type PlayerPickCardState } from '../utils/playerPerMatchWindows'
+import { reconcileScorersForDisplay } from '../utils/matchScorerDisplay'
 import { TeamFlagName } from './TeamFlagName'
 
 type SaveUiState = 'idle' | 'saving' | 'saved' | 'error'
@@ -191,15 +192,21 @@ export function PlayerPickFixtureCard({
       }
     : null
   const nameByKey = useMemo(() => new Map(allOptions.map((o) => [o.playerKey, o.name])), [allOptions])
-  const goalsBySide = useMemo(
-    () => mapScorersToDisplay(match.scorers ?? [], nameByKey, pickRef),
-    [match.scorers, nameByKey, pickRef],
-  )
-  const livePickPoints =
-    mode === 'live' && pickRef ? scorePlayerPerMatchPick(match, localKey, pickRef) : 0
-
   const rawH = match.goalsTeamA ?? match.goalsHome
   const rawA = match.goalsTeamB ?? match.goalsAway
+  const goalsBySide = useMemo(() => {
+    const reconciled = reconcileScorersForDisplay(match.scorers ?? [], rawH, rawA)
+    return mapScorersToDisplay(reconciled, nameByKey, pickRef)
+  }, [match.scorers, nameByKey, pickRef, rawH, rawA])
+  const livePickPoints =
+    mode === 'live' && pickRef
+      ? scorePlayerPerMatchPick(
+          { ...match, scorers: reconcileScorersForDisplay(match.scorers ?? [], rawH, rawA) },
+          localKey,
+          pickRef,
+        )
+      : 0
+
   const totalGoals =
     (typeof rawH === 'number' ? rawH : 0) + (typeof rawA === 'number' ? rawA : 0)
   const hasScorerRows = (match.scorers ?? []).some((s) => !s.includesPenalties && s.goals > 0)

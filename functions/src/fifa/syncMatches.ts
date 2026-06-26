@@ -2,7 +2,7 @@ import type { Firestore } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
 import { isMatchInPollingWindow, shouldRunScheduledSync } from '../apiSports/matchWindow'
 import { scorersChanged } from '../theSportsDb/fetchScorers'
-import { mergeScorerEntries, scorersIncompleteForScore } from '../lib/scorerSync'
+import { mergeScorerEntries, reconcileScorersWithScore, scorersIncompleteForScore } from '../lib/scorerSync'
 import type { MatchDoc, MatchScorerEntry, MatchStatus } from '../lib/types/predictions'
 import { fetchFifaLiveMatch, fetchScorersFromFifaLive } from './fetchScorers'
 
@@ -177,15 +177,26 @@ async function attachFifaScorers(
   official: FifaGroupMatch,
   next: FifaMatchUpdate,
 ): Promise<void> {
+  const baseScorers = reconcileScorersWithScore(
+    current.scorers ?? [],
+    next.goalsTeamA,
+    next.goalsTeamB,
+  )
+  if (baseScorers.length > 0) next.scorers = baseScorers
+
   const totalGoals = (next.goalsTeamA ?? 0) + (next.goalsTeamB ?? 0)
   if (totalGoals <= 0) return
   if (next.status !== 'live' && next.status !== 'finished') return
-  if (!scorersIncompleteForScore(next.goalsTeamA, next.goalsTeamB, current.scorers)) return
+  if (!scorersIncompleteForScore(next.goalsTeamA, next.goalsTeamB, baseScorers)) return
 
   const live = await fetchFifaLiveMatch(official.idStage, official.idMatch, official.idSeason)
   const fetched = await fetchScorersFromFifaLive(db, live, current.teamAId, current.teamBId)
   if (fetched.length === 0) return
-  next.scorers = mergeScorerEntries(current.scorers ?? [], fetched)
+  next.scorers = reconcileScorersWithScore(
+    mergeScorerEntries(baseScorers, fetched),
+    next.goalsTeamA,
+    next.goalsTeamB,
+  )
 }
 
 function localGoals(current: MatchDoc): { a: number | null; b: number | null } {

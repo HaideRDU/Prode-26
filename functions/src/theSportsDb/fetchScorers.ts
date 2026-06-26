@@ -4,6 +4,7 @@ import type { MatchDoc, MatchScorerEntry, TeamPlayerDoc } from '../lib/types/pre
 import { TSDB_FREE_KEY } from './constants'
 import { tsdbGetJson } from './client'
 import type { TsdbTimelineItem, TsdbTimelineResponse } from './types'
+import { iso3FromTsdb } from './teamCodes'
 
 function timelineOrEmpty(response: TsdbTimelineResponse): TsdbTimelineItem[] {
   const rows = response.timeline
@@ -38,7 +39,24 @@ export interface ParsedGoalEvent {
 }
 
 /** Un evento por gol (no agregado), ordenado por minuto. */
-export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] {
+export function parseTimelineGoals(
+  rows: TsdbTimelineItem[],
+  options?: {
+    tsdbHomeTeamId?: string
+    tsdbAwayTeamId?: string
+    teamAId?: string
+    teamBId?: string
+  },
+): ParsedGoalEvent[] {
+  const homeIso =
+    options?.tsdbHomeTeamId && options.teamAId && options.teamBId
+      ? iso3FromTsdb(options.tsdbHomeTeamId, '')
+      : null
+  const awayIso =
+    options?.tsdbAwayTeamId && options.teamAId && options.teamBId
+      ? iso3FromTsdb(options.tsdbAwayTeamId, '')
+      : null
+
   const goals: ParsedGoalEvent[] = []
   for (const row of rows) {
     if (!isCountableGoal(row)) continue
@@ -46,13 +64,27 @@ export function parseTimelineGoals(rows: TsdbTimelineItem[]): ParsedGoalEvent[] 
     const ownGoal = isOwnGoal(row)
     const rawMin = row.intTime != null && row.intTime !== '' ? parseInt(String(row.intTime), 10) : NaN
     const minute = Number.isFinite(rawMin) ? rawMin : null
-    const playerSide = (row.strHome ?? '').trim().toLowerCase() === 'yes' ? 'teamA' : 'teamB'
-    // En un autogol el gol cuenta para el rival del jugador que lo metió.
-    const teamSide: 'teamA' | 'teamB' = ownGoal
-      ? playerSide === 'teamA'
-        ? 'teamB'
-        : 'teamA'
-      : playerSide
+    const playerOnTsdbHome = (row.strHome ?? '').trim().toLowerCase() === 'yes'
+    const scoresForTsdbHome = ownGoal ? !playerOnTsdbHome : playerOnTsdbHome
+
+    let teamSide: 'teamA' | 'teamB'
+    if (homeIso && awayIso && options?.teamAId && options?.teamBId) {
+      const benefitingIso = scoresForTsdbHome ? homeIso : awayIso
+      if (benefitingIso === options.teamAId) teamSide = 'teamA'
+      else if (benefitingIso === options.teamBId) teamSide = 'teamB'
+      else {
+        teamSide = playerOnTsdbHome ? 'teamA' : 'teamB'
+      }
+    } else {
+      teamSide = ownGoal
+        ? playerOnTsdbHome
+          ? 'teamB'
+          : 'teamA'
+        : playerOnTsdbHome
+          ? 'teamA'
+          : 'teamB'
+    }
+
     goals.push({
       tsdbPlayerId: row.idPlayer,
       playerName: row.strPlayer?.trim() ?? '',
@@ -171,6 +203,7 @@ export async function fetchScorersFromTimeline(
   match: Pick<MatchDoc, 'teamAId' | 'teamBId' | 'teamHomeId' | 'teamAwayId'>,
   eventId: string,
   apiKey = TSDB_FREE_KEY,
+  tsdbTeams?: { idHomeTeam?: string; idAwayTeam?: string },
 ): Promise<MatchScorerEntry[]> {
   const teamAId = match.teamAId ?? match.teamHomeId
   const teamBId = match.teamBId ?? match.teamAwayId
@@ -180,7 +213,12 @@ export async function fetchScorersFromTimeline(
   const rows = timelineOrEmpty(json)
   if (rows.length === 0) return []
 
-  const parsed = parseTimelineGoals(rows)
+  const parsed = parseTimelineGoals(rows, {
+    tsdbHomeTeamId: tsdbTeams?.idHomeTeam,
+    tsdbAwayTeamId: tsdbTeams?.idAwayTeam,
+    teamAId,
+    teamBId,
+  })
   const scorers: MatchScorerEntry[] = []
   const cache = new Map<string, ResolvedPlayer>()
 
