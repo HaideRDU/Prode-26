@@ -72,21 +72,67 @@ function parsePenalties(
   return { wentToPenalties: true, penaltiesWinnerHome: null }
 }
 
-export function mapEventToMatchUpdate(item: TsdbEventItem): MatchFirestoreUpdate {
+import { iso3FromTsdb } from './teamCodes'
+
+export interface TsdbTeamMap {
+  teamATsdbId?: string
+  teamBTsdbId?: string
+  teamAId?: string
+  teamBId?: string
+}
+
+/** ¿El local de TSDB corresponde a teamA en Firestore? null si no se puede resolver. */
+export function tsdbHomeIsTeamA(item: Pick<TsdbEventItem, 'idHomeTeam' | 'idAwayTeam'>, map: TsdbTeamMap): boolean | null {
+  const { teamATsdbId, teamBTsdbId, teamAId, teamBId } = map
+  if (teamATsdbId && item.idHomeTeam === teamATsdbId) return true
+  if (teamBTsdbId && item.idHomeTeam === teamBTsdbId) return false
+  if (teamATsdbId && item.idAwayTeam === teamATsdbId) return false
+  if (teamBTsdbId && item.idAwayTeam === teamBTsdbId) return true
+
+  const homeIso = iso3FromTsdb(item.idHomeTeam, '')
+  const awayIso = iso3FromTsdb(item.idAwayTeam, '')
+  if (teamAId && teamBId && homeIso && awayIso) {
+    if (homeIso === teamAId && awayIso === teamBId) return true
+    if (homeIso === teamBId && awayIso === teamAId) return false
+  }
+  return null
+}
+
+function mapTsdbScoresToTeamAB(
+  homeGoals: number | null,
+  awayGoals: number | null,
+  homeIsTeamA: boolean | null,
+): { goalsTeamA: number | null; goalsTeamB: number | null } {
+  if (homeIsTeamA === null) {
+    return { goalsTeamA: homeGoals, goalsTeamB: awayGoals }
+  }
+  return homeIsTeamA
+    ? { goalsTeamA: homeGoals, goalsTeamB: awayGoals }
+    : { goalsTeamA: awayGoals, goalsTeamB: homeGoals }
+}
+
+export function mapEventToMatchUpdate(item: TsdbEventItem, teamMap: TsdbTeamMap = {}): MatchFirestoreUpdate {
   const status = mapTsdbStatus(item.strStatus)
   const homeGoals = parseScore(item.intHomeScore)
   const awayGoals = parseScore(item.intAwayScore)
+  const homeIsTeamA = tsdbHomeIsTeamA(item, teamMap)
+  const { goalsTeamA, goalsTeamB } = mapTsdbScoresToTeamAB(homeGoals, awayGoals, homeIsTeamA)
   const { wentToPenalties, penaltiesWinnerHome } = parsePenalties(item, status, homeGoals, awayGoals)
 
-  const penFlags =
-    penaltiesWinnerHome === null
-      ? { penaltiesWinnerTeamA: null as boolean | null, penaltiesWinnerTeamB: null as boolean | null }
-      : penaltiesWinnerFlagsForTeamA(penaltiesWinnerHome)
+  let penFlags: { penaltiesWinnerTeamA: boolean | null; penaltiesWinnerTeamB: boolean | null }
+  if (penaltiesWinnerHome === null) {
+    penFlags = { penaltiesWinnerTeamA: null, penaltiesWinnerTeamB: null }
+  } else if (homeIsTeamA === null) {
+    penFlags = penaltiesWinnerFlagsForTeamA(penaltiesWinnerHome)
+  } else {
+    const winnerIsTeamA = homeIsTeamA ? penaltiesWinnerHome : !penaltiesWinnerHome
+    penFlags = penaltiesWinnerFlagsForTeamA(winnerIsTeamA)
+  }
 
   const update: MatchFirestoreUpdate = {
     theSportsDbEventId: item.idEvent,
-    goalsTeamA: homeGoals,
-    goalsTeamB: awayGoals,
+    goalsTeamA,
+    goalsTeamB,
     status,
     wentToPenalties,
     ...penFlags,

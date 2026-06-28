@@ -128,31 +128,52 @@ function koLineupStatusLabel(status: ReturnType<typeof koLineupStatus>): string 
   }
 }
 
-function ProjectedKoCell({
+function ProjectedKoRow({
   lineup,
+  score,
   actualTeamAId,
   actualTeamBId,
   teamLabel,
 }: {
   lineup: ProjectedKoLineup | null
+  score?: MatchPredictionPayload
   actualTeamAId: string | null
   actualTeamBId: string | null
   teamLabel: (id: string) => string
 }) {
   const status = koLineupStatus(lineup, actualTeamAId, actualTeamBId)
-  if (!lineup?.predictedTeamAId || !lineup.predictedTeamBId) {
-    return <span className="match-comparison-table__empty">Sin cruce</span>
-  }
-  return (
-    <div className="match-comparison-table__projected-ko">
+
+  // Columna izquierda: cruce + marcador predicho
+  const leftCell = lineup?.predictedTeamAId && lineup?.predictedTeamBId ? (
+    <div className="match-comparison-table__ko-pred">
       <span className="match-comparison-table__projected-teams">
         {teamLabel(lineup.predictedTeamAId)} vs {teamLabel(lineup.predictedTeamBId)}
       </span>
-      <span className={`match-comparison-table__ko-badge match-comparison-table__ko-badge--${status}`}>
-        {koLineupStatusLabel(status)}
-      </span>
+      {score ? (
+        <span className="match-comparison-table__score">
+          {score.goalsTeamA} – {score.goalsTeamB}
+        </span>
+      ) : null}
     </div>
+  ) : (
+    <span className="match-comparison-table__empty">Sin cruce</span>
   )
+
+  // Columna central: badge de estado
+  const badgeCell = lineup?.predictedTeamAId ? (
+    <span className={`match-comparison-table__ko-badge match-comparison-table__ko-badge--${status}`}>
+      {koLineupStatusLabel(status)}
+    </span>
+  ) : null
+
+  // Columna derecha: cruce real
+  const rightCell = actualTeamAId && actualTeamBId ? (
+    <span className="match-comparison-table__projected-teams match-comparison-table__projected-teams--actual">
+      {teamLabel(actualTeamAId)} vs {teamLabel(actualTeamBId)}
+    </span>
+  ) : null
+
+  return { leftCell, badgeCell, rightCell }
 }
 
 function MatchCard({
@@ -374,64 +395,74 @@ function MatchPredictionsTable({
         <thead>
           <tr>
             <th scope="col">Usuario</th>
-            <th scope="col">Predicción</th>
-            {isKnockout ? <th scope="col">Cruce pronosticado</th> : null}
+            {isKnockout ? <th scope="col">Predicción</th> : <th scope="col">Predicción</th>}
+            {isKnockout ? <th scope="col" className="match-comparison-table__th--center" /> : null}
+            {isKnockout ? <th scope="col">Partido real</th> : null}
             <th scope="col">Jugador bonus</th>
             {isFinished ? <th scope="col">Puntos</th> : null}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.userId}>
-              <td>
-                <div className="match-comparison-table__user">
-                  <span className="match-comparison-table__avatar" aria-hidden>
-                    {initialsFromName(row.displayName)}
-                  </span>
-                  <span className="match-comparison-table__name">{row.displayName}</span>
-                </div>
-              </td>
-              <td>
-                {row.score ? (
-                  <span className="match-comparison-table__score">
-                    {row.score.goalsTeamA} - {row.score.goalsTeamB}
-                  </span>
-                ) : (
-                  <span className="match-comparison-table__empty">Sin predicción</span>
-                )}
-              </td>
-              {isKnockout ? (
+          {rows.map((row) => {
+            const ko = isKnockout
+              ? ProjectedKoRow({
+                  lineup: row.predictedLineup,
+                  score: row.score ?? undefined,
+                  actualTeamAId: teamAId,
+                  actualTeamBId: teamBId,
+                  teamLabel,
+                })
+              : null
+            return (
+              <tr key={row.userId}>
                 <td>
-                  <ProjectedKoCell
-                    lineup={row.predictedLineup}
-                    actualTeamAId={teamAId}
-                    actualTeamBId={teamBId}
-                    teamLabel={teamLabel}
-                  />
+                  <div className="match-comparison-table__user">
+                    <span className="match-comparison-table__avatar" aria-hidden>
+                      {initialsFromName(row.displayName)}
+                    </span>
+                    <span className="match-comparison-table__name">{row.displayName}</span>
+                  </div>
                 </td>
-              ) : null}
-              <td>
-                {row.bonusName ? (
-                  <span className="match-comparison-table__bonus">{row.bonusName}</span>
-                ) : (
-                  <span className="match-comparison-table__empty">Sin elegir</span>
-                )}
-              </td>
-              {isFinished ? (
                 <td>
-                  {row.points == null ? (
-                    <span className="match-comparison-table__points match-comparison-table__points--pending">
-                      …
+                  {isKnockout ? (
+                    ko?.leftCell ?? <span className="match-comparison-table__empty">Sin predicción</span>
+                  ) : row.score ? (
+                    <span className="match-comparison-table__score">
+                      {row.score.goalsTeamA} - {row.score.goalsTeamB}
                     </span>
                   ) : (
-                    <span className="match-comparison-table__points">
-                      {row.points > 0 ? `+${row.points}` : row.points}
-                    </span>
+                    <span className="match-comparison-table__empty">Sin predicción</span>
                   )}
                 </td>
-              ) : null}
-            </tr>
-          ))}
+                {isKnockout ? (
+                  <td className="match-comparison-table__td--center">{ko?.badgeCell}</td>
+                ) : null}
+                {isKnockout ? (
+                  <td>{ko?.rightCell}</td>
+                ) : null}
+                <td>
+                  {row.bonusName ? (
+                    <span className="match-comparison-table__bonus">{row.bonusName}</span>
+                  ) : (
+                    <span className="match-comparison-table__empty">Sin elegir</span>
+                  )}
+                </td>
+                {isFinished ? (
+                  <td>
+                    {row.points == null ? (
+                      <span className="match-comparison-table__points match-comparison-table__points--pending">
+                        …
+                      </span>
+                    ) : (
+                      <span className="match-comparison-table__points">
+                        {row.points > 0 ? `+${row.points}` : row.points}
+                      </span>
+                    )}
+                  </td>
+                ) : null}
+              </tr>
+            )
+          })}
         </tbody>
       </table>
       <p className="match-comparison-table__caption">

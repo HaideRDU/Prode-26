@@ -3063,9 +3063,30 @@ html[data-theme='light'] .pred-wc26 .pred-podium-section {
   white-space: normal;
 }
 
+/* Celda izquierda KO: cruce pronosticado + marcador */
+.match-comparison-table__ko-pred {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .match-comparison-table__projected-teams {
   font-weight: 650;
   color: var(--wc26-text);
+  white-space: nowrap;
+}
+
+.match-comparison-table__projected-teams--actual {
+  color: var(--wc26-muted);
+  font-weight: 500;
+}
+
+/* Columna central (badge) centrada y estrecha */
+.match-comparison-table__th--center,
+.match-comparison-table__td--center {
+  text-align: center;
+  white-space: nowrap;
+  padding-inline: 6px;
 }
 
 .match-comparison-table__ko-badge {

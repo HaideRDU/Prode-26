@@ -51,6 +51,19 @@ type FifaGroupMatch = {
   idSeason: string
 }
 
+type FifaKoMatch = {
+  matchNumber: number
+  dateIso: string
+  homeTeamId: string | null
+  awayTeamId: string | null
+  homeGoals: number | null
+  awayGoals: number | null
+  status: MatchStatus
+  idMatch: string
+  idStage: string
+  idSeason: string
+}
+
 type FifaMatchUpdate = {
   scheduledAt: Date
   goalsTeamA: number | null
@@ -124,17 +137,48 @@ function mapFifaRow(row: FifaMatch): FifaGroupMatch | null {
   }
 }
 
-async function fetchFifaGroupMatches(): Promise<Map<string, FifaGroupMatch>> {
+function mapFifaKoRow(row: FifaMatch): FifaKoMatch | null {
+  const matchNumber = Number(row.MatchNumber)
+  if (!Number.isFinite(matchNumber) || matchNumber <= 72 || matchNumber > 104) return null
+
+  const dateIso = normalizeDateIso(row.Date)
+  const idMatch = row.IdMatch?.trim()
+  const idStage = row.IdStage?.trim()
+  const idSeason = row.IdSeason?.trim() ?? '285023'
+  if (!dateIso || !idMatch || !idStage) return null
+
+  // TBD = equipo aún no determinado (esperando que avance alguien)
+  const rawHome = row.Home?.Abbreviation?.trim() ?? row.Home?.IdCountry?.trim() ?? ''
+  const rawAway = row.Away?.Abbreviation?.trim() ?? row.Away?.IdCountry?.trim() ?? ''
+  const isTbd = (s: string) => !s || s.toUpperCase() === 'TBD' || s.length > 5
+
+  return {
+    matchNumber,
+    dateIso,
+    homeTeamId: isTbd(rawHome) ? null : rawHome,
+    awayTeamId: isTbd(rawAway) ? null : rawAway,
+    homeGoals: scoreValue(row.HomeTeamScore ?? row.Home?.Score),
+    awayGoals: scoreValue(row.AwayTeamScore ?? row.Away?.Score),
+    status: mapFifaStatus(row, Date.now()),
+    idMatch,
+    idStage,
+    idSeason,
+  }
+}
+
+async function fetchFifaGroupMatches(): Promise<{ group: Map<string, FifaGroupMatch>; ko: Map<number, FifaKoMatch> }> {
   const res = await fetch(FIFA_MATCHES_URL)
   if (!res.ok) throw new Error(`FIFA API ${res.status}: ${await res.text()}`)
   const json = (await res.json()) as FifaResponse
-  const out = new Map<string, FifaGroupMatch>()
+  const group = new Map<string, FifaGroupMatch>()
+  const ko = new Map<number, FifaKoMatch>()
   for (const row of json.Results ?? []) {
-    const mapped = mapFifaRow(row)
-    if (!mapped) continue
-    out.set(`${mapped.groupId}|${teamPairKey(mapped.homeTeamId, mapped.awayTeamId)}`, mapped)
+    const grp = mapFifaRow(row)
+    if (grp) { group.set(`${grp.groupId}|${teamPairKey(grp.homeTeamId, grp.awayTeamId)}`, grp); continue }
+    const koMatch = mapFifaKoRow(row)
+    if (koMatch) ko.set(koMatch.matchNumber, koMatch)
   }
-  return out
+  return { group, ko }
 }
 
 function currentTimeMs(scheduledAt: unknown): number | null {
@@ -193,7 +237,7 @@ async function attachFifaScorers(
   const fetched = await fetchScorersFromFifaLive(db, live, current.teamAId, current.teamBId)
   if (fetched.length === 0) return
   next.scorers = reconcileScorersWithScore(
-    mergeScorerEntries(baseScorers, fetched),
+    mergeScorerEntries(fetched, baseScorers),
     next.goalsTeamA,
     next.goalsTeamB,
   )
@@ -221,26 +265,43 @@ function needsFifaCalendarSync(current: MatchDoc, official: FifaGroupMatch, nowM
   return local.a !== expected.goalsTeamA || local.b !== expected.goalsTeamB
 }
 
+function koMatchDocId(matchNumber: number): string {
+  return `wc26-ko-${matchNumber}`
+}
+
+function koRoundFromMatchNumber(n: number): string {
+  if (n <= 88) return 'r32'
+  if (n <= 96) return 'r16'
+  if (n <= 100) return 'qf'
+  if (n <= 102) return 'sf'
+  if (n === 103) return 'third'
+  return 'final'
+}
+
 export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult> {
   const nowMs = Date.now()
   if (!shouldRunScheduledSync(nowMs)) return { ran: false, inWindow: 0, updated: 0 }
 
-  const [snap, officialByMatch] = await Promise.all([
+  const [snap, { group: officialByGroup, ko: officialByKoNum }] = await Promise.all([
     db.collection('matches').get(),
     fetchFifaGroupMatches(),
   ])
   const docs = snap.docs.map((d) => ({ id: d.id, data: d.data() as MatchDoc }))
+  const docsById = new Map(docs.map((d) => [d.id, d]))
+
+  // ── Grupo ────────────────────────────────────────────────────────────────
   const toSync = docs.filter((d) => {
     if (d.data.phase !== 'group') return false
-    const official = officialByMatch.get(`${d.data.groupId ?? ''}|${teamPairKey(d.data.teamAId, d.data.teamBId)}`)
+    const official = officialByGroup.get(`${d.data.groupId ?? ''}|${teamPairKey(d.data.teamAId, d.data.teamBId)}`)
     if (!official) return false
     return needsFifaCalendarSync(d.data, official, nowMs)
   })
 
   const writer = db.bulkWriter()
   let updated = 0
+
   for (const { id, data } of toSync) {
-    const official = officialByMatch.get(`${data.groupId ?? ''}|${teamPairKey(data.teamAId, data.teamBId)}`)
+    const official = officialByGroup.get(`${data.groupId ?? ''}|${teamPairKey(data.teamAId, data.teamBId)}`)
     if (!official) continue
     const next = updateFromFifa(data, official)
     try {
@@ -252,7 +313,53 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
     writer.set(db.collection('matches').doc(id), next, { merge: true })
     updated += 1
   }
+
+  // ── Eliminatorias (R32 → Final) ───────────────────────────────────────
+  for (const [matchNum, ko] of officialByKoNum) {
+    const docId = koMatchDocId(matchNum)
+    const existing = docsById.get(docId)?.data
+
+    // Actualizar equipos si FIFA ya los conoce y nuestro doc no los tiene
+    const teamsKnown = ko.homeTeamId && ko.awayTeamId
+    const needsTeams = teamsKnown && (!existing?.teamAId || !existing?.teamBId)
+
+    // Actualizar marcador/estado si el partido está en ventana o tiene resultado
+    const needsScore =
+      (ko.status === 'live' || ko.status === 'finished') &&
+      existing?.teamAId && existing?.teamBId
+
+    if (!needsTeams && !needsScore) continue
+
+    const patch: Record<string, unknown> = { scheduledAt: new Date(ko.dateIso), status: ko.status }
+
+    if (needsTeams) {
+      patch.teamAId = ko.homeTeamId
+      patch.teamBId = ko.awayTeamId
+      patch.teamHomeId = ko.homeTeamId
+      patch.teamAwayId = ko.awayTeamId
+      patch.phase = 'knockout'
+      patch.round = koRoundFromMatchNumber(matchNum)
+    }
+
+    if (needsScore && existing) {
+      const homeIsTeamA = ko.homeTeamId === existing.teamAId || (!existing.teamAId && true)
+      patch.goalsTeamA = homeIsTeamA ? ko.homeGoals : ko.awayGoals
+      patch.goalsTeamB = homeIsTeamA ? ko.awayGoals : ko.homeGoals
+      patch.goalsHome = patch.goalsTeamA
+      patch.goalsAway = patch.goalsTeamB
+      if (ko.status === 'finished') patch.finishedAt = new Date()
+    }
+
+    const ref = db.collection('matches').doc(docId)
+    if (existing) {
+      writer.set(ref, patch, { merge: true })
+    } else {
+      writer.set(ref, { ...patch, phase: 'knockout', round: koRoundFromMatchNumber(matchNum) }, { merge: true })
+    }
+    updated += 1
+  }
+
   await writer.close()
-  logger.info(`[fifa:sync] toSync=${toSync.length} updated=${updated}`)
-  return { ran: true, inWindow: toSync.length, updated }
+  logger.info(`[fifa:sync] group=${toSync.length} ko=${officialByKoNum.size} updated=${updated}`)
+  return { ran: true, inWindow: toSync.length + officialByKoNum.size, updated }
 }

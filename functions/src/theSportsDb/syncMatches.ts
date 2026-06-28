@@ -1,6 +1,6 @@
 import type { Firestore } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
-import type { MatchDoc, MatchScorerEntry, TeamDoc } from '../lib/types/predictions'
+import type { MatchDoc, TeamDoc } from '../lib/types/predictions'
 import { fetchMatchScorers, matchNeedsScorerBackfill } from '../lib/syncMatchScorers'
 import { mergeScorerEntries, reconcileScorersWithScore, scorersIncompleteForScore } from '../lib/scorerSync'
 import { linkApiSportsFixtures } from '../apiSports/linkFixtures'
@@ -9,20 +9,13 @@ import { TSDB_FREE_KEY } from './constants'
 import { tsdbGet, eventsOrEmpty } from './client'
 import { quickLinkTsdbFixtures } from './linkFixtures'
 import { scorersChanged } from './fetchScorers'
-import { mapEventToMatchUpdate, matchUpdateChanged } from './mapEventToUpdate'
+import { mapEventToMatchUpdate, matchUpdateChanged, tsdbHomeIsTeamA } from './mapEventToUpdate'
 
 export interface SyncTsdbResult {
   ran: boolean
   inWindow: number
   updated: number
   linked?: number
-}
-
-function swapScorerSides(scorers: MatchScorerEntry[]): MatchScorerEntry[] {
-  return scorers.map((s) => ({
-    ...s,
-    teamSide: s.teamSide === 'teamA' ? 'teamB' : s.teamSide === 'teamB' ? 'teamA' : s.teamSide,
-  }))
 }
 
 export async function syncMatchesFromTsdb(
@@ -131,15 +124,17 @@ export async function syncMatchesFromTsdb(
     if (events.length === 0) continue
 
     const item = events[0]
-    const next = mapEventToMatchUpdate(item)
     const teamATsdbId = tsdbTeamIdByTeamId.get(current.teamAId)
-    const tsdbHomeIsTeamA = Boolean(teamATsdbId && item.idHomeTeam === teamATsdbId)
-    const tsdbAwayIsTeamA = Boolean(teamATsdbId && item.idAwayTeam === teamATsdbId)
-    const shouldSwapTsdbSides = !tsdbHomeIsTeamA && tsdbAwayIsTeamA
-    if (shouldSwapTsdbSides) {
-      const goalsTeamA = next.goalsTeamB
-      next.goalsTeamB = next.goalsTeamA
-      next.goalsTeamA = goalsTeamA
+    const teamBTsdbId = tsdbTeamIdByTeamId.get(current.teamBId)
+    const next = mapEventToMatchUpdate(item, {
+      teamATsdbId,
+      teamBTsdbId,
+      teamAId: current.teamAId,
+      teamBId: current.teamBId,
+    })
+    if (tsdbHomeIsTeamA(item, { teamATsdbId, teamBTsdbId, teamAId: current.teamAId, teamBId: current.teamBId }) === null) {
+      next.goalsTeamA = current.goalsTeamA ?? current.goalsHome ?? next.goalsTeamA
+      next.goalsTeamB = current.goalsTeamB ?? current.goalsAway ?? next.goalsTeamB
     }
 
     const goalsChanged =
@@ -180,14 +175,13 @@ export async function syncMatchesFromTsdb(
         // Nunca reducir scorers ya confirmados: TSDB a veces "parpadea" y devuelve
         // un timeline temporalmente incompleto. Solo se permite agregar/enriquecer.
         if (scorers.length > 0 || (current.scorers?.length ?? 0) > 0) {
-          const normalizedScorers = shouldSwapTsdbSides ? swapScorerSides(scorers) : scorers
           const baseScorers = reconcileScorersWithScore(
             current.scorers ?? [],
             next.goalsTeamA ?? goalsTeamA,
             next.goalsTeamB ?? goalsTeamB,
           )
           next.scorers = reconcileScorersWithScore(
-            mergeScorerEntries(baseScorers, normalizedScorers),
+            mergeScorerEntries(scorers, baseScorers),
             next.goalsTeamA ?? goalsTeamA,
             next.goalsTeamB ?? goalsTeamB,
           )

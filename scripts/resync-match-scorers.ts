@@ -12,7 +12,7 @@ import { mergeScorerEntries, reconcileScorersWithScore } from '../functions/lib/
 import { TSDB_FREE_KEY } from '../functions/lib/theSportsDb/constants.js'
 import { mapEventToMatchUpdate } from '../functions/lib/theSportsDb/mapEventToUpdate.js'
 import { tsdbGet, eventsOrEmpty } from '../functions/lib/theSportsDb/client.js'
-import type { MatchDoc } from '../functions/lib/lib/types/predictions.js'
+import type { MatchDoc, TeamDoc } from '../functions/lib/lib/types/predictions.js'
 import { restGetDoc, restPatchDoc } from './lib/firestoreRest.ts'
 import { createRestFirestoreShim } from './lib/restFirestoreShim.ts'
 
@@ -68,7 +68,16 @@ async function main(): Promise<void> {
     const item = events[0]!
     tsdbHomeTeamId = item.idHomeTeam
     tsdbAwayTeamId = item.idAwayTeam
-    const next = mapEventToMatchUpdate(item)
+    const teamARaw = current.teamAId ? await restGetDoc(projectId, `teams/${current.teamAId}`) : null
+    const teamBRaw = current.teamBId ? await restGetDoc(projectId, `teams/${current.teamBId}`) : null
+    const teamATsdbId = (teamARaw as TeamDoc | null)?.theSportsDbTeamId
+    const teamBTsdbId = (teamBRaw as TeamDoc | null)?.theSportsDbTeamId
+    const next = mapEventToMatchUpdate(item, {
+      teamATsdbId,
+      teamBTsdbId,
+      teamAId: current.teamAId,
+      teamBId: current.teamBId,
+    })
     nextGoals = {
       goalsTeamA: next.goalsTeamA,
       goalsTeamB: next.goalsTeamB,
@@ -95,8 +104,8 @@ async function main(): Promise<void> {
 
   scorers = reconcileScorersWithScore(
     mergeScorerEntries(
-      reconcileScorersWithScore(current.scorers ?? [], nextGoals.goalsTeamA, nextGoals.goalsTeamB),
       scorers,
+      reconcileScorersWithScore(current.scorers ?? [], nextGoals.goalsTeamA, nextGoals.goalsTeamB),
     ),
     nextGoals.goalsTeamA,
     nextGoals.goalsTeamB,

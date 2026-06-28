@@ -11,7 +11,10 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(node --loader tsx/esm -e ' *)",
       "WebSearch",
-      "Bash(del scripts\\\\test-scoring-b03.ts scripts\\\\inspect-match.ts scripts\\\\list-scorers.ts)"
+      "Bash(del scripts\\\\test-scoring-b03.ts scripts\\\\inspect-match.ts scripts\\\\list-scorers.ts)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(npx firebase *)"
     ]
   }
 }
