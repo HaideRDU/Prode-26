@@ -358,11 +358,16 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
     }
 
     if (needsScore && existing) {
-      const homeIsTeamA = ko.homeTeamId === existing.teamAId || (!existing.teamAId && true)
-      patch.goalsTeamA = homeIsTeamA ? ko.homeGoals : ko.awayGoals
-      patch.goalsTeamB = homeIsTeamA ? ko.awayGoals : ko.homeGoals
-      patch.goalsHome = patch.goalsTeamA
-      patch.goalsAway = patch.goalsTeamB
+      // No sobreescribir el score de partidos con penales confirmados:
+      // la API a veces reporta el marcador agregado (incluye penales) en lugar del 90'.
+      const confirmedPenalties = existing.wentToPenalties === true && existing.status === 'finished'
+      if (!confirmedPenalties) {
+        const homeIsTeamA = ko.homeTeamId === existing.teamAId || (!existing.teamAId && true)
+        patch.goalsTeamA = homeIsTeamA ? ko.homeGoals : ko.awayGoals
+        patch.goalsTeamB = homeIsTeamA ? ko.awayGoals : ko.homeGoals
+        patch.goalsHome = patch.goalsTeamA
+        patch.goalsAway = patch.goalsTeamB
+      }
       if (ko.status === 'finished') patch.finishedAt = new Date()
     }
 
