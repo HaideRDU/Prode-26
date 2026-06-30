@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { toDate } from '../config/ruleset'
+import { DEFAULT_RULESET, toDate, type KnockoutRoundId } from '../config/ruleset'
 import { getPredictedKoLineupForMatch } from '../domain/koPredictedLineup'
 import { matchTeamAId, matchTeamBId } from '../domain/matchFields'
+import { penaltiesWinnerIsTeamAFromPayload } from '../domain/matchPenalties'
 import { useMatchList } from '../hooks/useMatchList'
 import { useRoomPredictions } from '../hooks/useRoomMatchPredictions'
 import { useRoomMembers } from '../hooks/useRoomMembers'
 import { subscribeTeamPlayers, playerDocToKey } from '../services/teamsService'
-import { scoreMatchPrediction, scorePlayerPerMatchPick } from '../services/scoring'
+import { scoreMatchPredictionDetails, scorePlayerPerMatchPick, type MatchScoreDetails } from '../services/scoring'
 import { useTeamLabels } from '../hooks/useTeamLabels'
 import { useMatchTimeFormatters } from '../hooks/useUserTimeZone'
 import type {
@@ -22,6 +23,19 @@ import { TeamFlagName } from './TeamFlagName'
 
 type PlayerInfo = { name: string; theSportsDbPlayerId?: string }
 type ProjectedKoLineup = { predictedTeamAId: string | null; predictedTeamBId: string | null }
+
+type RowPointsBreakdownItem = {
+  label: string
+  points: number
+}
+
+type RowPointsBreakdown = {
+  matchPoints: number
+  bonusPoints: number
+  total: number
+  items: RowPointsBreakdownItem[]
+  ariaLabel: string
+}
 
 // Cache compartida de plantillas por equipo: un único listener por teamId,
 // reutilizado al cambiar de partido en el carrusel para evitar llamadas repetidas.
@@ -61,8 +75,165 @@ function phaseLabel(match: MatchDoc): string {
   return match.phase === 'knockout' ? 'Eliminatorias' : 'Partido'
 }
 
+function matchWinnerSide(match: MatchDoc): 'teamA' | 'teamB' | null {
+  if (match.status !== 'finished') return null
+  const rawA = match.goalsTeamA ?? match.goalsHome
+  const rawB = match.goalsTeamB ?? match.goalsAway
+  if (rawA == null || rawB == null) return null
+  if (rawA > rawB) return 'teamA'
+  if (rawB > rawA) return 'teamB'
+  if (match.phase !== 'knockout') return null
+  const pensWinnerIsTeamA = penaltiesWinnerIsTeamAFromPayload(match)
+  if (pensWinnerIsTeamA === true) return 'teamA'
+  if (pensWinnerIsTeamA === false) return 'teamB'
+  return null
+}
+
+function penaltyWinnerLabel(match: MatchDoc, teamLabel: (id: string) => string): string | null {
+  if (match.phase !== 'knockout' || match.status !== 'finished' || match.wentToPenalties !== true) return null
+  const winnerSide = matchWinnerSide(match)
+  const winnerId = winnerSide === 'teamA' ? matchTeamAId(match) : winnerSide === 'teamB' ? matchTeamBId(match) : null
+  return winnerId ? `${teamLabel(winnerId)} ganó por penales` : 'Definido por penales'
+}
+
 function matchKickoffMs(match: MatchDoc): number {
   return toDate(match.scheduledAt)?.getTime() ?? Number.MAX_SAFE_INTEGER
+}
+
+function normalizeKoRoundId(round: string | undefined): KnockoutRoundId {
+  switch (round) {
+    case 'r32':
+    case 'round32':
+    case 'round_of_32':
+    case '1/16':
+      return 'r32'
+    case 'r16':
+    case 'round16':
+    case 'round_of_16':
+    case 'octavos':
+      return 'r16'
+    case 'qf':
+    case 'quarter':
+    case 'quarters':
+    case 'cuartos':
+      return 'qf'
+    case 'sf':
+    case 'semi':
+    case 'semis':
+    case 'semifinal':
+      return 'sf'
+    case 'third':
+    case 'third_place':
+    case 'tercer':
+      return 'third'
+    case 'final':
+      return 'final'
+    default:
+      return 'r32'
+  }
+}
+
+function matchPointsRule(match: MatchDoc) {
+  if (match.phase === 'group') return DEFAULT_RULESET.points.matchByPhase.group
+  return DEFAULT_RULESET.points.matchByPhase.knockout[normalizeKoRoundId(match.round)]
+}
+
+function playerGoalPointsForMatch(match: MatchDoc): number {
+  if (match.phase === 'group') return DEFAULT_RULESET.points.playerPerMatch.goalsPerGoalByRound.group
+  return DEFAULT_RULESET.points.playerPerMatch.goalsPerGoalByRound[normalizeKoRoundId(match.round)]
+}
+
+function signedPoints(points: number): string {
+  return points > 0 ? `+${points}` : `${points}`
+}
+
+function buildMatchPointsItems(
+  match: MatchDoc,
+  details: MatchScoreDetails,
+  predictedLineup: ProjectedKoLineup | null,
+  teamAId: string | null,
+  teamBId: string | null,
+  teamLabel: (id: string) => string,
+): RowPointsBreakdownItem[] {
+  if (details.points <= 0) return []
+  const rule = matchPointsRule(match)
+  if (details.exactScoreHit) {
+    const exactScorePoints = rule.goalsTeamA + rule.goalsTeamB
+    return [
+      {
+        label: match.phase === 'knockout' ? 'Ganador' : 'Ganador / empate',
+        points: rule.winnerOrDraw,
+      },
+      { label: 'Marcador exacto', points: exactScorePoints },
+    ].filter((item) => item.points > 0)
+  }
+  const predTeamA = predictedLineup?.predictedTeamAId ?? teamAId
+  const predTeamB = predictedLineup?.predictedTeamBId ?? teamBId
+  const items: RowPointsBreakdownItem[] = []
+  if (details.winnerOrDrawHit) {
+    items.push({
+      label: match.phase === 'knockout' ? 'Ganador' : 'Ganador / empate',
+      points: rule.winnerOrDraw,
+    })
+  }
+  if (details.goalsAHit) {
+    items.push({
+      label: `Goles ${predTeamA ? teamLabel(predTeamA) : 'equipo A'}`,
+      points: rule.goalsTeamA,
+    })
+  }
+  if (details.goalsBHit) {
+    items.push({
+      label: `Goles ${predTeamB ? teamLabel(predTeamB) : 'equipo B'}`,
+      points: rule.goalsTeamB,
+    })
+  }
+  return items
+}
+
+function buildPointsBreakdown({
+  match,
+  details,
+  bonusName,
+  bonusPoints,
+  predictedLineup,
+  teamAId,
+  teamBId,
+  teamLabel,
+}: {
+  match: MatchDoc
+  details: MatchScoreDetails
+  bonusName: string | null
+  bonusPoints: number
+  predictedLineup: ProjectedKoLineup | null
+  teamAId: string | null
+  teamBId: string | null
+  teamLabel: (id: string) => string
+}): RowPointsBreakdown | null {
+  const total = details.points + bonusPoints
+  if (total <= 0) return null
+
+  const items = buildMatchPointsItems(match, details, predictedLineup, teamAId, teamBId, teamLabel)
+  if (bonusName && bonusPoints > 0) {
+    const perGoal = playerGoalPointsForMatch(match)
+    items.push({
+      label: `Jugador bonus (${bonusName}, ${perGoal} por gol)`,
+      points: bonusPoints,
+    })
+  }
+
+  const ariaLabel = [
+    ...items.map((item) => `${item.label}: ${signedPoints(item.points)}`),
+    `Total: ${signedPoints(total)}`,
+  ].join('. ')
+
+  return {
+    matchPoints: details.points,
+    bonusPoints,
+    total,
+    items,
+    ariaLabel,
+  }
 }
 
 /** Encuentra el partido más cercano: en juego primero, luego el próximo por jugar, sino el último finalizado. */
@@ -133,12 +304,16 @@ function ProjectedKoRow({
   score,
   actualTeamAId,
   actualTeamBId,
+  actualScoreLabel,
+  actualPenaltyLabel,
   teamLabel,
 }: {
   lineup: ProjectedKoLineup | null
   score?: MatchPredictionPayload
   actualTeamAId: string | null
   actualTeamBId: string | null
+  actualScoreLabel?: string | null
+  actualPenaltyLabel?: string | null
   teamLabel: (id: string) => string
 }) {
   const status = koLineupStatus(lineup, actualTeamAId, actualTeamBId)
@@ -168,9 +343,17 @@ function ProjectedKoRow({
 
   // Columna derecha: cruce real
   const rightCell = actualTeamAId && actualTeamBId ? (
-    <span className="match-comparison-table__projected-teams match-comparison-table__projected-teams--actual">
-      {teamLabel(actualTeamAId)} vs {teamLabel(actualTeamBId)}
-    </span>
+    <div className="match-comparison-table__ko-pred">
+      <span className="match-comparison-table__projected-teams match-comparison-table__projected-teams--actual">
+        {teamLabel(actualTeamAId)} vs {teamLabel(actualTeamBId)}
+      </span>
+      {actualScoreLabel ? (
+        <span className="match-comparison-table__score">{actualScoreLabel}</span>
+      ) : null}
+      {actualPenaltyLabel ? (
+        <span className="match-comparison-table__pens">{actualPenaltyLabel}</span>
+      ) : null}
+    </div>
   ) : null
 
   return { leftCell, badgeCell, rightCell }
@@ -194,6 +377,8 @@ function MatchCard({
   const rawA = match.goalsTeamA ?? match.goalsHome
   const rawB = match.goalsTeamB ?? match.goalsAway
   const hasScore = rawA !== null && rawA !== undefined && rawB !== null && rawB !== undefined
+  const winnerSide = matchWinnerSide(match)
+  const pensLabel = penaltyWinnerLabel(match, teamLabel)
   const scorersA = scorersForTeamSide(match.scorers, 'teamA', rawA, rawB)
   const scorersB = scorersForTeamSide(match.scorers, 'teamB', rawA, rawB)
   const showScorers = match.status === 'live' || match.status === 'finished'
@@ -212,11 +397,20 @@ function MatchCard({
         {match.status === 'live' || isMatchLiveForDisplay(match) ? (
           <span className="match-comparison-card__status match-comparison-card__status--live">En juego</span>
         ) : (
-          <span className="match-comparison-card__time">{formatMatchTime(match.scheduledAt)}</span>
+          <span className="match-comparison-card__time">
+            {match.status === 'finished' ? 'Finalizado' : formatMatchTime(match.scheduledAt)}
+          </span>
         )}
       </div>
       <div className="match-comparison-card__teams">
-        <div className="match-comparison-card__team">
+        <div
+          className={[
+            'match-comparison-card__team',
+            winnerSide === 'teamA' ? 'match-comparison-card__team--winner' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <TeamFlagName teamId={teamAId ?? ''} name={teamLabel(teamAId ?? '')} layout="stack" />
           {showScorers && scorersA.length > 0 ? (
             <ul className="match-comparison-card__scorers" aria-label="Goles local">
@@ -240,7 +434,14 @@ function MatchCard({
             <span className="match-comparison-card__score-vs">vs</span>
           )}
         </div>
-        <div className="match-comparison-card__team">
+        <div
+          className={[
+            'match-comparison-card__team',
+            winnerSide === 'teamB' ? 'match-comparison-card__team--winner' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <TeamFlagName teamId={teamBId ?? ''} name={teamLabel(teamBId ?? '')} layout="stack" />
           {showScorers && scorersB.length > 0 ? (
             <ul className="match-comparison-card__scorers" aria-label="Goles visitante">
@@ -254,6 +455,7 @@ function MatchCard({
           ) : null}
         </div>
       </div>
+      {pensLabel ? <p className="match-comparison-card__pens">{pensLabel}</p> : null}
     </button>
   )
 }
@@ -344,6 +546,11 @@ function MatchPredictionsTable({
 
   const isFinished = match.status === 'finished'
   const isKnockout = match.phase === 'knockout'
+  const actualRawA = match.goalsTeamA ?? match.goalsHome
+  const actualRawB = match.goalsTeamB ?? match.goalsAway
+  const actualScoreLabel =
+    actualRawA != null && actualRawB != null ? `${actualRawA} - ${actualRawB}` : null
+  const actualPenaltyLabel = penaltyWinnerLabel(match, teamLabel)
 
   const rows = useMemo(() => {
     return members
@@ -358,8 +565,9 @@ function MatchPredictionsTable({
           ? getPredictedKoLineupForMatch(userPredictions, match.id)
           : null
         let points: number | null = null
+        let pointsBreakdown: RowPointsBreakdown | null = null
         if (isFinished && playersLoaded) {
-          const matchPts = scoreMatchPrediction(match, score ?? null, predictedLineup)
+          const matchDetails = scoreMatchPredictionDetails(match, score ?? null, predictedLineup)
           const bonusPts = bonusKey
             ? scorePlayerPerMatchPick(match, bonusKey, {
                 playerKey: bonusKey,
@@ -367,7 +575,17 @@ function MatchPredictionsTable({
                 theSportsDbPlayerId: bonusPlayer?.theSportsDbPlayerId,
               })
             : 0
-          points = matchPts + bonusPts
+          points = matchDetails.points + bonusPts
+          pointsBreakdown = buildPointsBreakdown({
+            match,
+            details: matchDetails,
+            bonusName,
+            bonusPoints: bonusPts,
+            predictedLineup,
+            teamAId,
+            teamBId,
+            teamLabel,
+          })
         }
         return {
           userId: member.userId,
@@ -376,10 +594,11 @@ function MatchPredictionsTable({
           bonusName,
           predictedLineup,
           points,
+          pointsBreakdown,
         }
       })
       .sort((a, b) => a.displayName.localeCompare(b.displayName, 'es'))
-  }, [members, byUserId, playerByKey, playersLoaded, isFinished, isKnockout, match, predictions])
+  }, [members, byUserId, playerByKey, playersLoaded, isFinished, isKnockout, match, predictions, teamAId, teamBId, teamLabel])
 
   if (predictionsLoading || membersLoading) {
     return <p className="match-comparison-table__hint">Cargando predicciones…</p>
@@ -399,7 +618,25 @@ function MatchPredictionsTable({
             {isKnockout ? <th scope="col" className="match-comparison-table__th--center" /> : null}
             {isKnockout ? <th scope="col">Partido real</th> : null}
             <th scope="col">Jugador bonus</th>
-            {isFinished ? <th scope="col">Puntos</th> : null}
+            {isFinished ? (
+              <th scope="col">
+                <span className="match-comparison-table__points-head">
+                  Puntos
+                  <span
+                    className="match-comparison-table__info"
+                    tabIndex={0}
+                    role="button"
+                    aria-label="Cómo se calculan estos puntos"
+                  >
+                    !
+                    <span className="match-comparison-table__info-pop" role="tooltip">
+                      Puntos del partido seleccionado: marcador, goles por equipo, ganador o
+                      parciales en eliminatorias, y jugador bonus si anotó.
+                    </span>
+                  </span>
+                </span>
+              </th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
@@ -408,14 +645,16 @@ function MatchPredictionsTable({
               ? ProjectedKoRow({
                   lineup: row.predictedLineup,
                   score: row.score ?? undefined,
-                  actualTeamAId: teamAId,
-                  actualTeamBId: teamBId,
-                  teamLabel,
-                })
+	                  actualTeamAId: teamAId,
+	                  actualTeamBId: teamBId,
+	                  actualScoreLabel,
+	                  actualPenaltyLabel,
+	                  teamLabel,
+	                })
               : null
             return (
               <tr key={row.userId}>
-                <td>
+                <td data-label="Usuario">
                   <div className="match-comparison-table__user">
                     <span className="match-comparison-table__avatar" aria-hidden>
                       {initialsFromName(row.displayName)}
@@ -423,7 +662,7 @@ function MatchPredictionsTable({
                     <span className="match-comparison-table__name">{row.displayName}</span>
                   </div>
                 </td>
-                <td>
+                <td data-label="Predicción">
                   {isKnockout ? (
                     ko?.leftCell ?? <span className="match-comparison-table__empty">Sin predicción</span>
                   ) : row.score ? (
@@ -435,12 +674,14 @@ function MatchPredictionsTable({
                   )}
                 </td>
                 {isKnockout ? (
-                  <td className="match-comparison-table__td--center">{ko?.badgeCell}</td>
+                  <td className="match-comparison-table__td--center" data-label="Cruce">
+                    {ko?.badgeCell}
+                  </td>
                 ) : null}
                 {isKnockout ? (
-                  <td>{ko?.rightCell}</td>
+                  <td data-label="Partido real">{ko?.rightCell}</td>
                 ) : null}
-                <td>
+                <td data-label="Jugador bonus">
                   {row.bonusName ? (
                     <span className="match-comparison-table__bonus">{row.bonusName}</span>
                   ) : (
@@ -448,14 +689,43 @@ function MatchPredictionsTable({
                   )}
                 </td>
                 {isFinished ? (
-                  <td>
+                  <td data-label="Puntos">
                     {row.points == null ? (
                       <span className="match-comparison-table__points match-comparison-table__points--pending">
                         …
                       </span>
                     ) : (
-                      <span className="match-comparison-table__points">
-                        {row.points > 0 ? `+${row.points}` : row.points}
+                      <span className="match-comparison-table__points-cell">
+                        <span className="match-comparison-table__points">
+                          {row.points > 0 ? `+${row.points}` : row.points}
+                        </span>
+                        {row.pointsBreakdown ? (
+                          <span
+                            className="match-comparison-table__info match-comparison-table__info--row"
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`Desglose de puntos: ${row.pointsBreakdown.ariaLabel}`}
+                          >
+                            !
+                            <span
+                              className="match-comparison-table__info-pop match-comparison-table__info-pop--breakdown"
+                              role="tooltip"
+                            >
+                              <span className="match-comparison-table__breakdown-list">
+                                {row.pointsBreakdown.items.map((item) => (
+                                  <span className="match-comparison-table__breakdown-row" key={item.label}>
+                                    <span>{item.label}</span>
+                                    <strong>{signedPoints(item.points)}</strong>
+                                  </span>
+                                ))}
+                                <span className="match-comparison-table__breakdown-row match-comparison-table__breakdown-row--total">
+                                  <span>Total</span>
+                                  <strong>{signedPoints(row.pointsBreakdown.total)}</strong>
+                                </span>
+                              </span>
+                            </span>
+                          </span>
+                        ) : null}
                       </span>
                     )}
                   </td>

@@ -170,7 +170,7 @@ export function matchUpdateChanged(current: MatchDoc, next: MatchFirestoreUpdate
   // Para partidos finalizados con penales confirmados (wentToPenalties===true), no dejar
   // que la API sobreescriba el score ni los campos de penales con null.
   // TSDB a veces reporta el score incorrecto para partidos con ET/penales.
-  const confirmedPenalties = current.wentToPenalties === true && current.status === 'finished'
+  const confirmedPenalties = current.wentToPenalties === true
 
   if (!confirmedPenalties) {
     if ((current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA) return true

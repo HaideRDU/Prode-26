@@ -54,21 +54,20 @@ export function ReglamentoContent({ showPageTitle = true }: ReglamentoContentPro
       <section className="rules-detail-block" aria-labelledby="rules-golden-title">
         <h2 id="rules-golden-title">Regla de oro en eliminatorias</h2>
         <p>
-          Para sumar por goles de una selección en fases eliminatorias (R32 en adelante), la selección real debe
-          coincidir con la de tu pronóstico. Los goles se evalúan por <strong>identidad del equipo</strong>, sin
-          importar si en el partido real juega como Selección A o Selección B.
+          Para sumar puntos de partido en fases eliminatorias (R32 en adelante), tenes que haber pronosticado la
+          llave real: los dos equipos del cruce deben coincidir con el partido oficial. Si el cruce no coincide,
+          no suma ganador ni marcador; solo aplican los puntos de avance por seleccion clasificada.
         </p>
         <div className="rules-example">
           <p>
-            <strong>Ejemplo 1 (cambio de rival):</strong> En cuartos, pronosticaste Brasil 2 – 1 Croacia. El
-            partido real fue Brasil 2 – 1 Bélgica. Sumás por ganador (+3 en QF) y goles de Brasil;{' '}
-            <strong>0 pts</strong> en goles de la Selección B porque pronosticaste a Croacia y jugó Bélgica (aunque
-            el marcador de goles coincida).
+            <strong>Ejemplo 1 (cambio de rival):</strong> En cuartos, pronosticaste Brasil 2 - 1 Croacia. El
+            partido real fue Brasil 2 - 1 Belgica. Como la llave no coincide, el partido suma <strong>0 pts</strong>{' '}
+            por ganador o marcador. Brasil puede sumar aparte por avance si estaba en tu bracket.
           </p>
           <p>
-            <strong>Ejemplo 2 (inversión de localía):</strong> Pronosticaste Brasil 2 – 1 Croacia. El partido
-            real fue Croacia 1 – 2 Brasil. Sumás ganador y goles de ambas selecciones: coinciden equipos y goles →
-            máximo posible de la ronda, sin importar el orden en el marcador.
+            <strong>Ejemplo 2 (mismos equipos invertidos):</strong> Pronosticaste Brasil 2 - 1 Croacia. El partido
+            real fue Croacia 1 - 2 Brasil. La llave si coincide porque son los mismos equipos; se evalua por
+            identidad de seleccion y podes sumar ganador y marcador.
           </p>
         </div>
       </section>

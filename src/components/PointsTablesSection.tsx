@@ -113,7 +113,8 @@ export function PointsTablesSection() {
       />
       <p className="rules-points-hint">
         Cada acierto suma de forma independiente. La fila «Máximo posible» es el total si acertás ganador/empate
-        y ambos goles.
+        y ambos goles. En eliminatorias, estos puntos solo aplican si el cruce oficial de esa llave coincide con el
+        cruce que pronosticaste.
       </p>
 
       <h3>2. Bonus: goleador del partido</h3>
@@ -128,6 +129,9 @@ export function PointsTablesSection() {
         headers={['Ronda de destino', 'Pts por eq.']}
         rows={advRows}
       />
+      <p className="rules-points-hint">
+        Si el cruce real cambia frente a tu bracket, esta es la unica puntuacion que podes sumar por esa seleccion.
+      </p>
       <p className="rules-points-hint">
         Por cada selección que acertás que clasifica a esa fase, sumás los puntos indicados (acumulables).
       </p>

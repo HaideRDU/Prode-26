@@ -16,7 +16,7 @@ export type QualifiedThird = {
 
 /** Grupos elegibles para el tercero en cada partido (FIFA / Wikipedia 2026). */
 export const THIRD_SLOT_ELIGIBLE: Readonly<Record<number, readonly string[]>> = {
-  74: ['A', 'B', 'C', 'D', 'F'],
+  75: ['A', 'B', 'C', 'D', 'F'],
   77: ['C', 'D', 'F', 'G', 'H'],
   79: ['C', 'E', 'F', 'H', 'I'],
   80: ['E', 'H', 'I', 'J', 'K'],
@@ -26,7 +26,7 @@ export const THIRD_SLOT_ELIGIBLE: Readonly<Record<number, readonly string[]>> = 
   87: ['D', 'E', 'I', 'J', 'L'],
 }
 
-export const THIRD_ASSIGNMENT_ORDER = [74, 77, 79, 80, 81, 82, 85, 87] as const
+export const THIRD_ASSIGNMENT_ORDER = [75, 77, 79, 80, 81, 82, 85, 87] as const
 
 function rankSumForMap(
   m: Map<number, string>,

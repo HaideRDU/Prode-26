@@ -119,6 +119,31 @@ export async function syncMatchesFromTsdb(
     }
 
     // 1 llamada por partido en ventana (máx ~8 = muy bajo de 30/min)
+    if (current.status === 'finished') {
+      const needsScorers = scorersIncompleteForScore(goalsTeamA, goalsTeamB, current.scorers)
+      if (!needsScorers) continue
+
+      try {
+        const scorers = await fetchMatchScorers(db, current, tsdbId, {
+          tsdbApiKey: apiKey,
+          apiSportsKey,
+          goalsTeamA,
+          goalsTeamB,
+        })
+        const merged = reconcileScorersWithScore(
+          mergeScorerEntries(scorers, current.scorers ?? []),
+          goalsTeamA,
+          goalsTeamB,
+        )
+        if (!scorersChanged(current.scorers, merged)) continue
+        writer.set(db.collection('matches').doc(matchId), { scorers: merged }, { merge: true })
+        updated += 1
+      } catch (err) {
+        logger.warn(`[tsdb:sync] finished scorer backfill failed matchId=${matchId}`, err)
+      }
+      continue
+    }
+
     const resp = await tsdbGet(apiKey, 'lookupevent.php', { id: tsdbId })
     const events = eventsOrEmpty(resp)
     if (events.length === 0) continue
@@ -126,15 +151,30 @@ export async function syncMatchesFromTsdb(
     const item = events[0]
     const teamATsdbId = tsdbTeamIdByTeamId.get(current.teamAId)
     const teamBTsdbId = tsdbTeamIdByTeamId.get(current.teamBId)
+    const tsdbSide = tsdbHomeIsTeamA(item, {
+      teamATsdbId,
+      teamBTsdbId,
+      teamAId: current.teamAId,
+      teamBId: current.teamBId,
+    })
+    if (tsdbSide === null) {
+      logger.warn(`[tsdb:sync] skipped mismatched event matchId=${matchId} tsdbId=${tsdbId}`)
+      continue
+    }
     const next = mapEventToMatchUpdate(item, {
       teamATsdbId,
       teamBTsdbId,
       teamAId: current.teamAId,
       teamBId: current.teamBId,
     })
-    if (tsdbHomeIsTeamA(item, { teamATsdbId, teamBTsdbId, teamAId: current.teamAId, teamBId: current.teamBId }) === null) {
-      next.goalsTeamA = current.goalsTeamA ?? current.goalsHome ?? next.goalsTeamA
-      next.goalsTeamB = current.goalsTeamB ?? current.goalsAway ?? next.goalsTeamB
+
+    const kickoff = kickoffMs(current.scheduledAt)
+    if (kickoff !== null && nowMs < kickoff && (next.status === 'live' || next.status === 'finished')) {
+      logger.warn(
+        `[tsdb:sync] skipped premature status matchId=${matchId} tsdbId=${tsdbId} ` +
+          `status=${next.status} kickoff=${new Date(kickoff).toISOString()}`,
+      )
+      continue
     }
 
     const goalsChanged =
@@ -195,11 +235,15 @@ export async function syncMatchesFromTsdb(
     if (!matchUpdateChanged(current, next) && !scorersDelta) continue
 
     // FIFA u otra fuente puede marcar FT antes que TSDB; no revertir a live/scheduled.
-    if (current.status === 'finished' && next.status !== 'finished') {
+    // Si ya confirmamos una definición por penales, no permitir que TSDB la borre
+    // cuando su evento llega sin esos campos o con estado atrasado.
+    if (current.wentToPenalties === true) {
       next.status = 'finished'
+      next.wentToPenalties = true
+      next.penaltiesWinnerTeamA = current.penaltiesWinnerTeamA ?? null
+      next.penaltiesWinnerTeamB = current.penaltiesWinnerTeamB ?? null
     }
 
-    const kickoff = kickoffMs(current.scheduledAt)
     if (kickoff !== null && nowMs < kickoff && next.status === 'live') {
       next.status = 'scheduled'
     }

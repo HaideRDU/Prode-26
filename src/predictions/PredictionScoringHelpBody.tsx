@@ -46,7 +46,8 @@ export function PredictionScoringHelpBody({
           {KO_EXACT_SCORE_BY_ROUND.r32}, R16={KO_EXACT_SCORE_BY_ROUND.r16}, QF=
           {KO_EXACT_SCORE_BY_ROUND.qf}, SF={KO_EXACT_SCORE_BY_ROUND.sf}, 3.º=
           {KO_EXACT_SCORE_BY_ROUND.third}, final={KO_EXACT_SCORE_BY_ROUND.final}). Los goles cuentan por
-          identidad del equipo (Selección A / B de tu pronóstico).
+          identidad del equipo (Seleccion A / B de tu pronostico), pero solo si pronosticaste la llave real.
+          Si el cruce oficial es distinto al de tu bracket, el partido suma 0 por marcador/ganador.
         </li>
         <li>
           <strong>Avance por fases:</strong> +{ADVANCEMENT_POINTS.toR32} (R32), +{ADVANCEMENT_POINTS.toR16}{' '}

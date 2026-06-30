@@ -16,8 +16,7 @@ import { TSDB_FREE_KEY } from './theSportsDb/constants'
 import { syncMatchesFromTsdb as runTsdbSync } from './theSportsDb/syncMatches'
 import { syncMatchesFromFifa as runFifaSync } from './fifa/syncMatches'
 import { getAllRoomIds, recalculateStandingsForRoom } from './recalculateRoom'
-import { propagateKoBracket } from './lib/propagateKoBracket'
-import type { MatchDoc } from './lib/types/predictions'
+import { cascadeOfficialKoMatchTeams } from './lib/officialKoCascade'
 
 initializeApp()
 const db = getFirestore()
@@ -26,13 +25,11 @@ const GLOBAL_ROOM_ID = 'global'
 export const onMatchWrite = onDocumentWritten('matches/{matchId}', async (event) => {
   const matchId = event.params.matchId as string
   try {
-    const beforeData = event.data?.before.exists ? (event.data.before.data() as MatchDoc) : null
-    const afterData = event.data?.after.exists ? (event.data.after.data() as MatchDoc) : null
-
-    // Cuando un partido KO pasa a 'finished', propagar ganador/perdedor al siguiente slot del cuadro
-    const justFinished = afterData?.status === 'finished' && beforeData?.status !== 'finished'
-    if (justFinished && afterData) {
-      await propagateKoBracket(db, matchId, afterData)
+    if (matchId.startsWith('wc26-ko-')) {
+      const cascade = await cascadeOfficialKoMatchTeams(db)
+      if (cascade.updated > 0) {
+        logger.info(`onMatchWrite: cascaded ${cascade.updated} KO match slot(s)`)
+      }
     }
 
     // Un partido terminado afecta puntos de partido, avance en llave y podio en todas las salas.

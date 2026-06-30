@@ -27,7 +27,7 @@ function main() {
     wrongLineup,
   )
   assert.equal(detailsWrongPair.exactScoreHit, false)
-  assert.equal(detailsWrongPair.points, 3, 'Solo ganador QF (3); sin goles si el rival predicho no coincide')
+  assert.equal(detailsWrongPair.points, 0, 'Cruce distinto en QF: sin puntos de partido')
 
   const matchSwapped = {
     ...matchQf,
@@ -94,8 +94,8 @@ function main() {
     },
     { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
   )
-  assert.equal(detailsPensWinner.winnerOrDrawHit, true)
-  assert.equal(detailsPensWinner.points, 4, 'Ganador final por penales aunque el rival predicho difiera')
+  assert.equal(detailsPensWinner.winnerOrDrawHit, false)
+  assert.equal(detailsPensWinner.points, 0, 'Final con rival distinto: sin puntos de partido')
 
   const detailsPensAwayOnly = scoreMatchPredictionDetails(
     matchFinal,
@@ -125,7 +125,7 @@ function main() {
     { goalsTeamA: 1, goalsTeamB: 0, wentToPenalties: false },
     { predictedTeamAId: 'KOR', predictedTeamBId: 'OTHER' },
   )
-  assert.equal(detailsKorPartial.points, 2, 'R16: solo ganador (2), sin gol parcial si el rival no coincide')
+  assert.equal(detailsKorPartial.points, 0, 'R16 con rival distinto: sin puntos de partido')
 
   const matchCivJpn = {
     phase: 'knockout' as const,

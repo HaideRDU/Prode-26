@@ -244,33 +244,12 @@ function scoreAdditiveMatch(
 }
 
 /** Rivales distintos al cruce oficial: solo puntos por acertar el ganador (por ID de selección). */
-function scoreKnockoutWrongOpponents(
-  prediction: MatchPredictionPayload,
-  match: MatchForScore,
-  actualTeamAId: string,
-  actualTeamBId: string,
-  predTeamAId: string,
-  predTeamBId: string,
-  _actualA: number,
-  _actualB: number,
-  row: MatchPointsRow,
-): MatchScoreDetails {
-  const empty: MatchScoreDetails = {
+function scoreKnockoutWrongOpponents(): MatchScoreDetails {
+  return {
     points: 0,
     exactScoreHit: false,
     oneScoreHit: false,
     winnerOrDrawHit: false,
-    goalsAHit: false,
-    goalsBHit: false,
-  }
-  const predWinner = koPredictedWinnerTeamId(prediction, predTeamAId, predTeamBId)
-  const actualWinner = koActualWinnerTeamId(match, actualTeamAId, actualTeamBId)
-  if (predWinner === 'draw' || predWinner !== actualWinner) return empty
-  return {
-    points: row.winnerOrDraw,
-    exactScoreHit: false,
-    oneScoreHit: false,
-    winnerOrDrawHit: true,
     goalsAHit: false,
     goalsBHit: false,
   }
@@ -336,17 +315,7 @@ export function scoreMatchPredictionDetails(
     paId &&
     !koPairMatchesOfficial(phId, paId, ahId, aaId)
   ) {
-    return scoreKnockoutWrongOpponents(
-      prediction,
-      match,
-      ahId,
-      aaId,
-      phId,
-      paId,
-      actualTeamA,
-      actualTeamB,
-      row,
-    )
+    return scoreKnockoutWrongOpponents()
   }
 
   if (!ahId || !aaId || !phId || !paId) return empty

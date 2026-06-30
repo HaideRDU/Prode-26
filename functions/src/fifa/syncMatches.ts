@@ -4,6 +4,7 @@ import { isMatchInPollingWindow, shouldRunScheduledSync } from '../apiSports/mat
 import { scorersChanged } from '../theSportsDb/fetchScorers'
 import { mergeScorerEntries, reconcileScorersWithScore, scorersIncompleteForScore } from '../lib/scorerSync'
 import type { MatchDoc, MatchScorerEntry, MatchStatus } from '../lib/types/predictions'
+import { fifaKoMatchDocId } from '../data/wc2026/knockoutBracket'
 import { fetchFifaLiveMatch, fetchScorersFromFifaLive } from './fetchScorers'
 
 const FIFA_MATCHES_URL =
@@ -265,8 +266,10 @@ function needsFifaCalendarSync(current: MatchDoc, official: FifaGroupMatch, nowM
   return local.a !== expected.goalsTeamA || local.b !== expected.goalsTeamB
 }
 
-function koMatchDocId(matchNumber: number): string {
-  return `wc26-ko-${matchNumber}`
+export function koMatchDocId(matchNumber: number): string {
+  // El cuadro local quedó con M77/M78 invertidos respecto al calendario FIFA:
+  // local wc26-ko-77 = CIV-NOR, local wc26-ko-78 = FRA-SWE.
+  return fifaKoMatchDocId(matchNumber)
 }
 
 function koRoundFromMatchNumber(n: number): string {
@@ -332,8 +335,23 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
 
   // ── Eliminatorias (R32 → Final) ───────────────────────────────────────
   for (const [matchNum, ko] of officialByKoNum) {
-    const docId = koMatchDocId(matchNum)
+    const docId = fifaKoMatchDocId(matchNum)
     const existing = docsById.get(docId)?.data
+    if (existing?.status === 'finished') continue
+
+    const hasCompleteScore = ko.homeGoals !== null && ko.awayGoals !== null
+    const kickoffMs = Date.parse(ko.dateIso)
+    const officialStatus =
+      ko.status === 'finished' && !hasCompleteScore
+        ? Number.isFinite(kickoffMs) && nowMs < kickoffMs
+          ? 'scheduled'
+          : 'live'
+        : ko.status
+    const localKickoffMs = existing ? currentTimeMs(existing.scheduledAt) : null
+    const externalStatusTooEarly =
+      localKickoffMs !== null &&
+      nowMs < localKickoffMs &&
+      (officialStatus === 'live' || officialStatus === 'finished')
 
     // Actualizar equipos si FIFA ya los conoce y nuestro doc no los tiene
     const teamsKnown = ko.homeTeamId && ko.awayTeamId
@@ -341,12 +359,16 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
 
     // Actualizar marcador/estado si el partido está en ventana o tiene resultado
     const needsScore =
-      (ko.status === 'live' || ko.status === 'finished') &&
+      !externalStatusTooEarly &&
+      (officialStatus === 'live' || (officialStatus === 'finished' && hasCompleteScore)) &&
       existing?.teamAId && existing?.teamBId
 
     if (!needsTeams && !needsScore) continue
 
-    const patch: Record<string, unknown> = { scheduledAt: new Date(ko.dateIso), status: ko.status }
+    const patch: Record<string, unknown> =
+      externalStatusTooEarly && existing
+        ? { scheduledAt: existing.scheduledAt, status: existing.status ?? 'scheduled' }
+        : { scheduledAt: new Date(ko.dateIso), status: officialStatus }
 
     if (needsTeams) {
       patch.teamAId = ko.homeTeamId
@@ -360,7 +382,7 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
     if (needsScore && existing) {
       // No sobreescribir el score de partidos con penales confirmados:
       // la API a veces reporta el marcador agregado (incluye penales) en lugar del 90'.
-      const confirmedPenalties = existing.wentToPenalties === true && existing.status === 'finished'
+      const confirmedPenalties = existing.wentToPenalties === true
       if (!confirmedPenalties) {
         const homeIsTeamA = ko.homeTeamId === existing.teamAId || (!existing.teamAId && true)
         patch.goalsTeamA = homeIsTeamA ? ko.homeGoals : ko.awayGoals
@@ -368,7 +390,7 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
         patch.goalsHome = patch.goalsTeamA
         patch.goalsAway = patch.goalsTeamB
       }
-      if (ko.status === 'finished') patch.finishedAt = new Date()
+      if (officialStatus === 'finished') patch.finishedAt = new Date()
     }
 
     const ref = db.collection('matches').doc(docId)

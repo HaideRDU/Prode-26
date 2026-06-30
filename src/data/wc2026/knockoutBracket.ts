@@ -24,14 +24,20 @@ export function koMatchDocId(matchNum: number): string {
   return `wc26-ko-${matchNum}`
 }
 
+export function fifaKoMatchDocId(matchNum: number): string {
+  if (matchNum === 77) return koMatchDocId(78)
+  if (matchNum === 78) return koMatchDocId(77)
+  return koMatchDocId(matchNum)
+}
+
 /** R32: lados según secciones oficiales (Equipo A = primera columna en FIFA). */
 export const WC26_KO_MATCHES: readonly KoMatchTemplate[] = [
   { matchNum: 73, round: 'r32', home: { kind: 'group_runner', group: 'A' }, away: { kind: 'group_runner', group: 'B' } },
-  { matchNum: 74, round: 'r32', home: { kind: 'group_winner', group: 'E' }, away: { kind: 'third_slot', matchNum: 74 } },
-  { matchNum: 75, round: 'r32', home: { kind: 'group_winner', group: 'F' }, away: { kind: 'group_runner', group: 'C' } },
-  { matchNum: 76, round: 'r32', home: { kind: 'group_winner', group: 'C' }, away: { kind: 'group_runner', group: 'F' } },
-  { matchNum: 77, round: 'r32', home: { kind: 'group_winner', group: 'I' }, away: { kind: 'third_slot', matchNum: 77 } },
-  { matchNum: 78, round: 'r32', home: { kind: 'group_runner', group: 'E' }, away: { kind: 'group_runner', group: 'I' } },
+  { matchNum: 74, round: 'r32', home: { kind: 'group_winner', group: 'C' }, away: { kind: 'group_runner', group: 'F' } },
+  { matchNum: 75, round: 'r32', home: { kind: 'group_winner', group: 'E' }, away: { kind: 'third_slot', matchNum: 75 } },
+  { matchNum: 76, round: 'r32', home: { kind: 'group_winner', group: 'F' }, away: { kind: 'group_runner', group: 'C' } },
+  { matchNum: 77, round: 'r32', home: { kind: 'group_runner', group: 'E' }, away: { kind: 'group_runner', group: 'I' } },
+  { matchNum: 78, round: 'r32', home: { kind: 'group_winner', group: 'I' }, away: { kind: 'third_slot', matchNum: 78 } },
   { matchNum: 79, round: 'r32', home: { kind: 'group_winner', group: 'A' }, away: { kind: 'third_slot', matchNum: 79 } },
   { matchNum: 80, round: 'r32', home: { kind: 'group_winner', group: 'L' }, away: { kind: 'third_slot', matchNum: 80 } },
   { matchNum: 81, round: 'r32', home: { kind: 'group_winner', group: 'D' }, away: { kind: 'third_slot', matchNum: 81 } },
