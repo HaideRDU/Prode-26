@@ -50,25 +50,34 @@ function parsePenalties(
     return { wentToPenalties: null, penaltiesWinnerHome: null }
   }
 
-  // Intentar parsear el marcador de penales desde strResult: "(X-Y pens)" o "(X-Y pen)"
+  // Formato 1: "(X-Y pens)" o "(X-Y pen)"
   const penMatch = result.match(/\((\d+)-(\d+)\s*pen/)
   if (penMatch) {
     const homeP = parseInt(penMatch[1], 10)
     const awayP = parseInt(penMatch[2], 10)
     if (Number.isFinite(homeP) && Number.isFinite(awayP) && homeP !== awayP) {
-      return {
-        wentToPenalties: true,
-        penaltiesWinnerHome: homeP > awayP,
-      }
+      return { wentToPenalties: true, penaltiesWinnerHome: homeP > awayP }
     }
   }
 
-  // Sin parseo exitoso: reportamos que hubo penales pero ganador desconocido
-  // Fallback: si los goles regulares están empatados, sabemos que hubo penales
-  if (homeGoals != null && awayGoals != null && homeGoals === awayGoals) {
-    return { wentToPenalties: true, penaltiesWinnerHome: null }
+  // Formato 2: "{TeamName} win X-Y on penalties" — TSDB status AP
+  // Comprobar si el equipo local o visitante aparece antes de "win"
+  const homeTeam = (item.strHomeTeam ?? '').toLowerCase()
+  const awayTeam = (item.strAwayTeam ?? '').toLowerCase()
+  if (homeTeam && result.includes(homeTeam) && result.includes('win')) {
+    const idx = result.indexOf('win')
+    if (result.lastIndexOf(homeTeam, idx) >= 0) {
+      return { wentToPenalties: true, penaltiesWinnerHome: true }
+    }
+  }
+  if (awayTeam && result.includes(awayTeam) && result.includes('win')) {
+    const idx = result.indexOf('win')
+    if (result.lastIndexOf(awayTeam, idx) >= 0) {
+      return { wentToPenalties: true, penaltiesWinnerHome: false }
+    }
   }
 
+  // Fallback: hubo penales pero ganador desconocido
   return { wentToPenalties: true, penaltiesWinnerHome: null }
 }
 

@@ -7,7 +7,7 @@ import type { MatchStatus } from '../lib/types/predictions'
  *   "Not Started"   → scheduled
  *   "In Progress"   → live
  *   "1H", "HT", "2H", "ET", "Extra Time", "Penalties" → live
- *   "Match Finished", "FT", "AET", "PEN"  → finished
+ *   "Match Finished", "FT", "AET", "PEN", "AP"  → finished
  *   "Postponed"     → postponed
  *   "Cancelled"     → cancelled
  */
@@ -15,7 +15,7 @@ export function mapTsdbStatus(strStatus: string): MatchStatus {
   const s = strStatus.trim().toUpperCase()
 
   const LIVE = new Set(['IN PROGRESS', '1H', 'HT', '2H', 'ET', 'EXTRA TIME', 'PENALTIES', 'LIVE', 'BT'])
-  const FINISHED = new Set(['MATCH FINISHED', 'FT', 'AET', 'PEN', 'AWD', 'WO'])
+  const FINISHED = new Set(['MATCH FINISHED', 'FT', 'AET', 'PEN', 'AP', 'AWD', 'WO'])
   const POSTPONED = new Set(['POSTPONED', 'PST', 'SUSP'])
   const CANCELLED = new Set(['CANCELLED', 'CANCELED', 'CANC', 'ABD'])
 
