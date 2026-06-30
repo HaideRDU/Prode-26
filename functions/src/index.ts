@@ -16,6 +16,8 @@ import { TSDB_FREE_KEY } from './theSportsDb/constants'
 import { syncMatchesFromTsdb as runTsdbSync } from './theSportsDb/syncMatches'
 import { syncMatchesFromFifa as runFifaSync } from './fifa/syncMatches'
 import { getAllRoomIds, recalculateStandingsForRoom } from './recalculateRoom'
+import { propagateKoBracket } from './lib/propagateKoBracket'
+import type { MatchDoc } from './lib/types/predictions'
 
 initializeApp()
 const db = getFirestore()
@@ -24,6 +26,15 @@ const GLOBAL_ROOM_ID = 'global'
 export const onMatchWrite = onDocumentWritten('matches/{matchId}', async (event) => {
   const matchId = event.params.matchId as string
   try {
+    const beforeData = event.data?.before.exists ? (event.data.before.data() as MatchDoc) : null
+    const afterData = event.data?.after.exists ? (event.data.after.data() as MatchDoc) : null
+
+    // Cuando un partido KO pasa a 'finished', propagar ganador/perdedor al siguiente slot del cuadro
+    const justFinished = afterData?.status === 'finished' && beforeData?.status !== 'finished'
+    if (justFinished && afterData) {
+      await propagateKoBracket(db, matchId, afterData)
+    }
+
     // Un partido terminado afecta puntos de partido, avance en llave y podio en todas las salas.
     const roomIds = await getAllRoomIds(db)
     logger.info(`onMatchWrite: matchId=${matchId} recalculating ${roomIds.length} room(s)`)
@@ -136,7 +147,7 @@ const apisportsKey = defineSecret('APISPORTS_KEY')
  */
 export const syncMatchesFromTsdb = onSchedule(
   {
-    schedule: 'every 1 minutes',
+    schedule: 'every 5 minutes',
     timeZone: 'UTC',
     secrets: [apisportsKey],
   },
@@ -156,7 +167,7 @@ export const syncMatchesFromTsdb = onSchedule(
  */
 export const syncMatchesFromFifa = onSchedule(
   {
-    schedule: 'every 1 minutes',
+    schedule: 'every 5 minutes',
     timeZone: 'UTC',
   },
   async () => {

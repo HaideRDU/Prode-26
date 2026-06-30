@@ -282,12 +282,28 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
   const nowMs = Date.now()
   if (!shouldRunScheduledSync(nowMs)) return { ran: false, inWindow: 0, updated: 0 }
 
-  const [snap, { group: officialByGroup, ko: officialByKoNum }] = await Promise.all([
-    db.collection('matches').get(),
-    fetchFifaGroupMatches(),
-  ])
+  // Leer Firestore primero para saber si hay algo que necesite sync
+  const snap = await db.collection('matches').get()
   const docs = snap.docs.map((d) => ({ id: d.id, data: d.data() as MatchDoc }))
   const docsById = new Map(docs.map((d) => [d.id, d]))
+
+  const hasGroupInWindow = docs.some(
+    (d) => d.data.phase === 'group' && isMatchInPollingWindow(d.data, nowMs),
+  )
+  const hasKoNeedingTeams = docs.some(
+    (d) => d.id.startsWith('wc26-ko-') && (!d.data.teamAId || !d.data.teamBId),
+  )
+  const hasKoInWindow = docs.some(
+    (d) => d.data.phase === 'knockout' && isMatchInPollingWindow(d.data, nowMs),
+  )
+
+  if (!hasGroupInWindow && !hasKoNeedingTeams && !hasKoInWindow) {
+    logger.info('[fifa:sync] sin partidos activos — omitiendo llamada a API')
+    return { ran: false, inWindow: 0, updated: 0 }
+  }
+
+  // Solo se llama a FIFA cuando hay trabajo real que hacer
+  const { group: officialByGroup, ko: officialByKoNum } = await fetchFifaGroupMatches()
 
   // ── Grupo ────────────────────────────────────────────────────────────────
   const toSync = docs.filter((d) => {

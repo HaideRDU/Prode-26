@@ -157,12 +157,24 @@ export function mapEventToMatchUpdate(item: TsdbEventItem, teamMap: TsdbTeamMap 
 
 export function matchUpdateChanged(current: MatchDoc, next: MatchFirestoreUpdate): boolean {
   if ((current.theSportsDbEventId ?? null) !== next.theSportsDbEventId) return true
-  if ((current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA) return true
-  if ((current.goalsTeamB ?? current.goalsAway ?? null) !== next.goalsTeamB) return true
+
+  // Para partidos finalizados con penales confirmados (wentToPenalties===true), no dejar
+  // que la API sobreescriba el score ni los campos de penales con null.
+  // TSDB a veces reporta el score incorrecto para partidos con ET/penales.
+  const confirmedPenalties = current.wentToPenalties === true && current.status === 'finished'
+
+  if (!confirmedPenalties) {
+    if ((current.goalsTeamA ?? current.goalsHome ?? null) !== next.goalsTeamA) return true
+    if ((current.goalsTeamB ?? current.goalsAway ?? null) !== next.goalsTeamB) return true
+  }
+
   if (current.status !== next.status) return true
-  if ((current.wentToPenalties ?? null) !== next.wentToPenalties) return true
-  if ((current.penaltiesWinnerTeamA ?? current.penaltiesWinnerHome ?? null) !== next.penaltiesWinnerTeamA) return true
-  if ((current.penaltiesWinnerTeamB ?? current.penaltiesWinnerAway ?? null) !== next.penaltiesWinnerTeamB) return true
+
+  if (!confirmedPenalties) {
+    if ((current.wentToPenalties ?? null) !== next.wentToPenalties) return true
+    if ((current.penaltiesWinnerTeamA ?? current.penaltiesWinnerHome ?? null) !== next.penaltiesWinnerTeamA) return true
+    if ((current.penaltiesWinnerTeamB ?? current.penaltiesWinnerAway ?? null) !== next.penaltiesWinnerTeamB) return true
+  }
   // Detectar corrección de horario
   if (next.scheduledAt) {
     const curMs = typeof current.scheduledAt === 'object' && current.scheduledAt !== null && 'toDate' in current.scheduledAt
