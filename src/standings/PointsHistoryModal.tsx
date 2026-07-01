@@ -80,12 +80,13 @@ function MatchHistoryCard({ row }: { row: PointsHistoryMatchRow }) {
         ))}
       </ul>
 
-      {/* KO con cruce distinto: explicar por qué no suma marcador */}
+      {/* KO con rival distinto: explicar la regla de identidad (crédito parcial) */}
       {row.crossDiffered ? (
         <p className="points-history-card__cross-note app-muted">
-          El cruce real fue distinto al de tu cuadro predicho, así que este partido{' '}
-          <strong>no suma marcador ni ganador</strong>. Los puntos por estos equipos se cuentan
-          aparte en <strong>Avance en llave</strong>.
+          El rival real fue distinto al de tu cuadro predicho. Por la{' '}
+          <strong>regla de identidad de selección</strong>, igual cuentan el ganador y los goles de
+          las selecciones que coincidieron con el partido oficial (ver desglose arriba); los goles del
+          equipo que no jugó ese cruce no suman.
         </p>
       ) : null}
 

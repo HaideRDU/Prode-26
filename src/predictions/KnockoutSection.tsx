@@ -127,8 +127,9 @@ export function KnockoutSection({
       </p>
       {hasOfficialBracketMismatch ? (
         <p className="pred-ko-bracket-mismatch-note app-muted">
-          Hay resultados oficiales de un cuadro distinto al tuyo. Seguí editando tus cruces abajo; los puntos por
-          partido se calculan solo cuando el cruce oficial de ese número de partido coincida con tu predicción.
+          Hay resultados oficiales de un cuadro distinto al tuyo. Seguí editando tus cruces abajo. Por la
+          regla de identidad de selección, igual sumás el ganador y los goles de las selecciones que coincidan
+          con el partido oficial, aunque el rival haya cambiado.
         </p>
       ) : null}
       {roundOrder.map((round) => {

@@ -54,15 +54,15 @@ export function ReglamentoContent({ showPageTitle = true }: ReglamentoContentPro
       <section className="rules-detail-block" aria-labelledby="rules-golden-title">
         <h2 id="rules-golden-title">Regla de oro en eliminatorias</h2>
         <p>
-          Para sumar puntos de partido en fases eliminatorias (R32 en adelante), tenes que haber pronosticado la
-          llave real: los dos equipos del cruce deben coincidir con el partido oficial. Si el cruce no coincide,
-          no suma ganador ni marcador; solo aplican los puntos de avance por seleccion clasificada.
+          En fases eliminatorias (R32 en adelante), los puntos se evaluan por identidad de seleccion. Si cambia
+          el rival, todavia podes sumar ganador y goles de la seleccion que coincida con el partido oficial.
+          Los goles del equipo que no jugo ese cruce no suman.
         </p>
         <div className="rules-example">
           <p>
             <strong>Ejemplo 1 (cambio de rival):</strong> En cuartos, pronosticaste Brasil 2 - 1 Croacia. El
-            partido real fue Brasil 2 - 1 Belgica. Como la llave no coincide, el partido suma <strong>0 pts</strong>{' '}
-            por ganador o marcador. Brasil puede sumar aparte por avance si estaba en tu bracket.
+            partido real fue Brasil 2 - 1 Belgica. Sumas ganador y goles de Brasil, pero no los goles de Croacia
+            porque no jugo ese partido.
           </p>
           <p>
             <strong>Ejemplo 2 (mismos equipos invertidos):</strong> Pronosticaste Brasil 2 - 1 Croacia. El partido

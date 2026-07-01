@@ -27,7 +27,7 @@ function main() {
     wrongLineup,
   )
   assert.equal(detailsWrongPair.exactScoreHit, false)
-  assert.equal(detailsWrongPair.points, 0, 'Cruce distinto en QF: sin puntos de partido')
+  assert.equal(detailsWrongPair.points, 6, 'QF: ganador y gol de BRA suman por identidad')
 
   const matchSwapped = {
     ...matchQf,
@@ -69,8 +69,8 @@ function main() {
   assert.equal(detailsOverlap.exactScoreHit, false)
   assert.equal(
     detailsOverlap.points,
-    0,
-    'Un solo rival en común no alcanza: sin ganador acertado ni goles parciales',
+    3,
+    'Un solo rival en comun puede sumar goles parciales por identidad',
   )
 
   const matchFinal = {
@@ -94,8 +94,8 @@ function main() {
     },
     { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
   )
-  assert.equal(detailsPensWinner.winnerOrDrawHit, false)
-  assert.equal(detailsPensWinner.points, 0, 'Final con rival distinto: sin puntos de partido')
+  assert.equal(detailsPensWinner.winnerOrDrawHit, true)
+  assert.equal(detailsPensWinner.points, 4, 'Final: ganador CIV suma por identidad aunque cambie rival')
 
   const detailsPensAwayOnly = scoreMatchPredictionDetails(
     matchFinal,
@@ -125,7 +125,7 @@ function main() {
     { goalsTeamA: 1, goalsTeamB: 0, wentToPenalties: false },
     { predictedTeamAId: 'KOR', predictedTeamBId: 'OTHER' },
   )
-  assert.equal(detailsKorPartial.points, 0, 'R16 con rival distinto: sin puntos de partido')
+  assert.equal(detailsKorPartial.points, 2, 'R16: ganador KOR suma por identidad aunque cambie rival')
 
   const matchCivJpn = {
     phase: 'knockout' as const,
@@ -147,7 +147,7 @@ function main() {
     },
     { predictedTeamAId: 'CIV', predictedTeamBId: 'JPN' },
   )
-  assert.equal(detailsCivPens.points, 3, 'QF: solo ganador por penales (3), sin gol 0=0 si el oficial fue 0-3')
+  assert.equal(detailsCivPens.points, 6, 'QF: ganador por penales y gol de CIV por identidad')
 
   const detailsCivWrongRival = scoreMatchPredictionDetails(
     matchCivJpn,
@@ -159,8 +159,25 @@ function main() {
     },
     { predictedTeamAId: 'CIV', predictedTeamBId: 'CZE' },
   )
-  assert.equal(detailsCivWrongRival.points, 0, 'Penales al rival predicho (CZE) no cuenta si ganó Japón')
+  assert.equal(detailsCivWrongRival.points, 3, 'Rival ausente no suma, pero CIV 0-0 si suma gol por identidad')
 
+  const matchNedMar = {
+    phase: 'knockout' as const,
+    status: 'finished' as const,
+    goalsTeamA: 1,
+    goalsTeamB: 1,
+    wentToPenalties: true,
+    penaltiesWinnerTeamB: true,
+    round: 'r32',
+    teamAId: 'NED',
+    teamBId: 'MAR',
+  }
+  const detailsNedMar = scoreMatchPredictionDetails(
+    matchNedMar,
+    { goalsTeamA: 2, goalsTeamB: 1, wentToPenalties: false },
+    { predictedTeamAId: 'NED', predictedTeamBId: 'MAR' },
+  )
+  assert.equal(detailsNedMar.points, 3, 'R32 NED 2-1 MAR vs 1-1 pen MAR: suma gol de MAR')
   console.log('scoringKoMismatch.test.ts: OK')
 }
 

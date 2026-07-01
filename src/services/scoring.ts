@@ -81,18 +81,6 @@ export interface PredictedKoLineup {
   predictedTeamBId: string | null
 }
 
-function koPairMatchesOfficial(
-  predTeamAId: string,
-  predTeamBId: string,
-  actualTeamAId: string,
-  actualTeamBId: string,
-): boolean {
-  return (
-    (predTeamAId === actualTeamAId && predTeamBId === actualTeamBId) ||
-    (predTeamAId === actualTeamBId && predTeamBId === actualTeamAId)
-  )
-}
-
 function matchResultSign(goalsA: number, goalsB: number): -1 | 0 | 1 {
   if (goalsA > goalsB) return 1
   if (goalsA < goalsB) return -1
@@ -204,28 +192,17 @@ function scoreAdditiveMatch(
     winnerOrDrawHit = true
   }
 
-  const predSign = matchResultSign(predTeamA, predTeamB)
-  const actualSign = matchResultSign(actualA, actualB)
-  // KO: sin goles parciales si predijiste empate/penales y el partido definió ganador en 90'.
-  // Sí permite goles si el ganador coincide aunque local/visitante estén invertidos en el marcador.
-  const allowGoalLines =
-    !koContext ||
-    predSign === actualSign ||
-    (predSign !== 0 &&
-      actualSign !== 0 &&
-      predWinner !== 'draw' &&
-      predWinner === actualWinner)
-
+  // In knockout rounds, goal-line points follow team identity, even if the rival changed.
   const actualGoalsForPredA =
     predSlotAId === actualSlotAId ? actualA : predSlotAId === actualSlotBId ? actualB : null
   const actualGoalsForPredB =
     predSlotBId === actualSlotAId ? actualA : predSlotBId === actualSlotBId ? actualB : null
 
-  if (allowGoalLines && actualGoalsForPredA !== null && predTeamA === actualGoalsForPredA) {
+  if (actualGoalsForPredA !== null && predTeamA === actualGoalsForPredA) {
     points += row.goalsTeamA
     goalsAHit = true
   }
-  if (allowGoalLines && actualGoalsForPredB !== null && predTeamB === actualGoalsForPredB) {
+  if (actualGoalsForPredB !== null && predTeamB === actualGoalsForPredB) {
     points += row.goalsTeamB
     goalsBHit = true
   }
@@ -240,18 +217,6 @@ function scoreAdditiveMatch(
     winnerOrDrawHit,
     goalsAHit,
     goalsBHit,
-  }
-}
-
-/** Rivales distintos al cruce oficial: solo puntos por acertar el ganador (por ID de selección). */
-function scoreKnockoutWrongOpponents(): MatchScoreDetails {
-  return {
-    points: 0,
-    exactScoreHit: false,
-    oneScoreHit: false,
-    winnerOrDrawHit: false,
-    goalsAHit: false,
-    goalsBHit: false,
   }
 }
 
@@ -306,17 +271,6 @@ export function scoreMatchPredictionDetails(
   const paId = predictedLineup?.predictedTeamBId ?? aaId
   const roundId = normalizeKoRoundId(match.round)
   const row = DEFAULT_RULESET.points.matchByPhase.knockout[roundId]
-
-  if (
-    match.phase === 'knockout' &&
-    ahId &&
-    aaId &&
-    phId &&
-    paId &&
-    !koPairMatchesOfficial(phId, paId, ahId, aaId)
-  ) {
-    return scoreKnockoutWrongOpponents()
-  }
 
   if (!ahId || !aaId || !phId || !paId) return empty
 

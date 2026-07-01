@@ -83,7 +83,7 @@ export type PointsHistoryMatchRow = {
   phase: 'group' | 'knockout'
   /** Desglose del marcador: de dónde salió cada punto de partido. */
   scoreLines: PointsHistoryScoreLine[]
-  /** KO: el cruce real fue distinto al de tu cuadro predicho (no suma marcador). */
+  /** KO: el rival real fue distinto al de tu cuadro; se evalúa por identidad (crédito parcial). */
   crossDiffered: boolean
   /** Avance en llave de los equipos de ESTE partido (informativo; cuenta en 'Avance en llave'). */
   advancementLines: PointsHistoryMatchAdvancement[]
@@ -386,7 +386,7 @@ export function buildPointsHistory(args: {
     }
     const advancementPoints = advancementLines.reduce((s, l) => s + l.points, 0)
 
-    // Mostrar si sumó algo, o si es un KO de cruce distinto (para explicar el 0).
+    // Mostrar si sumó algo, o si es un KO con rival distinto (para explicar el crédito parcial por identidad).
     if (total <= 0 && !crossDiffered) continue
 
     // Desglose del marcador: de dónde salió cada punto de partido.

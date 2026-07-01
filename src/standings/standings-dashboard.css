@@ -750,15 +750,15 @@ h2.standings-dashboard-card__label {
   color: #facc15;
 }
 
-/* KO cruce distinto: nota explicativa */
+/* KO rival distinto: nota informativa (regla de identidad, crédito parcial) */
 .points-history-card__cross-note {
   margin: 0.5rem 0 0;
   font-size: 0.76rem;
   line-height: 1.4;
   padding: 0.5rem 0.6rem;
   border-radius: 0.5rem;
-  background: color-mix(in srgb, #f59e0b 12%, transparent);
-  border: 1px solid color-mix(in srgb, #f59e0b 30%, var(--border));
+  background: color-mix(in srgb, #38bdf8 12%, transparent);
+  border: 1px solid color-mix(in srgb, #38bdf8 30%, var(--border));
 }
 
 .points-history-card__cross-note strong {

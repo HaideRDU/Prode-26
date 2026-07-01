@@ -113,8 +113,8 @@ export function PointsTablesSection() {
       />
       <p className="rules-points-hint">
         Cada acierto suma de forma independiente. La fila «Máximo posible» es el total si acertás ganador/empate
-        y ambos goles. En eliminatorias, estos puntos solo aplican si el cruce oficial de esa llave coincide con el
-        cruce que pronosticaste.
+        y ambos goles. En eliminatorias, ganador y goles se evaluan por identidad de seleccion, incluso si el
+        rival real cambia frente a tu bracket.
       </p>
 
       <h3>2. Bonus: goleador del partido</h3>
@@ -130,7 +130,8 @@ export function PointsTablesSection() {
         rows={advRows}
       />
       <p className="rules-points-hint">
-        Si el cruce real cambia frente a tu bracket, esta es la unica puntuacion que podes sumar por esa seleccion.
+        Si el cruce real cambia frente a tu bracket, estos puntos se suman aparte por cada seleccion clasificada
+        que hayas ubicado en esa ronda.
       </p>
       <p className="rules-points-hint">
         Por cada selección que acertás que clasifica a esa fase, sumás los puntos indicados (acumulables).

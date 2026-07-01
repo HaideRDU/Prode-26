@@ -76,6 +76,8 @@ type FifaMatchUpdate = {
   scorers?: MatchScorerEntry[]
 }
 
+type FifaScorerSource = Pick<FifaGroupMatch, 'idMatch' | 'idStage' | 'idSeason'>
+
 export interface SyncFifaResult {
   ran: boolean
   inWindow: number
@@ -219,7 +221,7 @@ function updateChanged(current: MatchDoc, next: FifaMatchUpdate): boolean {
 async function attachFifaScorers(
   db: Firestore,
   current: MatchDoc,
-  official: FifaGroupMatch,
+  official: FifaScorerSource,
   next: FifaMatchUpdate,
 ): Promise<void> {
   const baseScorers = reconcileScorersWithScore(
@@ -267,8 +269,6 @@ function needsFifaCalendarSync(current: MatchDoc, official: FifaGroupMatch, nowM
 }
 
 export function koMatchDocId(matchNumber: number): string {
-  // El cuadro local quedó con M77/M78 invertidos respecto al calendario FIFA:
-  // local wc26-ko-77 = CIV-NOR, local wc26-ko-78 = FRA-SWE.
   return fifaKoMatchDocId(matchNumber)
 }
 
@@ -383,12 +383,30 @@ export async function syncMatchesFromFifa(db: Firestore): Promise<SyncFifaResult
       // No sobreescribir el score de partidos con penales confirmados:
       // la API a veces reporta el marcador agregado (incluye penales) en lugar del 90'.
       const confirmedPenalties = existing.wentToPenalties === true
+      let goalsTeamA = existing.goalsTeamA ?? existing.goalsHome ?? null
+      let goalsTeamB = existing.goalsTeamB ?? existing.goalsAway ?? null
       if (!confirmedPenalties) {
         const homeIsTeamA = ko.homeTeamId === existing.teamAId || (!existing.teamAId && true)
-        patch.goalsTeamA = homeIsTeamA ? ko.homeGoals : ko.awayGoals
-        patch.goalsTeamB = homeIsTeamA ? ko.awayGoals : ko.homeGoals
-        patch.goalsHome = patch.goalsTeamA
-        patch.goalsAway = patch.goalsTeamB
+        goalsTeamA = homeIsTeamA ? ko.homeGoals : ko.awayGoals
+        goalsTeamB = homeIsTeamA ? ko.awayGoals : ko.homeGoals
+        patch.goalsTeamA = goalsTeamA
+        patch.goalsTeamB = goalsTeamB
+        patch.goalsHome = goalsTeamA
+        patch.goalsAway = goalsTeamB
+      }
+      try {
+        const scorerNext: FifaMatchUpdate = {
+          scheduledAt: new Date(ko.dateIso),
+          status: officialStatus,
+          goalsTeamA,
+          goalsTeamB,
+          goalsHome: goalsTeamA,
+          goalsAway: goalsTeamB,
+        }
+        await attachFifaScorers(db, existing, ko, scorerNext)
+        if (scorerNext.scorers) patch.scorers = scorerNext.scorers
+      } catch (err) {
+        logger.warn(`[fifa:sync] scorers failed matchId=${docId}`, err)
       }
       if (officialStatus === 'finished') patch.finishedAt = new Date()
     }

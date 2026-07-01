@@ -20,13 +20,13 @@ export const THIRD_SLOT_ELIGIBLE: Readonly<Record<number, readonly string[]>> = 
   77: ['C', 'D', 'F', 'G', 'H'],
   79: ['C', 'E', 'F', 'H', 'I'],
   80: ['E', 'H', 'I', 'J', 'K'],
-  81: ['B', 'E', 'F', 'I', 'J'],
-  82: ['A', 'E', 'H', 'I', 'J'],
-  85: ['E', 'F', 'G', 'I', 'J'],
-  87: ['D', 'E', 'I', 'J', 'L'],
+  82: ['B', 'E', 'F', 'I', 'J'],
+  84: ['A', 'E', 'H', 'I', 'J'],
+  81: ['E', 'F', 'G', 'I', 'J'],
+  86: ['D', 'E', 'I', 'J', 'L'],
 }
 
-export const THIRD_ASSIGNMENT_ORDER = [74, 77, 79, 80, 81, 82, 85, 87] as const
+export const THIRD_ASSIGNMENT_ORDER = [74, 77, 79, 80, 82, 84, 81, 86] as const
 
 function rankSumForMap(
   m: Map<number, string>,

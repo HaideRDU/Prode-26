@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_RULESET, toDate, type KnockoutRoundId } from '../config/ruleset'
+import {
+  extractGroupAndKoPredMaps,
+  officialTeamsByAdvancementRound,
+  predictedTeamsByAdvancementRound,
+  type AdvancementRoundKey,
+} from '../domain/bracketAdvancement'
 import { getPredictedKoLineupForMatch } from '../domain/koPredictedLineup'
 import { matchTeamAId, matchTeamBId } from '../domain/matchFields'
 import { penaltiesWinnerIsTeamAFromPayload } from '../domain/matchPenalties'
@@ -32,9 +38,18 @@ type RowPointsBreakdownItem = {
 type RowPointsBreakdown = {
   matchPoints: number
   bonusPoints: number
+  advancementPoints: number
   total: number
   items: RowPointsBreakdownItem[]
   ariaLabel: string
+}
+
+const ROUND_TO_ADVANCEMENT: Partial<Record<string, AdvancementRoundKey>> = {
+  r32: 'toR32',
+  r16: 'toR16',
+  qf: 'toQf',
+  sf: 'toSf',
+  final: 'toFinal',
 }
 
 // Cache compartida de plantillas por equipo: un único listener por teamId,
@@ -196,6 +211,7 @@ function buildPointsBreakdown({
   details,
   bonusName,
   bonusPoints,
+  advancementItems,
   predictedLineup,
   teamAId,
   teamBId,
@@ -205,12 +221,14 @@ function buildPointsBreakdown({
   details: MatchScoreDetails
   bonusName: string | null
   bonusPoints: number
+  advancementItems: RowPointsBreakdownItem[]
   predictedLineup: ProjectedKoLineup | null
   teamAId: string | null
   teamBId: string | null
   teamLabel: (id: string) => string
 }): RowPointsBreakdown | null {
-  const total = details.points + bonusPoints
+  const advancementPoints = advancementItems.reduce((sum, item) => sum + item.points, 0)
+  const total = details.points + bonusPoints + advancementPoints
   if (total <= 0) return null
 
   const items = buildMatchPointsItems(match, details, predictedLineup, teamAId, teamBId, teamLabel)
@@ -221,6 +239,7 @@ function buildPointsBreakdown({
       points: bonusPoints,
     })
   }
+  items.push(...advancementItems)
 
   const ariaLabel = [
     ...items.map((item) => `${item.label}: ${signedPoints(item.points)}`),
@@ -230,10 +249,43 @@ function buildPointsBreakdown({
   return {
     matchPoints: details.points,
     bonusPoints,
+    advancementPoints,
     total,
     items,
     ariaLabel,
   }
+}
+
+function advancementItemsForMatch({
+  match,
+  matches,
+  userPredictions,
+  teamLabel,
+}: {
+  match: MatchDoc & { id: string }
+  matches: (MatchDoc & { id: string })[]
+  userPredictions: PredictionDoc[]
+  teamLabel: (id: string) => string
+}): RowPointsBreakdownItem[] {
+  if (match.phase !== 'knockout') return []
+  const advKey = ROUND_TO_ADVANCEMENT[String(match.round ?? '').toLowerCase()]
+  if (!advKey) return []
+
+  const matchesById = new Map(matches.map((m) => [m.id, m]))
+  const { groupPredByMatchId, koPredByMatchId } = extractGroupAndKoPredMaps(userPredictions)
+  const predictedByRound = predictedTeamsByAdvancementRound(groupPredByMatchId, koPredByMatchId)
+  const officialByRound = officialTeamsByAdvancementRound(matchesById)
+  const predSet = predictedByRound.get(advKey) ?? new Set<string>()
+  const offSet = officialByRound.get(advKey) ?? new Set<string>()
+  const points = DEFAULT_RULESET.points.advancement[advKey]
+
+  return [matchTeamAId(match), matchTeamBId(match)]
+    .filter((teamId): teamId is string => Boolean(teamId))
+    .filter((teamId) => predSet.has(teamId) && offSet.has(teamId))
+    .map((teamId) => ({
+      label: `Avance en llave (${teamLabel(teamId)})`,
+      points,
+    }))
 }
 
 /** Encuentra el partido más cercano: en juego primero, luego el próximo por jugar, sino el último finalizado. */
@@ -328,7 +380,9 @@ function ProjectedKoRow({
         <span className="match-comparison-table__score">
           {score.goalsTeamA} – {score.goalsTeamB}
         </span>
-      ) : null}
+      ) : (
+        <span className="match-comparison-table__empty">Sin marcador</span>
+      )}
     </div>
   ) : (
     <span className="match-comparison-table__empty">Sin cruce</span>
@@ -463,12 +517,14 @@ function MatchCard({
 function MatchPredictionsTable({
   roomId,
   match,
+  matches,
   teamLabel,
   predictions,
   predictionsLoading,
 }: {
   roomId: string | undefined
   match: MatchDoc & { id: string }
+  matches: (MatchDoc & { id: string })[]
   teamLabel: (id: string) => string
   predictions: PredictionDoc[]
   predictionsLoading: boolean
@@ -575,12 +631,20 @@ function MatchPredictionsTable({
                 theSportsDbPlayerId: bonusPlayer?.theSportsDbPlayerId,
               })
             : 0
-          points = matchDetails.points + bonusPts
+          const advancementItems = advancementItemsForMatch({
+            match,
+            matches,
+            userPredictions,
+            teamLabel,
+          })
+          const advancementPts = advancementItems.reduce((sum, item) => sum + item.points, 0)
+          points = matchDetails.points + bonusPts + advancementPts
           pointsBreakdown = buildPointsBreakdown({
             match,
             details: matchDetails,
             bonusName,
             bonusPoints: bonusPts,
+            advancementItems,
             predictedLineup,
             teamAId,
             teamBId,
@@ -598,7 +662,7 @@ function MatchPredictionsTable({
         }
       })
       .sort((a, b) => a.displayName.localeCompare(b.displayName, 'es'))
-  }, [members, byUserId, playerByKey, playersLoaded, isFinished, isKnockout, match, predictions, teamAId, teamBId, teamLabel])
+  }, [members, byUserId, playerByKey, playersLoaded, isFinished, isKnockout, match, matches, predictions, teamAId, teamBId, teamLabel])
 
   if (predictionsLoading || membersLoading) {
     return <p className="match-comparison-table__hint">Cargando predicciones…</p>
@@ -801,6 +865,7 @@ export function MatchComparisonCarousel({ roomId }: { roomId: string | undefined
         <MatchPredictionsTable
           roomId={roomId}
           match={selectedMatch}
+          matches={matches}
           teamLabel={teamLabel}
           predictions={predictions}
           predictionsLoading={predictionsLoading}
