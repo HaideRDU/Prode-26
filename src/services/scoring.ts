@@ -143,7 +143,7 @@ function koActualWinnerTeamId(
   return 'draw'
 }
 
-function normalizeKoRoundId(round: string | undefined): KnockoutRoundId {
+export function normalizeKoRoundId(round: string | undefined): KnockoutRoundId {
   switch (round) {
     case 'r32':
     case 'round32':

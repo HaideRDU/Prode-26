@@ -49,18 +49,61 @@ function MatchHistoryCard({ row }: { row: PointsHistoryMatchRow }) {
           <dd>{row.playerLabel}</dd>
         </div>
         <div className="points-history-card__item points-history-card__item--scores">
-          <dt>Puntos</dt>
+          <dt>Puntos del partido</dt>
           <dd>
-            Marcador <strong>{row.matchPoints}</strong>
+            <strong>{row.matchPoints}</strong>
             {row.playerBonusPoints > 0 ? (
               <>
                 {' · '}
-                Bonus <strong>{row.playerBonusPoints}</strong>
+                Bonus jugador <strong>{row.playerBonusPoints}</strong>
               </>
             ) : null}
           </dd>
         </div>
       </dl>
+
+      {/* Desglose: de dónde salió cada punto del marcador */}
+      <ul className="points-history-card__lines" aria-label="Desglose del marcador">
+        {row.scoreLines.map((line) => (
+          <li
+            key={line.label}
+            className={`points-history-card__line${line.hit ? ' is-hit' : ' is-miss'}`}
+          >
+            <span className="points-history-card__line-icon" aria-hidden="true">
+              {line.hit ? '✓' : '✕'}
+            </span>
+            <span className="points-history-card__line-label">{line.label}</span>
+            <span className="points-history-card__line-pts">
+              {line.hit ? `+${line.points}` : '+0'}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {/* KO con cruce distinto: explicar por qué no suma marcador */}
+      {row.crossDiffered ? (
+        <p className="points-history-card__cross-note app-muted">
+          El cruce real fue distinto al de tu cuadro predicho, así que este partido{' '}
+          <strong>no suma marcador ni ganador</strong>. Los puntos por estos equipos se cuentan
+          aparte en <strong>Avance en llave</strong>.
+        </p>
+      ) : null}
+
+      {/* Aporte de avance en llave de los equipos de este partido */}
+      {row.advancementLines.length > 0 ? (
+        <div className="points-history-card__advancement">
+          <span className="points-history-card__advancement-label">
+            Avance en llave (cuenta en su propia sección)
+          </span>
+          <ul className="points-history-card__advancement-list">
+            {row.advancementLines.map((adv) => (
+              <li key={adv.teamLabel}>
+                {adv.teamLabel} <strong>+{adv.points}</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </article>
   )
 }

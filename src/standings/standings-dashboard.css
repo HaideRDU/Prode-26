@@ -699,6 +699,103 @@ h2.standings-dashboard-card__label {
   color: #facc15;
 }
 
+/* Desglose del marcador: de dónde salió cada punto */
+.points-history-card__lines {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0.5rem 0 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.points-history-card__line {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.points-history-card__line-icon {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.points-history-card__line.is-hit .points-history-card__line-icon {
+  color: #22c55e;
+}
+
+.points-history-card__line.is-miss {
+  color: var(--muted, var(--text));
+}
+
+.points-history-card__line.is-miss .points-history-card__line-icon {
+  color: color-mix(in srgb, #ef4444 70%, var(--muted, var(--text)));
+}
+
+.points-history-card__line-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.points-history-card__line-pts {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.points-history-card__line.is-hit .points-history-card__line-pts {
+  color: #facc15;
+}
+
+/* KO cruce distinto: nota explicativa */
+.points-history-card__cross-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  border: 1px solid color-mix(in srgb, #f59e0b 30%, var(--border));
+}
+
+.points-history-card__cross-note strong {
+  color: var(--text-h);
+}
+
+/* Aporte de avance en llave de los equipos de este partido */
+.points-history-card__advancement {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.points-history-card__advancement-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, var(--text));
+  margin-bottom: 0.25rem;
+}
+
+.points-history-card__advancement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  font-size: 0.78rem;
+}
+
+.points-history-card__advancement-list strong {
+  color: #38bdf8;
+}
+
 /* Mi estado */
 .standings-my-status__panel {
   margin-top: 0.5rem;

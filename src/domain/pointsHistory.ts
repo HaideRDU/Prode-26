@@ -23,6 +23,8 @@ import type {
   TournamentResultDoc,
 } from '../types/predictions'
 import {
+  MATCH_POINTS_BY_PHASE,
+  normalizeKoRoundId,
   scoreMatchPredictionDetails,
   scorePlayerPerMatchPick,
   scoreTournamentPrediction,
@@ -31,6 +33,15 @@ import {
   type PlayerPerMatchScoreInput,
   type TournamentScoreInput,
 } from '../services/scoring'
+
+/** Ronda KO → clave de avance en llave (la 3ra fase no otorga avance). */
+const ROUND_TO_ADVANCEMENT: Partial<Record<string, AdvancementRoundKey>> = {
+  r32: 'toR32',
+  r16: 'toR16',
+  qf: 'toQf',
+  sf: 'toSf',
+  final: 'toFinal',
+}
 
 const groupMatchNumber = new Map(GROUP_STAGE_SCHEDULE.map((r, i) => [r.matchId, i + 1]))
 
@@ -45,6 +56,19 @@ const EXTRA_QUESTION_LABELS: Record<string, string> = {
 
 const BONUS_LABEL_BY_ID = new Map(ALL_QUESTION_METAS.map((m) => [m.id, m.labelEs]))
 
+/** Una línea del desglose del marcador (ganador / gol local / gol visitante). */
+export type PointsHistoryScoreLine = {
+  label: string
+  points: number
+  hit: boolean
+}
+
+/** Aporte de avance en llave atribuible a un equipo de este partido. */
+export type PointsHistoryMatchAdvancement = {
+  teamLabel: string
+  points: number
+}
+
 export type PointsHistoryMatchRow = {
   matchNumber: number
   sortKey: number
@@ -55,6 +79,16 @@ export type PointsHistoryMatchRow = {
   matchPoints: number
   playerBonusPoints: number
   total: number
+  /** 'group' | 'knockout' — para explicar reglas específicas de KO. */
+  phase: 'group' | 'knockout'
+  /** Desglose del marcador: de dónde salió cada punto de partido. */
+  scoreLines: PointsHistoryScoreLine[]
+  /** KO: el cruce real fue distinto al de tu cuadro predicho (no suma marcador). */
+  crossDiffered: boolean
+  /** Avance en llave de los equipos de ESTE partido (informativo; cuenta en 'Avance en llave'). */
+  advancementLines: PointsHistoryMatchAdvancement[]
+  /** Suma de advancementLines (informativo, ya contado en el subtotal de avance). */
+  advancementPoints: number
 }
 
 export type PointsHistoryQuestionRow = {
@@ -321,10 +355,51 @@ export function buildPointsHistory(args: {
     const playerKey = playerKeyByMatchId.get(mp.matchId)
     const playerBonusPoints = scorePlayerPerMatchPick(mp.match, playerKey)
     const total = matchPoints + playerBonusPoints
-    if (total <= 0) continue
 
+    const isKo = mp.match.phase === 'knockout'
     const teamA = matchTeamAId(fullMatch)
     const teamB = matchTeamBId(fullMatch)
+
+    // KO: ¿el cruce real coincide con el de tu cuadro predicho?
+    const predA = mp.predictedLineup?.predictedTeamAId ?? null
+    const predB = mp.predictedLineup?.predictedTeamBId ?? null
+    const crossDiffered =
+      isKo && !!teamA && !!teamB && !!predA && !!predB
+        ? !(
+            (predA === teamA && predB === teamB) ||
+            (predA === teamB && predB === teamA)
+          )
+        : false
+
+    // Aporte de avance en llave de los equipos de este partido (misma ronda).
+    const advKey = isKo ? ROUND_TO_ADVANCEMENT[normalizeKoRoundId(mp.match.round)] : undefined
+    const advancementLines: PointsHistoryMatchAdvancement[] = []
+    if (advKey) {
+      const advPts = DEFAULT_RULESET.points.advancement[advKey]
+      const predSet = predictedByRound.get(advKey) ?? new Set()
+      const offSet = officialByRound.get(advKey) ?? new Set()
+      for (const tid of [teamA, teamB]) {
+        if (tid && predSet.has(tid) && offSet.has(tid)) {
+          advancementLines.push({ teamLabel: teamLabel(tid), points: advPts })
+        }
+      }
+    }
+    const advancementPoints = advancementLines.reduce((s, l) => s + l.points, 0)
+
+    // Mostrar si sumó algo, o si es un KO de cruce distinto (para explicar el 0).
+    if (total <= 0 && !crossDiffered) continue
+
+    // Desglose del marcador: de dónde salió cada punto de partido.
+    const row =
+      mp.match.phase === 'group'
+        ? MATCH_POINTS_BY_PHASE.group
+        : MATCH_POINTS_BY_PHASE.knockout[normalizeKoRoundId(mp.match.round)]
+    const scoreLines: PointsHistoryScoreLine[] = [
+      { label: 'Ganador/empate', points: details.winnerOrDrawHit ? row.winnerOrDraw : 0, hit: details.winnerOrDrawHit },
+      { label: 'Gol local', points: details.goalsAHit ? row.goalsTeamA : 0, hit: details.goalsAHit },
+      { label: 'Gol visitante', points: details.goalsBHit ? row.goalsTeamB : 0, hit: details.goalsBHit },
+    ]
+
     const matchupLabel =
       teamA && teamB ? `${teamLabel(teamA)} vs ${teamLabel(teamB)}` : mp.matchId
 
@@ -340,6 +415,11 @@ export function buildPointsHistory(args: {
       matchPoints,
       playerBonusPoints,
       total,
+      phase: isKo ? 'knockout' : 'group',
+      scoreLines,
+      crossDiffered,
+      advancementLines,
+      advancementPoints,
     })
   }
 
