@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { useMatchList } from '../hooks/useMatchList'
 import { usePlayerPerMatchPicks } from '../hooks/usePlayerPerMatchPicks'
@@ -21,9 +21,9 @@ import { RoomHomePlayerPickBanner } from '../predictions/RoomHomePlayerPickBanne
 import { MatchComparisonCarousel } from '../predictions/MatchComparisonCarousel'
 import { useRoomStandingsMeta } from '../hooks/useRoomStandingsMeta'
 import { StandingsLeaderboard } from '../standings/StandingsLeaderboard'
+import { StandingsPlayerDetail } from '../standings/StandingsPlayerDetail'
 import { StandingsMyStatusCard } from '../standings/StandingsMyStatusCard'
 import { StandingsPageHeader } from '../standings/StandingsPageHeader'
-import { PointsHistoryModal } from '../standings/PointsHistoryModal'
 import { ModalPortal } from '../components/ModalPortal'
 import { PredictionReviewModal } from '../predictions/PredictionReviewModal'
 import { StandingsParticipationCard } from '../standings/StandingsParticipationCard'
@@ -53,7 +53,9 @@ export function RoomStandingsPage() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showPredictionPrompt, setShowPredictionPrompt] = useState(false)
+  const [showMatchComparison, setShowMatchComparison] = useState(false)
   const [historyMember, setHistoryMember] = useState<InspectedMember | null>(null)
+  const historyReturnScrollY = useRef(0)
   const [predictionMember, setPredictionMember] = useState<InspectedMember | null>(null)
   const [predictionFinalized, setPredictionFinalized] = useState<boolean | null>(null)
   const { matches } = useMatchList()
@@ -210,11 +212,19 @@ export function RoomStandingsPage() {
   }
 
   function openHistoryForRow(row: StandingRow) {
+    historyReturnScrollY.current = window.scrollY
     setPredictionMember(null)
     setHistoryMember({
       userId: row.userId,
       displayName: row.displayName?.trim() || row.userId || row.id,
       standing: row,
+    })
+  }
+
+  function closeHistoryDetail() {
+    setHistoryMember(null)
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: historyReturnScrollY.current, behavior: 'smooth' })
     })
   }
 
@@ -369,7 +379,16 @@ export function RoomStandingsPage() {
           ) : undefined
         }
       />
-      <MatchComparisonCarousel roomId={roomId} />
+      <div className="room-standings-lazy-panel">
+        <button
+          type="button"
+          className="room-standings-lazy-panel__btn"
+          onClick={() => setShowMatchComparison((value) => !value)}
+        >
+          {showMatchComparison ? 'Ocultar comparacion de partidos' : 'Ver comparacion de partidos'}
+        </button>
+        {showMatchComparison ? <MatchComparisonCarousel roomId={roomId} /> : null}
+      </div>
       {showScoringHelpModal ? (
         <ModalPortal>
           <div
@@ -441,7 +460,15 @@ export function RoomStandingsPage() {
         </div>
         {loading ? <p className="user-email">Cargando…</p> : null}
         {error ? <p className="auth-error">{error}</p> : null}
-        {standings.length > 0 ? (
+        {historyMember ? (
+          <StandingsPlayerDetail
+            member={historyMember}
+            history={pointsHistory}
+            loading={pointsHistoryLoading}
+            error={pointsHistoryError}
+            onBack={closeHistoryDetail}
+          />
+        ) : standings.length > 0 ? (
           <StandingsLeaderboard
             standings={standings}
             showSpecialsColumn={showSpecialsColumn}
@@ -489,15 +516,6 @@ export function RoomStandingsPage() {
           roomId={roomId}
           inviteCode={room.inviteCode}
           onClose={() => setShowInviteModal(false)}
-        />
-      ) : null}
-      {historyMember ? (
-        <PointsHistoryModal
-          history={pointsHistory}
-          loading={pointsHistoryLoading}
-          error={pointsHistoryError}
-          subjectDisplayName={historyMember.displayName}
-          onClose={() => setHistoryMember(null)}
         />
       ) : null}
       {predictionMember ? (

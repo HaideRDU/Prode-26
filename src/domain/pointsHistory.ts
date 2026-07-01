@@ -5,7 +5,8 @@ import { tournamentCatalogSortKey } from './matchCatalogOrder'
 import { formatOfficialMatchScore, formatPredictionMatchScore } from './formatMatchScoreDisplay'
 import { formatTournamentPayloadLabel } from './formatTournamentPayloadLabel'
 import { getPredictedKoLineupForMatch, parseWc26KoMatchNum } from './koPredictedLineup'
-import { matchTeamAId, matchTeamBId } from './matchFields'
+import { matchGoalsTeamA, matchGoalsTeamB, matchTeamAId, matchTeamBId, predictionGoalsTeamA, predictionGoalsTeamB } from './matchFields'
+import { penaltiesWinnerIsTeamAFromPayload } from './matchPenalties'
 import {
   type AdvancementRoundKey,
   extractGroupAndKoPredMaps,
@@ -73,8 +74,22 @@ export type PointsHistoryMatchRow = {
   matchNumber: number
   sortKey: number
   matchupLabel: string
+  teamAId: string | null
+  teamBId: string | null
+  teamALabel: string | null
+  teamBLabel: string | null
+  predictedTeamAId: string | null
+  predictedTeamBId: string | null
+  predictedTeamALabel: string | null
+  predictedTeamBLabel: string | null
   officialScore: string
   predictionScore: string
+  officialGoalsA: number | null
+  officialGoalsB: number | null
+  officialPenaltiesWinner: 'teamA' | 'teamB' | null
+  predictionGoalsA: number
+  predictionGoalsB: number
+  predictionPenaltiesWinner: 'teamA' | 'teamB' | null
   playerLabel: string
   matchPoints: number
   playerBonusPoints: number
@@ -371,14 +386,20 @@ export function buildPointsHistory(args: {
           )
         : false
 
-    // Aporte de avance en llave de los equipos de este partido (misma ronda).
+    const displayPredA = isKo ? predA : teamA
+    const displayPredB = isKo ? predB : teamB
+
+    // Aporte de avance en llave de los equipos que el usuario puso en esta tarjeta.
     const advKey = isKo ? ROUND_TO_ADVANCEMENT[normalizeKoRoundId(mp.match.round)] : undefined
     const advancementLines: PointsHistoryMatchAdvancement[] = []
     if (advKey) {
       const advPts = DEFAULT_RULESET.points.advancement[advKey]
       const predSet = predictedByRound.get(advKey) ?? new Set()
       const offSet = officialByRound.get(advKey) ?? new Set()
-      for (const tid of [teamA, teamB]) {
+      const seen = new Set<string>()
+      for (const tid of [displayPredA, displayPredB]) {
+        if (!tid || seen.has(tid)) continue
+        seen.add(tid)
         if (tid && predSet.has(tid) && offSet.has(tid)) {
           advancementLines.push({ teamLabel: teamLabel(tid), points: advPts })
         }
@@ -387,17 +408,19 @@ export function buildPointsHistory(args: {
     const advancementPoints = advancementLines.reduce((s, l) => s + l.points, 0)
 
     // Mostrar si sumó algo, o si es un KO con rival distinto (para explicar el crédito parcial por identidad).
-    if (total <= 0 && !crossDiffered) continue
+    if (total <= 0 && advancementPoints <= 0) continue
 
     // Desglose del marcador: de dónde salió cada punto de partido.
     const row =
       mp.match.phase === 'group'
         ? MATCH_POINTS_BY_PHASE.group
         : MATCH_POINTS_BY_PHASE.knockout[normalizeKoRoundId(mp.match.round)]
+    const scoreTeamALabel = displayPredA ? teamLabel(displayPredA) : teamA ? teamLabel(teamA) : 'equipo A'
+    const scoreTeamBLabel = displayPredB ? teamLabel(displayPredB) : teamB ? teamLabel(teamB) : 'equipo B'
     const scoreLines: PointsHistoryScoreLine[] = [
       { label: 'Ganador/empate', points: details.winnerOrDrawHit ? row.winnerOrDraw : 0, hit: details.winnerOrDrawHit },
-      { label: 'Gol local', points: details.goalsAHit ? row.goalsTeamA : 0, hit: details.goalsAHit },
-      { label: 'Gol visitante', points: details.goalsBHit ? row.goalsTeamB : 0, hit: details.goalsBHit },
+      { label: `Goles de ${scoreTeamALabel}`, points: details.goalsAHit ? row.goalsTeamA : 0, hit: details.goalsAHit },
+      { label: `Goles de ${scoreTeamBLabel}`, points: details.goalsBHit ? row.goalsTeamB : 0, hit: details.goalsBHit },
     ]
 
     const matchupLabel =
@@ -407,8 +430,32 @@ export function buildPointsHistory(args: {
       matchNumber: catalogMatchNumber(fullMatch),
       sortKey: tournamentCatalogSortKey(fullMatch),
       matchupLabel,
+      teamAId: teamA,
+      teamBId: teamB,
+      teamALabel: teamA ? teamLabel(teamA) : null,
+      teamBLabel: teamB ? teamLabel(teamB) : null,
+      predictedTeamAId: displayPredA,
+      predictedTeamBId: displayPredB,
+      predictedTeamALabel: displayPredA ? teamLabel(displayPredA) : null,
+      predictedTeamBLabel: displayPredB ? teamLabel(displayPredB) : null,
       officialScore: formatOfficialMatchScore(fullMatch),
       predictionScore: formatPredictionMatchScore(mp.prediction),
+      officialGoalsA: matchGoalsTeamA(fullMatch),
+      officialGoalsB: matchGoalsTeamB(fullMatch),
+      officialPenaltiesWinner:
+        penaltiesWinnerIsTeamAFromPayload(fullMatch) === true
+          ? 'teamA'
+          : penaltiesWinnerIsTeamAFromPayload(fullMatch) === false
+            ? 'teamB'
+            : null,
+      predictionGoalsA: predictionGoalsTeamA(mp.prediction),
+      predictionGoalsB: predictionGoalsTeamB(mp.prediction),
+      predictionPenaltiesWinner:
+        penaltiesWinnerIsTeamAFromPayload(mp.prediction) === true
+          ? 'teamA'
+          : penaltiesWinnerIsTeamAFromPayload(mp.prediction) === false
+            ? 'teamB'
+            : null,
       playerLabel: playerKey?.trim()
         ? resolvePlayerName?.(playerKey) ?? playerKey
         : '—',
@@ -435,7 +482,7 @@ export function buildPointsHistory(args: {
     const part = tournamentParts.find((t) => t.questionId === questionId)
     if (!part) continue
     const points = scoreTournamentPrediction(questionId, part.officialAnswer, part.prediction)
-    if (points <= 0) continue
+    if (part.officialAnswer == null) continue
     if (PODIUM_QUESTION_IDS.has(questionId)) detailPodiumSum += points
     else if (SPECIAL_QUESTION_IDS.has(questionId)) detailSpecialsSum += points
     questionRows.push({

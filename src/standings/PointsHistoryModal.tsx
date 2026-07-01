@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ModalPortal } from '../components/ModalPortal'
+import { TeamFlagName } from '../predictions/TeamFlagName'
 import type {
   PointsHistory,
   PointsHistoryBracketRow,
@@ -30,7 +31,17 @@ function MatchHistoryCard({ row }: { row: PointsHistoryMatchRow }) {
     <article className="points-history-card">
       <header className="points-history-card__head">
         <span className="points-history-card__badge">#{row.matchNumber}</span>
-        <h4 className="points-history-card__title">{row.matchupLabel}</h4>
+        <h4 className="points-history-card__title">
+          {row.teamAId && row.teamBId ? (
+            <span className="points-history-card__teams">
+              <TeamFlagName teamId={row.teamAId} name={row.teamALabel ?? row.teamAId} compact />
+              <span>vs</span>
+              <TeamFlagName teamId={row.teamBId} name={row.teamBLabel ?? row.teamBId} compact />
+            </span>
+          ) : (
+            row.matchupLabel
+          )}
+        </h4>
         <span className="points-history-card__total">
           <strong>{row.total}</strong> pts
         </span>
