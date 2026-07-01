@@ -260,11 +260,13 @@ function advancementItemsForMatch({
   match,
   matches,
   userPredictions,
+  predictedLineup,
   teamLabel,
 }: {
   match: MatchDoc & { id: string }
   matches: (MatchDoc & { id: string })[]
   userPredictions: PredictionDoc[]
+  predictedLineup: ProjectedKoLineup | null
   teamLabel: (id: string) => string
 }): RowPointsBreakdownItem[] {
   if (match.phase !== 'knockout') return []
@@ -279,7 +281,7 @@ function advancementItemsForMatch({
   const offSet = officialByRound.get(advKey) ?? new Set<string>()
   const points = DEFAULT_RULESET.points.advancement[advKey]
 
-  return [matchTeamAId(match), matchTeamBId(match)]
+  return [predictedLineup?.predictedTeamAId, predictedLineup?.predictedTeamBId]
     .filter((teamId): teamId is string => Boolean(teamId))
     .filter((teamId) => predSet.has(teamId) && offSet.has(teamId))
     .map((teamId) => ({
@@ -635,6 +637,7 @@ function MatchPredictionsTable({
             match,
             matches,
             userPredictions,
+            predictedLineup,
             teamLabel,
           })
           const advancementPts = advancementItems.reduce((sum, item) => sum + item.points, 0)

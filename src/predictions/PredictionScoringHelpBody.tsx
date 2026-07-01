@@ -14,7 +14,7 @@ import {
 
 /**
  * Texto de ayuda alineado con el motor en scoring.ts.
- * `variant`: solo puntajes o incluir nota sobre cuándo suman los partidos.
+ * `variant`: solo puntajes o incluir nota sobre cuando suman los partidos.
  */
 export function PredictionScoringHelpBody({
   variant = 'scores',
@@ -30,7 +30,7 @@ export function PredictionScoringHelpBody({
         </p>
       ) : null}
       <p className="app-muted" style={{ marginBottom: 10 }}>
-        <strong>Marcador exacto:</strong> mismo número de goles del Equipo A y del Equipo B que el resultado
+        <strong>Marcador exacto:</strong> mismo numero de goles del Equipo A y del Equipo B que el resultado
         oficial.
       </p>
       <h3 className="pred-rules-modal__subtitle">Puntos por partido</h3>
@@ -42,23 +42,24 @@ export function PredictionScoringHelpBody({
           <strong>+{GROUP_WINNER_POINTS}</strong>.
         </li>
         <li>
-          <strong>Eliminatorias (90 minutos):</strong> aciertos independientes por ronda (máx. R32=
+          <strong>Eliminatorias (90 minutos):</strong> aciertos independientes por ronda (max. R32=
           {KO_EXACT_SCORE_BY_ROUND.r32}, R16={KO_EXACT_SCORE_BY_ROUND.r16}, QF=
-          {KO_EXACT_SCORE_BY_ROUND.qf}, SF={KO_EXACT_SCORE_BY_ROUND.sf}, 3.º=
-          {KO_EXACT_SCORE_BY_ROUND.third}, final={KO_EXACT_SCORE_BY_ROUND.final}). Los goles cuentan por
-          identidad del equipo (Seleccion A / B de tu pronostico), incluso si el rival real cambia frente a tu
-          bracket. Un equipo que no jugo ese cruce no suma goles.
+          {KO_EXACT_SCORE_BY_ROUND.qf}, SF={KO_EXACT_SCORE_BY_ROUND.sf}, 3ro=
+          {KO_EXACT_SCORE_BY_ROUND.third}, final={KO_EXACT_SCORE_BY_ROUND.final}). Los puntos de partido siguen
+          la identidad del equipo en esa ronda: si tu seleccion jugo ese cruce oficial, puede sumar ganador y sus
+          goles exactos aunque cambie el rival. Si la otra seleccion quedo en otra llave, solo suma avance de
+          llave, no goles de este partido.
         </li>
         <li>
           <strong>Avance por fases:</strong> +{ADVANCEMENT_POINTS.toR32} (R32), +{ADVANCEMENT_POINTS.toR16}{' '}
           (R16), +{ADVANCEMENT_POINTS.toQf} (QF), +{ADVANCEMENT_POINTS.toSf} (SF), +{ADVANCEMENT_POINTS.toFinal}{' '}
-          (final) por cada selección acertada.
+          (final) por cada seleccion acertada.
         </li>
       </ul>
       <h3 className="pred-rules-modal__subtitle">Avance y especiales</h3>
       <ul className="pred-rules-modal__list">
-        <li>Campeón: <strong>+{POINTS_CHAMPION}</strong> puntos si acertás.</li>
-        <li>Subcampeón: <strong>+{POINTS_RUNNER_UP}</strong> puntos.</li>
+        <li>Campeon: <strong>+{POINTS_CHAMPION}</strong> puntos si aciertas.</li>
+        <li>Subcampeon: <strong>+{POINTS_RUNNER_UP}</strong> puntos.</li>
         <li>Tercer puesto: <strong>+{POINTS_THIRD_PLACE}</strong> puntos.</li>
         <li>Goleador del torneo: <strong>+{POINTS_TOP_SCORER}</strong> puntos.</li>
         <li>Arquero con mejor promedio de goles recibidos: <strong>+{POINTS_BEST_GOALKEEPER_AVERAGE}</strong> puntos.</li>

@@ -18,7 +18,7 @@ const KO_ROUND_LABEL: Record<KnockoutRoundId, string> = {
   r16: 'R16',
   qf: 'QF',
   sf: 'SF',
-  third: '3.º',
+  third: '3ro',
   final: 'Fin',
 }
 
@@ -73,17 +73,17 @@ export function PointsTablesSection() {
       ...KO_ROUND_ORDER.map((r) => ko[r].winnerOrDraw),
     ],
     [
-      'Goles Selección A',
+      'Goles seleccion A',
       gr.goalsTeamA,
       ...KO_ROUND_ORDER.map((r) => ko[r].goalsTeamA),
     ],
     [
-      'Goles Selección B',
+      'Goles seleccion B',
       gr.goalsTeamB,
       ...KO_ROUND_ORDER.map((r) => ko[r].goalsTeamB),
     ],
     [
-      'Máximo posible',
+      'Maximo posible',
       maxMatchPoints(gr),
       ...KO_ROUND_ORDER.map((r) => KO_EXACT_SCORE_BY_ROUND[r]),
     ],
@@ -112,42 +112,42 @@ export function PointsTablesSection() {
         rows={matchRows}
       />
       <p className="rules-points-hint">
-        Cada acierto suma de forma independiente. La fila «Máximo posible» es el total si acertás ganador/empate
-        y ambos goles. En eliminatorias, ganador y goles se evaluan por identidad de seleccion, incluso si el
-        rival real cambia frente a tu bracket.
+        Cada acierto suma de forma independiente. La fila de maximo posible es el total si aciertas ganador/empate
+        y ambos goles. En eliminatorias, ganador y goles se evaluan por identidad de seleccion: si tu equipo jugo
+        ese cruce oficial, puede sumar aunque cambie el rival; si quedo en otra llave, no suma goles en este partido.
       </p>
 
       <h3>2. Bonus: goleador del partido</h3>
       <p className="rules-points-hint">
-        Elegís un solo jugador por partido. Si anota, sumás puntos por cada gol en el encuentro (solo goles en los
+        Eliges un solo jugador por partido. Si anota, sumas puntos por cada gol en el encuentro (solo goles en los
         90 minutos o en el tiempo suplementario del mismo partido).
       </p>
-      <PointsTable caption="Puntos por gol según ronda" headers={playerHeaders} rows={playerRows} />
+      <PointsTable caption="Puntos por gol segun ronda" headers={playerHeaders} rows={playerRows} />
 
       <PointsTable
-        caption="3. Avance — equipos clasificados"
+        caption="3. Avance - equipos clasificados"
         headers={['Ronda de destino', 'Pts por eq.']}
         rows={advRows}
       />
       <p className="rules-points-hint">
         Si el cruce real cambia frente a tu bracket, estos puntos se suman aparte por cada seleccion clasificada
-        que hayas ubicado en esa ronda.
+        que hayas ubicado en esa ronda, incluso si jugo en otra llave.
       </p>
       <p className="rules-points-hint">
-        Por cada selección que acertás que clasifica a esa fase, sumás los puntos indicados (acumulables).
+        Por cada seleccion que aciertas que clasifica a esa fase, sumas los puntos indicados (acumulables).
       </p>
 
-      <h3>4. Especiales — podio del torneo</h3>
+      <h3>4. Especiales - podio del torneo</h3>
       <ul>
         <li>
-          Campeón: <strong>+{POINTS_CHAMPION}</strong> · Subcampeón: <strong>+{POINTS_RUNNER_UP}</strong> · Tercer
+          Campeon: <strong>+{POINTS_CHAMPION}</strong> - Subcampeon: <strong>+{POINTS_RUNNER_UP}</strong> - Tercer
           puesto: <strong>+{POINTS_THIRD_PLACE}</strong>
         </li>
       </ul>
 
       <h3>5. Banco de preguntas extra</h3>
       <p className="rules-points-hint">
-        Las <strong>{bonusCount}</strong> preguntas adicionales del banco, resueltas según publicaciones oficiales
+        Las <strong>{bonusCount}</strong> preguntas adicionales del banco, resueltas segun publicaciones oficiales
         del torneo, otorgan <strong>+{POINTS_BONUS_QUESTION}</strong> puntos cada una acertada.
       </p>
 

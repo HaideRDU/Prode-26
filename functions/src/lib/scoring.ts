@@ -254,6 +254,8 @@ function scoreAdditiveMatch(
     exactScoreHit: exact,
     oneScoreHit,
     winnerOrDrawHit,
+    goalsAHit,
+    goalsBHit,
   }
 }
 
@@ -262,6 +264,8 @@ export interface MatchScoreDetails {
   exactScoreHit: boolean
   oneScoreHit: boolean
   winnerOrDrawHit: boolean
+  goalsAHit: boolean
+  goalsBHit: boolean
 }
 
 export function scoreMatchPredictionDetails(
@@ -270,12 +274,12 @@ export function scoreMatchPredictionDetails(
   predictedLineup?: PredictedKoLineup | null,
 ): MatchScoreDetails {
   if (match.status !== 'finished' || prediction == null) {
-    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
+    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false, goalsAHit: false, goalsBHit: false }
   }
   const actualTeamA = goalsForTeamA(match)
   const actualTeamB = goalsForTeamB(match)
   if (actualTeamA == null || actualTeamB == null) {
-    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
+    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false, goalsAHit: false, goalsBHit: false }
   }
 
   const predTeamA = predictionGoalsTeamA(prediction)
@@ -285,7 +289,7 @@ export function scoreMatchPredictionDetails(
 
   if (match.phase === 'group') {
     if (!ahId || !aaId) {
-      return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
+      return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false, goalsAHit: false, goalsBHit: false }
     }
     return scoreAdditiveMatch(
       GROUP_ROW,
@@ -306,7 +310,7 @@ export function scoreMatchPredictionDetails(
   const row = DEFAULT_RULESET.points.matchByPhase.knockout[roundId]
 
   if (!ahId || !aaId || !phId || !paId) {
-    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false }
+    return { points: 0, exactScoreHit: false, oneScoreHit: false, winnerOrDrawHit: false, goalsAHit: false, goalsBHit: false }
   }
 
   return scoreAdditiveMatch(

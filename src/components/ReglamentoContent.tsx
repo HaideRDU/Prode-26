@@ -54,15 +54,16 @@ export function ReglamentoContent({ showPageTitle = true }: ReglamentoContentPro
       <section className="rules-detail-block" aria-labelledby="rules-golden-title">
         <h2 id="rules-golden-title">Regla de oro en eliminatorias</h2>
         <p>
-          En fases eliminatorias (R32 en adelante), los puntos se evaluan por identidad de seleccion. Si cambia
-          el rival, todavia podes sumar ganador y goles de la seleccion que coincida con el partido oficial.
-          Los goles del equipo que no jugo ese cruce no suman.
+          En fases eliminatorias (R32 en adelante), los puntos de partido siguen la identidad de la seleccion
+          dentro de esa ronda. Si cambia el rival, todavia podes sumar ganador y goles exactos del equipo que si
+          jugo ese cruce oficial. El equipo que quedo en otra llave no suma goles en este partido: solo suma sus
+          puntos de avance de llave si llego a la ronda.
         </p>
         <div className="rules-example">
           <p>
-            <strong>Ejemplo 1 (cambio de rival):</strong> En cuartos, pronosticaste Brasil 2 - 1 Croacia. El
-            partido real fue Brasil 2 - 1 Belgica. Sumas ganador y goles de Brasil, pero no los goles de Croacia
-            porque no jugo ese partido.
+            <strong>Ejemplo 1 (cambio de rival):</strong> En R32, pronosticaste Mexico 2 - 0 Ecuador. El partido
+            real fue Mexico 2 - 0 Colombia. Sumas ganador y goles exactos de Mexico. Ecuador no suma goles en
+            ese partido; si Ecuador tambien llego a R32 en otra llave, suma el avance de llave aparte.
           </p>
           <p>
             <strong>Ejemplo 2 (mismos equipos invertidos):</strong> Pronosticaste Brasil 2 - 1 Croacia. El partido

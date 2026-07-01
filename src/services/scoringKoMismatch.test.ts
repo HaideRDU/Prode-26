@@ -29,6 +29,38 @@ function main() {
   assert.equal(detailsWrongPair.exactScoreHit, false)
   assert.equal(detailsWrongPair.points, 6, 'QF: ganador y gol de BRA suman por identidad')
 
+  const matchMexCol = {
+    phase: 'knockout' as const,
+    status: 'finished' as const,
+    goalsTeamA: 2,
+    goalsTeamB: 0,
+    wentToPenalties: false,
+    round: 'r32',
+    teamAId: 'MEX',
+    teamBId: 'COL',
+  }
+  const detailsGoldenRule = scoreMatchPredictionDetails(
+    matchMexCol,
+    { goalsTeamA: 2, goalsTeamB: 0, wentToPenalties: false },
+    { predictedTeamAId: 'MEX', predictedTeamBId: 'ECU' },
+  )
+  assert.equal(detailsGoldenRule.winnerOrDrawHit, true)
+  assert.equal(detailsGoldenRule.goalsAHit, true)
+  assert.equal(detailsGoldenRule.goalsBHit, false)
+  assert.equal(detailsGoldenRule.exactScoreHit, false)
+  assert.equal(
+    detailsGoldenRule.points,
+    4,
+    'Regla de oro: MEX suma ganador y goles; ECU en otra llave solo suma avance, no este partido',
+  )
+
+  const detailsNoSharedTeam = scoreMatchPredictionDetails(
+    matchMexCol,
+    { goalsTeamA: 2, goalsTeamB: 0, wentToPenalties: false },
+    { predictedTeamAId: 'CRO', predictedTeamBId: 'ECU' },
+  )
+  assert.equal(detailsNoSharedTeam.points, 0, 'Marcador parecido sin equipos en comun no suma partido KO')
+
   const matchSwapped = {
     ...matchQf,
     goalsTeamA: 1,
